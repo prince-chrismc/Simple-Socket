@@ -1,6 +1,13 @@
-------------------------------------------------------------------------------------------
-* History
-------------------------------------------------------------------------------------------
+# CSimpleSocket
+This fork aims to have the original library compile and work reliably using modern c++ compilers ( MSVC 15.7 / GCC 7.3 )
+
+### Table of Contents
+1. [History](#History)
+2. [Building and Installing](Building-and-Installing)
+3. [Class Overview](#Class-Overview)
+4. [Examples](#Examples)
+
+## History
 Written by Mark Carrier to provide a mechanism for writing cross platform socket code. This library was originally written to only support blocking TCP sockets. Over the years it has been extended to support UDP and RAW sockets as well. This is the first official release of the library and the following functionality is supported:
 
     * Cross platform socket support.
@@ -14,9 +21,7 @@ Written by Mark Carrier to provide a mechanism for writing cross platform socket
     * Thread Safe
     * Signal Safe
 
-------------------------------------------------------------------------------------------
-* Building and Installing	
-------------------------------------------------------------------------------------------
+## Building and Installing	
 This is a very small library and is very easy to build and configure.  To build and install
 make sure you are logged in as a user who has access to the recommend GNU installation 
 directories. Then type
@@ -28,9 +33,7 @@ That is it now you are off and running.
 NOTE: When using the library with WINDOWS you must define _WIN32 and when using with LINUX
       you must define _LINUX.
 
-------------------------------------------------------------------------------------------
-* SimpleSocket Class Overview
-------------------------------------------------------------------------------------------
+## 3. SimpleSocket Class Overview
 Network communications via sockets can be abstracted into two categories of functionality; the active socket and the passive socket. The active socket object initiates a connection with a known host, whereas the passive socket object waits (or listens) for inbound requests for communication. The functionality of both objects is identical as far as sending and receiving data. This library makes distinction between the two objects because the operations for constructing and destructing the two are different.
 
 This library is different from other socket libraries which define TCP sockets, UDP sockets, HTTP sockets, etc. The reason is the operations required for TCP, UDP, and RAW network communication is identical from a logical stand point. Thus a program could initially be written employing TCP streams, and then at some future point it could be discovered that UDP datagrams would satisify the solution. Changing between the two transport protocols would only require changing how the object is instantiated. The remaining code would in theory require minimal to no changes.
@@ -42,10 +45,7 @@ The simple socket library is comprised of two class which can be used to represe
     * Active Socket Class
     * Passive Socket Class 
 
-
-------------------------------------------------------------------------------------------
-* SimpleSocket Class Examples
-------------------------------------------------------------------------------------------
+## 4. SimpleSocket Class Examples
 When operating on a socket object most methods will return true or false
 Simple Active Socket
 As mentioned previously the active socket (CActiveSocket) is used to initiate a connections with a server on some known port. So you want to connect to an existing server...
@@ -56,6 +56,7 @@ There are many ways using the existing Berkley Socket API, but the goal of this 
 
 The following code will connect to a DAYTIME server on port 13, query for the current time, and close the socket.
 
+```cpp
 #include <string.h>
 #include "ActiveSocket.h"       // Include header for active socket object definition
 
@@ -63,51 +64,39 @@ int main(int argc, char **argv)
 {
     CActiveSocket socket;       // Instantiate active socket object (defaults to TCP).
     char          time[50];
-
     memset(&time, 0, 50);
 
-    //--------------------------------------------------------------------------
     // Initialize our socket object 
-    //--------------------------------------------------------------------------
     socket.Initialize();
 
-    //--------------------------------------------------------------------------
-    // Create a connection to the time server so that data can be sent
-    // and received.
-    //--------------------------------------------------------------------------
     if (socket.Open("time-C.timefreq.bldrdoc.gov", 13))
     {
-        //----------------------------------------------------------------------
         // Send a requtest the server requesting the current time.
-        //----------------------------------------------------------------------
         if (socket.Send((const uint8 *)"\n", 1))
         {
-            //----------------------------------------------------------------------
             // Receive response from the server.
-            //----------------------------------------------------------------------
             socket.Receive(49);
             memcpy(&time, socket.GetData(), 49);
             printf("%s\n", time);
 
-            //----------------------------------------------------------------------
             // Close the connection.
-            //----------------------------------------------------------------------
             socket.Close();
         }
     }
 
-
     return 1;
 }
+```
 
 You can see that the amount of code required to an object for network communciation is very small and simple.
 Simple Passive Socket
 Now you want to build a server.
 
-How do you do it?
+> How do you do it?
 
 For a practical test lets build an echo server. The server will listen on port 6789 an repsond back with what ever has been sent to the server.
 
+```cpp
 #include "PassiveSocket.h"       // Include header for active socket object definition
 
 #define MAX_PACKET 4096 
@@ -117,25 +106,17 @@ int main(int argc, char **argv)
     CPassiveSocket socket;
     CActiveSocket *pClient = NULL;
 
-    //--------------------------------------------------------------------------
     // Initialize our socket object 
-    //--------------------------------------------------------------------------
     socket.Initialize();
-
     socket.Listen("127.0.0.1", 6789);
-
     while (true)
     {
         if ((pClient = socket.Accept()) != NULL)
         {
-            //----------------------------------------------------------------------
             // Receive request from the client.
-            //----------------------------------------------------------------------
             if (pClient->Receive(MAX_PACKET))
             {
-                //------------------------------------------------------------------
                 // Send response to client and close connection to the client.
-                //------------------------------------------------------------------
                 pClient->Send( pClient->GetData(), pClient->GetBytesReceived() );
                 pClient->Close();
             }
@@ -143,11 +124,8 @@ int main(int argc, char **argv)
             delete pClient;
         }
     }
-
-    //-----------------------------------------------------------------------------
-    // Receive request from the client.
-    //-----------------------------------------------------------------------------
     socket.Close();
 
     return 1;
 }
+```
