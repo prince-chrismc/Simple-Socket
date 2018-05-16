@@ -33,7 +33,7 @@ That is it now you are off and running.
 NOTE: When using the library with WINDOWS you must define _WIN32 and when using with LINUX
       you must define _LINUX.
 
-## 3. SimpleSocket Class Overview
+## Class Overview
 Network communications via sockets can be abstracted into two categories of functionality; the active socket and the passive socket. The active socket object initiates a connection with a known host, whereas the passive socket object waits (or listens) for inbound requests for communication. The functionality of both objects is identical as far as sending and receiving data. This library makes distinction between the two objects because the operations for constructing and destructing the two are different.
 
 This library is different from other socket libraries which define TCP sockets, UDP sockets, HTTP sockets, etc. The reason is the operations required for TCP, UDP, and RAW network communication is identical from a logical stand point. Thus a program could initially be written employing TCP streams, and then at some future point it could be discovered that UDP datagrams would satisify the solution. Changing between the two transport protocols would only require changing how the object is instantiated. The remaining code would in theory require minimal to no changes.
@@ -45,7 +45,7 @@ The simple socket library is comprised of two class which can be used to represe
     * Active Socket Class
     * Passive Socket Class 
 
-## 4. SimpleSocket Class Examples
+## Examples
 When operating on a socket object most methods will return true or false
 Simple Active Socket
 As mentioned previously the active socket (CActiveSocket) is used to initiate a connections with a server on some known port. So you want to connect to an existing server...
