@@ -452,7 +452,9 @@ public:
     /// Returns clients Internet host address as a string in standard numbers-and-dots notation.
     ///  @return NULL if invalid
     const char *GetClientAddr() {
-        return inet_ntoa(m_stClientSockaddr.sin_addr);
+		//return inet_ntoa(m_stClientSockaddr.sin_addr);
+		char buff[16];
+		return inet_ntop(AF_INET, &m_stClientSockaddr.sin_addr, buff, 16);
     };
 
     /// Returns the port number on which the client is connected.
@@ -464,7 +466,9 @@ public:
     /// Returns server Internet host address as a string in standard numbers-and-dots notation.
     ///  @return NULL if invalid
     const char *GetServerAddr() {
-        return inet_ntoa(m_stServerSockaddr.sin_addr);
+        //return inet_ntoa(m_stServerSockaddr.sin_addr);
+		char buff[16];
+		return inet_ntop(AF_INET, &m_stServerSockaddr.sin_addr, buff, 16);
     };
 
     /// Returns the port number on which the server is connected.
