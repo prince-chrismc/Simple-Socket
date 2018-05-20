@@ -157,7 +157,8 @@ extern "C"
 #define ACCEPT(a,b,c)          accept(a,b,c)
 #define CONNECT(a,b,c)         connect(a,b,c)
 #define CLOSE(a)               closesocket(a)
-#define READ(a,b,c)            read(a,b,c)
+#define READ(a,b,c)            _read(a,b,c)
+#define SEEK(a,b,c)            _lseek(a,b,c)
 #define RECV(a,b,c,d)          recv(a, (char *)b, c, d)
 #define RECVFROM(a,b,c,d,e,f)  recvfrom(a, (char *)b, c, d, (sockaddr *)e, (int *)f)
 #define RECV_FLAGS             MSG_WAITALL
@@ -180,7 +181,8 @@ extern "C"
 #define ACCEPT(a,b,c)          accept(a,b,c)
 #define CONNECT(a,b,c)         connect(a,b,c)
 #define CLOSE(a)               close(a)
-#define READ(a,b,c)            read(a,b,c)
+#define READ(a,b,c)            pread(a,b,c,0)
+#define SEEK(a,b,c)            lseek(a,b,c)
 #define RECV(a,b,c,d)          recv(a, (void *)b, c, d)
 #define RECVFROM(a,b,c,d,e,f)  recvfrom(a, (char *)b, c, d, (sockaddr *)e, f)
 #define RECV_FLAGS             MSG_WAITALL
