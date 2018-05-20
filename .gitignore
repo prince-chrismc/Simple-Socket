@@ -1,5 +1,10 @@
 build*/
 
+## output files
+libclsocket.a
+clsocket-example
+echoserver-example
+querydaytime-example
 
 ## CMake files
 CMakeCache.txt
