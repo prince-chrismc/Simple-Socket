@@ -87,17 +87,20 @@ if(UNIX)
     OPTION(CLSOCKET_EXAMPLES "Build the examples" OFF)
 
     if(CLSOCKET_EXAMPLES)
-        ADD_EXECUTABLE(clsocket-example examples/RecvAsync.cpp)
-        TARGET_LINK_LIBRARIES(clsocket-example clsocket pthread)
+        ADD_EXECUTABLE(clsocket-example.run examples/RecvAsync.cpp)
+        TARGET_LINK_LIBRARIES(clsocket-example.run clsocket pthread)
         if(NOT CLSOCKET_DEP_ONLY)
-            install(TARGETS clsocket-example DESTINATION bin)
+            install(TARGETS clsocket-example.run DESTINATION bin)
         endif()
 
-        ADD_EXECUTABLE(querydaytime-example examples/QueryDayTime.cpp)
-        TARGET_LINK_LIBRARIES(querydaytime-example clsocket)
+        ADD_EXECUTABLE(querydaytime-example.run examples/QueryDayTime.cpp)
+        TARGET_LINK_LIBRARIES(querydaytime-example.run clsocket)
 
-        ADD_EXECUTABLE(echoserver-example examples/EchoServer.cpp)
-        TARGET_LINK_LIBRARIES(echoserver-example clsocket)
+        ADD_EXECUTABLE(echoserver-example.run examples/EchoServer.cpp)
+        TARGET_LINK_LIBRARIES(echoserver-example.run clsocket)
+
+        ADD_EXECUTABLE(echoclient-example.run examples/EchoClient.cpp)
+        TARGET_LINK_LIBRARIES(echoclient-example.run clsocket)
     endif()
 endif()
 
