@@ -51,7 +51,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /home/cmcarthur/Documents/Programming/clsocket
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/cmcarthur/Documents/Programming/clsocket
+CMAKE_BINARY_DIR = /home/cmcarthur/Documents/Programming/clsocket/build
 
 #=============================================================================
 # Targets provided globally by CMake.
