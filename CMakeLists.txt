@@ -52,7 +52,7 @@ elseif(WIN32)
     endif()
 endif()
 
-OPTION(CLSOCKET_SHARED "Build clsocket lib as shared." ON)
+OPTION(CLSOCKET_SHARED "Build clsocket lib as shared." OFF)
 OPTION(CLSOCKET_DEP_ONLY "Build for use inside other CMake projects as dependency." OFF)
 
 # make the lib
@@ -83,7 +83,7 @@ set_target_properties(clsocket PROPERTIES VERSION ${BUILD_VERSION}
                                           SOVERSION ${BUILD_MAJOR})
 
 if(UNIX)
-    OPTION(CLSOCKET_EXAMPLES "Build the examples" OFF)
+    OPTION(CLSOCKET_EXAMPLES "Build the examples" ON)
 
     if(CLSOCKET_EXAMPLES)
         ADD_EXECUTABLE(clsocket-example.run examples/RecvAsync.cpp)
@@ -100,6 +100,17 @@ if(UNIX)
 
         ADD_EXECUTABLE(echoclient-example.run examples/EchoClient.cpp)
         TARGET_LINK_LIBRARIES(echoclient-example.run clsocket)
+    endif()
+elseif(WIN32)
+    OPTION(CLSOCKET_EXAMPLES "Build the examples" ON)
+    
+        if(CLSOCKET_EXAMPLES)
+
+        ADD_EXECUTABLE(echoserver-example examples/EchoServer.cpp)
+        TARGET_LINK_LIBRARIES(echoserver-example clsocket)
+
+        ADD_EXECUTABLE(echoclient-example examples/EchoClient.cpp)
+        TARGET_LINK_LIBRARIES(echoclient-example clsocket)
     endif()
 endif()
 
