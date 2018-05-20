@@ -111,6 +111,9 @@ elseif(WIN32)
 
         ADD_EXECUTABLE(echoclient-example examples/EchoClient.cpp)
         TARGET_LINK_LIBRARIES(echoclient-example clsocket)
+        
+        ADD_EXECUTABLE(clsocket-tester tests/main.cpp)
+        TARGET_LINK_LIBRARIES(clsocket-tester clsocket)
     endif()
 endif()
 
