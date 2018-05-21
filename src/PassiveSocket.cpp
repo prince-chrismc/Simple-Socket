@@ -76,7 +76,8 @@ bool CPassiveSocket::BindMulticast(const char *pInterface, const char *pGroup, u
     }
     else
     {
-        if ((inAddr = inet_addr(pInterface)) != INADDR_NONE)
+        inet_pton(m_nSocketDomain, pInterface, &inAddr);
+        if (inAddr != INADDR_NONE)
         {
             m_stMulticastGroup.sin_addr.s_addr = inAddr;
         }
@@ -90,11 +91,10 @@ bool CPassiveSocket::BindMulticast(const char *pInterface, const char *pGroup, u
         //----------------------------------------------------------------------
         // Join the multicast group
         //----------------------------------------------------------------------
-        m_stMulticastRequest.imr_multiaddr.s_addr = inet_addr(pGroup);
+        inet_pton(m_nSocketDomain, pGroup, &m_stMulticastRequest.imr_multiaddr.s_addr);
         m_stMulticastRequest.imr_interface.s_addr = m_stMulticastGroup.sin_addr.s_addr;
 
-        if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-                       (void *)&m_stMulticastRequest,
+        if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &m_stMulticastRequest,
                        sizeof(m_stMulticastRequest)) == CSimpleSocket::SocketSuccess)
         {
             bRetVal = true;
@@ -161,7 +161,8 @@ bool CPassiveSocket::Listen(const char *pAddr, uint16 nPort, int32 nConnectionBa
     }
     else
     {
-        if ((inAddr = inet_addr(pAddr)) != INADDR_NONE)
+        inet_pton(m_nSocketDomain, pAddr, &inAddr);
+        if (inAddr != INADDR_NONE)
         {
             m_stServerSockaddr.sin_addr.s_addr = inAddr;
         }

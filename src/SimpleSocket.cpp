@@ -109,20 +109,22 @@ CSimpleSocket::CSimpleSocket(CSocketType nType) :
 
 CSimpleSocket::CSimpleSocket(CSimpleSocket &socket)
 {
+    delete m_pBuffer;
     m_pBuffer = new uint8[socket.m_nBufferSize];
     m_nBufferSize = socket.m_nBufferSize;
     memcpy(m_pBuffer, socket.m_pBuffer, socket.m_nBufferSize);
 }
 
-CSimpleSocket *CSimpleSocket::operator=(CSimpleSocket &socket)
+CSimpleSocket* CSimpleSocket::operator=(CSimpleSocket &socket)
 {
     if (m_nBufferSize != socket.m_nBufferSize)
     {
         delete m_pBuffer;
         m_pBuffer = new uint8[socket.m_nBufferSize];
         m_nBufferSize = socket.m_nBufferSize;
-        memcpy(m_pBuffer, socket.m_pBuffer, socket.m_nBufferSize);
     }
+
+    memcpy(m_pBuffer, socket.m_pBuffer, socket.m_nBufferSize);
 
     return this;
 }
@@ -173,7 +175,7 @@ bool CSimpleSocket::BindInterface(const char *pInterface)
     {
         if (pInterface)
         {
-            stInterfaceAddr.s_addr= inet_addr(pInterface);
+            inet_pton(m_nSocketDomain, pInterface, &stInterfaceAddr.s_addr);
             if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_MULTICAST_IF, &stInterfaceAddr, sizeof(stInterfaceAddr)) == SocketSuccess)
             {
                 bRetVal = true;
