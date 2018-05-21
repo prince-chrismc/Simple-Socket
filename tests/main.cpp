@@ -85,6 +85,9 @@ int EchoServerThread(std::future<void> exitEvent)
     {
         if ((pClient = socket.Accept()) != NULL)
         {
+            printf("New Client from %s on %d\n", 
+                   pClient->GetClientAddr(),
+                   pClient->GetClientPort() );
             // Receive request from the client.
             if (pClient->Receive(MAX_PACKET))
             {
