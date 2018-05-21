@@ -2,21 +2,33 @@ sudo: false
 language: cpp
 matrix:
   include:
-    - env: GCC_VERSION=4.8
+    # works on Precise and Trusty
+    - os: linux
       addons:
         apt:
+          sources:
+            - ubuntu-toolchain-r-test
           packages:
-            - gcc-4.8-multilib
-            - g++-4.8-multilib
+            - g++-6
+      env:
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+before_install:
+    - eval "${MATRIX_EVAL}"
+
 script:
 - mkdir build-travis
 - cd build-travis
 - cmake .. -DCMAKE_C_COMPILER=gcc-$GCC_VERSION -DCMAKE_CXX_COMPILER=g++-$GCC_VERSION -DCLSOCKET_EXAMPLES:BOOL=ON
 - make -j3
-notifications:
-  email: false
-  irc:
-    channels:
-      - "chat.freenode.net#dfhack"
-    on_success: change
-    on_failure: always
