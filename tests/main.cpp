@@ -74,9 +74,7 @@ int EchoServerThread(std::future<void> exitEvent)
     CPassiveSocket socket;
     CActiveSocket *pClient = NULL;
 
-    //--------------------------------------------------------------------------
     // Initialize our socket object 
-    //--------------------------------------------------------------------------
     socket.Initialize();
 
     socket.Listen("127.0.0.1", 6789);
@@ -85,9 +83,11 @@ int EchoServerThread(std::future<void> exitEvent)
     {
         if ((pClient = socket.Accept()) != NULL)
         {
+            const char* clientAddr = pClient->GetClientAddr();
             printf("New Client from %s on %d\n", 
-                   pClient->GetClientAddr(),
+                   clientAddr,
                    pClient->GetClientPort() );
+
             // Receive request from the client.
             if (pClient->Receive(MAX_PACKET))
             {
