@@ -1,5 +1,5 @@
 # CSimpleSocket [![Build Status](https://travis-ci.org/prince-chrismc/clsocket.svg?branch=master)](https://travis-ci.org/prince-chrismc/clsocket)
-This fork aims to have the original library compile and work reliably using modern c++ compilers ( MSVC 15.7 / GCC 7.3 )
+This ~fork~ repository aims to have the original library compile and work reliably using modern c++ compilers ( MSVC 15.7 / GCC 7.3 ) with a focus on the async and multicast functionality.
 
 ### Table of Contents
 1. [History](#History)
@@ -22,16 +22,9 @@ Written by Mark Carrier to provide a mechanism for writing cross platform socket
     * Signal Safe
 
 ## Building and Installing	
-This is a very small library and is very easy to build and configure.  To build and install
+This is a very small library and is very easy to build and configure. To build and install
 make sure you are logged in as a user who has access to the recommend GNU installation 
-directories. Then type
-
-make -BUILD=Release && make install
-
-That is it now you are off and running.
-
-NOTE: When using the library with WINDOWS you must define _WIN32 and when using with LINUX
-      you must define _LINUX.
+directories. Then type `make -BUILD=Release && make install` That is it now you are off and running.
 
 ## Class Overview
 Network communications via sockets can be abstracted into two categories of functionality; the active socket and the passive socket. The active socket object initiates a connection with a known host, whereas the passive socket object waits (or listens) for inbound requests for communication. The functionality of both objects is identical as far as sending and receiving data. This library makes distinction between the two objects because the operations for constructing and destructing the two are different.
@@ -41,9 +34,8 @@ This library is different from other socket libraries which define TCP sockets, 
 This library avoids abstractions like HTTP socket, or SMTP socket, soley because this type of object mixes the application and the transport layer. These types of abstractions can be created using this library as a base class.
 
 The simple socket library is comprised of two class which can be used to represent all socket communications.
-
-    * Active Socket Class
-    * Passive Socket Class 
+* Active Socket Class
+* Passive Socket Class 
 
 ## Examples
 When operating on a socket object most methods will return true or false
