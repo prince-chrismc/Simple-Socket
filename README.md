@@ -1,4 +1,4 @@
-# CSimpleSocket
+# CSimpleSocket [![Build Status](https://travis-ci.org/prince-chrismc/clsocket.svg?branch=master)](https://travis-ci.org/prince-chrismc/clsocket)
 This fork aims to have the original library compile and work reliably using modern c++ compilers ( MSVC 15.7 / GCC 7.3 )
 
 ### Table of Contents
