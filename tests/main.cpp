@@ -43,6 +43,12 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    if (client.GetMulticast())
+    {
+        printf("Client should not be multicast..\n");
+        return -1;
+    }
+
     if (client.Send((uint8 *)TEST_PACKET, strlen(TEST_PACKET)))
     {
         int numBytes = -1;
