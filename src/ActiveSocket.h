@@ -84,7 +84,7 @@ private:
     bool ConnectRAW(const char *pAddr, uint16 nPort);
 
 private:
-    struct hostent *m_pHE;
+    struct hostent *m_pHE; // to be removed
 };
 
 #endif /*  __ACTIVESOCKET_H__  */

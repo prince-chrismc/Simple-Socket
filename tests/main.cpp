@@ -43,11 +43,11 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    if (client.GetMulticast())
-    {
-        printf("Client should not be multicast..\n");
-        return -1;
-    }
+    //if (client.GetMulticast())
+    //{
+    //    printf("Client should not be multicast..\n");
+    //    return -1;
+    //}
 
     if (client.Send((uint8 *)TEST_PACKET, strlen(TEST_PACKET)))
     {
@@ -72,6 +72,8 @@ int main(int argc, char **argv)
 
     exitSignal.set_value();
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    getchar();
     return 1;
 }
 
@@ -89,11 +91,16 @@ int EchoServerThread(std::future<void> exitEvent)
     {
         if ((pClient = socket.Accept()) != NULL)
         {
+#ifdef _LINUX
             const char* clientAddr = pClient->GetClientAddr();
             printf("New Client from %s on %d\n", 
                    clientAddr,
                    pClient->GetClientPort() );
-
+#elif _WIN32
+            printf("New Client from %s on %d\n",
+                pClient->GetClientAddr(),
+                pClient->GetClientPort());
+#endif
             // Receive request from the client.
             if (pClient->Receive(MAX_PACKET))
             {

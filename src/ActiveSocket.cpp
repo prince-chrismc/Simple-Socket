@@ -54,7 +54,6 @@ CActiveSocket::CActiveSocket(CSocketType nType) : CSimpleSocket(nType)
 bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
 {
     bool           bRetVal = false;
-    struct in_addr stIpAddress;
 
     //------------------------------------------------------------------
     // Preconnection setup that must be preformed
@@ -62,7 +61,15 @@ bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
     memset(&m_stServerSockaddr, 0, sizeof(m_stServerSockaddr));
     m_stServerSockaddr.sin_family = AF_INET;
 
-    if ((m_pHE = GETHOSTBYNAME(pAddr)) == NULL)
+    addrinfo hints;
+    ZeroMemory(&hints, sizeof(hints));
+    hints.ai_flags = AI_ALL;
+    hints.ai_family = PF_INET;
+    hints.ai_protocol = IPPROTO_IPV4;
+    ADDRINFO* pResult = NULL;
+    int errcode = getaddrinfo(pAddr, NULL, &hints, &pResult);
+
+    if (errcode != 0)
     {
 #ifdef WIN32
         TranslateSocketError();
@@ -75,8 +82,8 @@ bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
         return bRetVal;
     }
 
-    memcpy(&stIpAddress, m_pHE->h_addr_list[0], m_pHE->h_length);
-    m_stServerSockaddr.sin_addr.s_addr = stIpAddress.s_addr;
+    m_stServerSockaddr.sin_addr.s_addr = *((ULONG*)&(((sockaddr_in*)pResult->ai_addr)->sin_addr));
+    m_stServerSockaddr.sin_port = htons(nPort);
 
     if ((int32)m_stServerSockaddr.sin_addr.s_addr == CSimpleSocket::SocketError)
     {
@@ -84,11 +91,8 @@ bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
         return bRetVal;
     }
 
-    m_stServerSockaddr.sin_port = htons(nPort);
-
     //------------------------------------------------------------------
     // Connect to address "xxx.xxx.xxx.xxx"    (IPv4) address only.
-    //
     //------------------------------------------------------------------
     m_timer.Initialize();
     m_timer.SetStartTime();
