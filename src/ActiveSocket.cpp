@@ -67,7 +67,7 @@ bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
     hints.ai_family = PF_INET;
     hints.ai_protocol = IPPROTO_IPV4;
     ADDRINFO* pResult = NULL;
-    int errcode = getaddrinfo(pAddr, NULL, &hints, &pResult);
+    int errcode = getaddrinfo(pAddr, NULL, &hints, &pResult); /// https://codereview.stackexchange.com/a/17866
 
     if (errcode != 0)
     {
