@@ -108,6 +108,9 @@ elseif(WIN32)
     OPTION(CLSOCKET_EXAMPLES "Build the examples" ON)
     
         if(CLSOCKET_EXAMPLES)
+		
+        ADD_EXECUTABLE(querydaytime-example examples/QueryDayTime.cpp)
+        TARGET_LINK_LIBRARIES(querydaytime-example clsocket)
 
         ADD_EXECUTABLE(echoserver-example examples/EchoServer.cpp)
         TARGET_LINK_LIBRARIES(echoserver-example clsocket)

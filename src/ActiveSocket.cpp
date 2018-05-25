@@ -62,11 +62,10 @@ bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
     m_stServerSockaddr.sin_family = AF_INET;
 
     addrinfo hints;
-    ZeroMemory(&hints, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_flags = AI_ALL;
-    hints.ai_family = PF_INET;
-    hints.ai_protocol = IPPROTO_IPV4;
-    ADDRINFO* pResult = NULL;
+    hints.ai_family = AF_INET;
+    addrinfo* pResult = NULL;
     int errcode = getaddrinfo(pAddr, NULL, &hints, &pResult); /// https://codereview.stackexchange.com/a/17866
 
     if (errcode != 0)
@@ -82,7 +81,7 @@ bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
         return bRetVal;
     }
 
-    m_stServerSockaddr.sin_addr.s_addr = *((ULONG*)&(((sockaddr_in*)pResult->ai_addr)->sin_addr));
+    m_stServerSockaddr.sin_addr.s_addr = *((unsigned long*)&(((sockaddr_in*)pResult->ai_addr)->sin_addr));
     m_stServerSockaddr.sin_port = htons(nPort);
 
     if ((int32)m_stServerSockaddr.sin_addr.s_addr == CSimpleSocket::SocketError)
