@@ -27,18 +27,21 @@ matrix:
         - GCC_VERSION=7
         
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode8.3
       env:
         - MATRIX_EVAL="brew install gcc6 && CC=gcc-6 && CXX=g++-6"
         - GCC_VERSION=6
 
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode8.3
       env:
         - MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
         - GCC_VERSION=7
 
 before_install:
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew update ;
+      fi
     - eval "${MATRIX_EVAL}"
 
 script:
