@@ -1,5 +1,5 @@
 
-#include <string.h>
+
 #include "ActiveSocket.h"       // Include header for active socket object definition
 
 int main(int argc, char **argv)
