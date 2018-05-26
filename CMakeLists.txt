@@ -32,6 +32,9 @@ LIST(APPEND CLSOCKET_SOURCES ${CLSOCKET_HEADERS})
 if(UNIX)
     # linux / normal unix
     add_definitions(-D_LINUX)
+    ADD_CUSTOM_TARGET(debug
+      COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Debug ${CMAKE_SOURCE_DIR}
+      COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all)
     if(CYGWIN)
         # Special Cygwin stuff here
     elseif(APPLE)
