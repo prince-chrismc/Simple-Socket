@@ -174,18 +174,40 @@ bool CSimpleSocket::BindInterface(const char *pInterface)
 
     if (GetMulticast() == true)
     {
-        if (pInterface)
+        if ( pInterface )
         {
             inet_pton(m_nSocketDomain, pInterface, &stInterfaceAddr.s_addr);
-            if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_MULTICAST_IF, &stInterfaceAddr, sizeof(stInterfaceAddr)) == SocketSuccess)
+            if ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_MULTICAST_IF, &stInterfaceAddr, sizeof( stInterfaceAddr ) ) == SocketSuccess )
             {
                 bRetVal = true;
+            }
+            else
+            {
+               TranslateSocketError();
             }
         }
     }
     else
     {
-        SetSocketError(CSimpleSocket::SocketProtocolError);
+       if (pInterface)
+      {
+         struct sockaddr_in saThisMachine;
+          // Set up the sockaddr structure
+          saThisMachine.sin_family = AF_INET;
+          saThisMachine.sin_addr.s_addr = inet_addr((char *)pInterface);
+          saThisMachine.sin_port = htons(5150);
+
+          // Bind the listening socket using the
+          // information in the sockaddr structure
+          if ((bind(m_socket, (sockaddr*)&saThisMachine, sizeof(saThisMachine))) == CSimpleSocket::SocketError)
+          {
+             TranslateSocketError();
+          }
+          else
+          {
+             bRetVal = true;
+          }
+      }
     }
 
     return bRetVal;
@@ -785,7 +807,13 @@ int32 CSimpleSocket::Receive(int32 nMaxBytes, uint8 * pBuffer )
                 m_nBytesReceived = RECVFROM(m_socket, pWorkBuffer, nMaxBytes, 0,
                                             &m_stMulticastGroup, &srcSize);
                 TranslateSocketError();
-            } while (GetSocketError() == CSimpleSocket::SocketInterrupted);
+
+                if( CSimpleSocket::SocketMessageTooLong == GetSocketError() )
+                {
+                   m_nBytesReceived = nMaxBytes;
+                }
+
+            } while ( GetSocketError() == CSimpleSocket::SocketInterrupted );
         }
         else
         {
@@ -794,7 +822,7 @@ int32 CSimpleSocket::Receive(int32 nMaxBytes, uint8 * pBuffer )
                 m_nBytesReceived = RECVFROM(m_socket, pWorkBuffer, nMaxBytes, 0,
                                             &m_stClientSockaddr, &srcSize);
                 TranslateSocketError();
-            } while (GetSocketError() == CSimpleSocket::SocketInterrupted);
+            } while ( GetSocketError() == CSimpleSocket::SocketInterrupted );
         }
 
         break;
@@ -1061,6 +1089,9 @@ void CSimpleSocket::TranslateSocketError(void)
     case WSAEFAULT:
         SetSocketError(CSimpleSocket::SocketInvalidPointer);
         break;
+    case WSAEMSGSIZE:
+        SetSocketError( CSimpleSocket::SocketMessageTooLong );
+        break;
     default:
         SetSocketError(CSimpleSocket::SocketEunknown);
         break;
@@ -1184,5 +1215,15 @@ bool CSimpleSocket::Select(int32 nTimeoutSec, int32 nTimeoutUSec)
     }
 
     return bRetVal;
+bool CSimpleSocket::IsReadable( DWORD dwTimeoutInMs )
+{
+   timeval timeout;
+   timeout.tv_sec = dwTimeoutInMs / 1000;
+   timeout.tv_usec = dwTimeoutInMs % 1000;
+   fd_set fds;
+   FD_ZERO( &fds );
+   FD_SET( m_socket, &fds );
+
+   return (select( m_socket +1 , &fds, NULL, NULL, &timeout ) == 1);
 }
 

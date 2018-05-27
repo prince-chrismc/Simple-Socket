@@ -83,6 +83,8 @@ private:
     /// Utility function used to create a RAW connection, called from Open().
     ///  @return true if successful connection made, otherwise false.
     bool ConnectRAW(const char *pAddr, uint16 nPort);
+    /// Utility function, code common to Connect TCP & UDP
+    HRESULT _Connect( const uint8 *pAddr, int16 nPort );
 
 private:
     struct hostent *m_pHE; // to be removed

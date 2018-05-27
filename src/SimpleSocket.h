@@ -453,9 +453,10 @@ public:
     /// Returns clients Internet host address as a string in standard numbers-and-dots notation.
     ///  @return NULL if invalid
     const char *GetClientAddr() {
-        //return inet_ntoa(m_stClientSockaddr.sin_addr);
         char buff[16];
         return inet_ntop(m_nSocketDomain, &m_stServerSockaddr.sin_addr, buff, 16);
+        static char buffer[INET_ADDRSTRLEN];
+        return ( uint8 * )inet_ntop( AF_INET, &( m_stClientSockaddr.sin_addr ), buffer, INET_ADDRSTRLEN );
     };
 
     /// Returns the port number on which the client is connected.
@@ -467,43 +468,43 @@ public:
     /// Returns server Internet host address as a string in standard numbers-and-dots notation.
     ///  @return NULL if invalid
     const char *GetServerAddr() {
-        //return inet_ntoa(m_stServerSockaddr.sin_addr);
-        char buff[16];
         return inet_ntop(m_nSocketDomain, &m_stServerSockaddr.sin_addr, buff, 16);
+        static char buffer[INET_ADDRSTRLEN];
+        return ( uint8 * )inet_ntop( AF_INET, &( m_stServerSockaddr.sin_addr ), buffer, INET_ADDRSTRLEN );
     };
 
     /// Returns the port number on which the server is connected.
     ///  @return server port number.
     uint16 GetServerPort() {
-        return ntohs(m_stServerSockaddr.sin_port);
+        return ntohs( m_stServerSockaddr.sin_port );
     };
 
     /// Get the TCP receive buffer window size for the current socket object.
     /// <br><br>\b NOTE: Linux will set the receive buffer to twice the value passed.
     ///  @return zero on failure else the number of bytes of the TCP receive buffer window size if successful.
     uint32 GetReceiveWindowSize() {
-        return GetWindowSize(SO_RCVBUF);
+        return GetWindowSize( SO_RCVBUF );
     };
 
     /// Get the TCP send buffer window size for the current socket object.
     /// <br><br>\b NOTE: Linux will set the send buffer to twice the value passed.
     ///  @return zero on failure else the number of bytes of the TCP receive buffer window size if successful.
     uint32 GetSendWindowSize() {
-        return GetWindowSize(SO_SNDBUF);
+        return GetWindowSize( SO_SNDBUF );
     };
 
     /// Set the TCP receive buffer window size for the current socket object.
     /// <br><br>\b NOTE: Linux will set the receive buffer to twice the value passed.
     ///  @return zero on failure else the number of bytes of the TCP send buffer window size if successful.
     uint32 SetReceiveWindowSize(uint32 nWindowSize) {
-        return SetWindowSize(SO_RCVBUF, nWindowSize);
+        return SetWindowSize( SO_RCVBUF, nWindowSize );
     };
 
     /// Set the TCP send buffer window size for the current socket object.
     /// <br><br>\b NOTE: Linux will set the send buffer to twice the value passed.
     ///  @return zero on failure else the number of bytes of the TCP send buffer window size if successful.
     uint32 SetSendWindowSize(uint32 nWindowSize) {
-        return SetWindowSize(SO_SNDBUF, nWindowSize);
+        return SetWindowSize( SO_SNDBUF, nWindowSize );
     };
 
     /// Disable the Nagle algorithm (Set TCP_NODELAY to true)
