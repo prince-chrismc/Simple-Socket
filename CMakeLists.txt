@@ -78,8 +78,6 @@ TARGET_LINK_LIBRARIES(clsocket ${PROJECT_LIBS})
 if(NOT CLSOCKET_DEP_ONLY)
     install(TARGETS clsocket ARCHIVE DESTINATION lib LIBRARY DESTINATION lib)
     install(FILES ${CLSOCKET_HEADERS} DESTINATION include)
-else()
-
 endif()
 
 set_target_properties(clsocket PROPERTIES VERSION ${BUILD_VERSION}
@@ -110,8 +108,7 @@ if(UNIX)
 elseif(WIN32)
     OPTION(CLSOCKET_EXAMPLES "Build the examples" ON)
     
-        if(CLSOCKET_EXAMPLES)
-		
+    if(CLSOCKET_EXAMPLES)
         ADD_EXECUTABLE(querydaytime-example examples/QueryDayTime.cpp)
         TARGET_LINK_LIBRARIES(querydaytime-example clsocket)
 
