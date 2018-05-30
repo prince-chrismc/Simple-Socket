@@ -453,10 +453,8 @@ public:
     /// Returns clients Internet host address as a string in standard numbers-and-dots notation.
     ///  @return NULL if invalid
     const char *GetClientAddr() {
-        char buff[16];
-        return inet_ntop(m_nSocketDomain, &m_stServerSockaddr.sin_addr, buff, 16);
         static char buffer[INET_ADDRSTRLEN];
-        return ( uint8 * )inet_ntop( AF_INET, &( m_stClientSockaddr.sin_addr ), buffer, INET_ADDRSTRLEN );
+        return inet_ntop(m_nSocketDomain, &( m_stClientSockaddr.sin_addr ), buffer, INET_ADDRSTRLEN );
     };
 
     /// Returns the port number on which the client is connected.
@@ -468,9 +466,8 @@ public:
     /// Returns server Internet host address as a string in standard numbers-and-dots notation.
     ///  @return NULL if invalid
     const char *GetServerAddr() {
-        return inet_ntop(m_nSocketDomain, &m_stServerSockaddr.sin_addr, buff, 16);
         static char buffer[INET_ADDRSTRLEN];
-        return ( uint8 * )inet_ntop( AF_INET, &( m_stServerSockaddr.sin_addr ), buffer, INET_ADDRSTRLEN );
+        return inet_ntop(m_nSocketDomain, &( m_stServerSockaddr.sin_addr ), buffer, INET_ADDRSTRLEN );
     };
 
     /// Returns the port number on which the server is connected.
