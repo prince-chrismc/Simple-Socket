@@ -124,9 +124,9 @@ elseif(WIN32)
         ADD_EXECUTABLE(clsocket-tester tests/main.cpp)
         TARGET_LINK_LIBRARIES(clsocket-tester clsocket)
         
-        FILE(GLOB HTTPREQ "example/HttpRequest/*.*")
-        ADD_EXECUTABLE(clsocket-tester ${HTTPREQ})
-        TARGET_LINK_LIBRARIES(clsocket-tester clsocket)
+        FILE(GLOB HTTPREQ "examples/HttpRequest/*")
+        ADD_EXECUTABLE(httpclient-example ${HTTPREQ})
+        TARGET_LINK_LIBRARIES(httpclient-example clsocket)
     endif()
 endif()
 
