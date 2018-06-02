@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include <string>
 #include "Constants.h"
+#include <string>
 
 class HttpResponse
 {

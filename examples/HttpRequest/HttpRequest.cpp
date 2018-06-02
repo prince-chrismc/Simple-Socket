@@ -25,6 +25,7 @@ Upgrade-Insecure-Requests: 1
 
 */
 
+#include "HttpRequest.h"
 #include  <algorithm>
 
 #define CRLF "\r\n"
