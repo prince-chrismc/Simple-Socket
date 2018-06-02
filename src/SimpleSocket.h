@@ -573,8 +573,8 @@ protected:
     struct sockaddr_in   m_stMulticastGroup;  /// multicast group to bind to
     struct linger        m_stLinger;          /// linger flag
     CStatTimer           m_timer;             /// internal statistics.
-#ifdef WIN32
     WSADATA              m_hWSAData;          /// Windows
+#ifdef _WIN32
 #endif
     fd_set               m_writeFds;          /// write file descriptor set
     fd_set               m_readFds;           /// read file descriptor set
