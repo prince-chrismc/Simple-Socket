@@ -1,0 +1,5 @@
+[dns struct](https://github.com/icefirejw/DnsQuery/blob/master/src/dnsquery.h)
+[dns implemenation](https://github.com/adafruit/CC3000_MDNS/blob/master/CC3000_MDNS.cpp)
+[mDns](https://tools.ietf.org/html/rfc6762#page-47)
+[dns-sd](https://tools.ietf.org/html/rfc6763)
+[dns](https://www.ietf.org/rfc/rfc1035.txt)
