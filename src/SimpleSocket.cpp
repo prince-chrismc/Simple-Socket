@@ -43,10 +43,10 @@
  *----------------------------------------------------------------------------*/
 #include "SimpleSocket.h"
 
-CSimpleSocket::CSimpleSocket(CSocketType nType) :
+CSimpleSocket::CSimpleSocket(const ESocketType nType) :
     m_socket(INVALID_SOCKET),
-    m_socketErrno(CSimpleSocket::SocketInvalidSocket),
-    m_pBuffer(NULL), m_nBufferSize(0), m_nSocketDomain(AF_INET),
+    m_socketErrno(SocketInvalidSocket),
+    m_pBuffer(nullptr), m_nBufferSize(0), m_nSocketDomain(AF_INET),
     m_nSocketType(SocketTypeInvalid), m_nBytesReceived(-1),
     m_nBytesSent(-1), m_nFlags(0),
     m_bIsBlocking(true)
@@ -58,65 +58,77 @@ CSimpleSocket::CSimpleSocket(CSocketType nType) :
 
     switch(nType)
     {
-        //----------------------------------------------------------------------
-        // Declare socket type stream - TCP
-        //----------------------------------------------------------------------
-    case CSimpleSocket::SocketTypeTcp:
+    //----------------------------------------------------------------------
+    // Declare socket type stream - TCP
+    //----------------------------------------------------------------------
+    case SocketTypeTcp:
     {
         m_nSocketDomain = AF_INET;
-        m_nSocketType = CSimpleSocket::SocketTypeTcp;
+        m_nSocketType = SocketTypeTcp;
         break;
     }
-    case CSimpleSocket::SocketTypeTcp6:
+    case SocketTypeTcp6:
     {
         m_nSocketDomain = AF_INET6;
-        m_nSocketType = CSimpleSocket::SocketTypeTcp6;
+        m_nSocketType = SocketTypeTcp6;
         break;
     }
     //----------------------------------------------------------------------
     // Declare socket type datagram - UDP
     //----------------------------------------------------------------------
-    case CSimpleSocket::SocketTypeUdp:
+    case SocketTypeUdp:
     {
         m_nSocketDomain = AF_INET;
-        m_nSocketType = CSimpleSocket::SocketTypeUdp;
+        m_nSocketType = SocketTypeUdp;
         break;
     }
-    case CSimpleSocket::SocketTypeUdp6:
+    case SocketTypeUdp6:
     {
         m_nSocketDomain = AF_INET6;
-        m_nSocketType = CSimpleSocket::SocketTypeUdp6;
+        m_nSocketType = SocketTypeUdp6;
         break;
     }
     //----------------------------------------------------------------------
     // Declare socket type raw Ethernet - Ethernet
     //----------------------------------------------------------------------
-    case CSimpleSocket::SocketTypeRaw:
+    case SocketTypeRaw:
     {
 #if defined(_LINUX) && !defined(_DARWIN)
         m_nSocketDomain = AF_PACKET;
-        m_nSocketType = CSimpleSocket::SocketTypeRaw;
-#endif
-#ifdef _WIN32
-        m_nSocketType = CSimpleSocket::SocketTypeInvalid;
+        m_nSocketType = SocketTypeRaw;
+#elif _WIN32
+        m_nSocketType = SocketTypeInvalid;
 #endif
         break;
     }
     default:
-        m_nSocketType = CSimpleSocket::SocketTypeInvalid;
+        m_nSocketType = SocketTypeInvalid;
         break;
     }
 }
 
-CSimpleSocket::CSimpleSocket(CSimpleSocket &socket)
+CSimpleSocket::CSimpleSocket(CSimpleSocket&& socket) noexcept
 {
-    delete m_pBuffer;
-    m_pBuffer = new uint8[socket.m_nBufferSize];
-    m_nBufferSize = socket.m_nBufferSize;
+    if (m_nBufferSize != socket.m_nBufferSize)
+    {
+        delete m_pBuffer;
+        m_pBuffer = new uint8[socket.m_nBufferSize];
+        m_nBufferSize = socket.m_nBufferSize;
+    }
+
     memcpy(m_pBuffer, socket.m_pBuffer, socket.m_nBufferSize);
 }
 
-CSimpleSocket* CSimpleSocket::operator=(CSimpleSocket &socket)
+CSimpleSocket::~CSimpleSocket()
+{
+    if (m_pBuffer != nullptr)
+    {
+        delete [] m_pBuffer;
+        m_pBuffer = nullptr;
+    }
+}
+
+CSimpleSocket& CSimpleSocket::operator=(CSimpleSocket&& socket) noexcept
 {
     if (m_nBufferSize != socket.m_nBufferSize)
     {
@@ -127,7 +139,7 @@ CSimpleSocket* CSimpleSocket::operator=(CSimpleSocket &socket)
 
     memcpy(m_pBuffer, socket.m_pBuffer, socket.m_nBufferSize);
 
-    return this;
+    return *this;
 }
 
 
@@ -138,14 +150,14 @@ CSimpleSocket* CSimpleSocket::operator=(CSimpleSocket &socket)
 //------------------------------------------------------------------------------
 bool CSimpleSocket::Initialize()
 {
-    errno = CSimpleSocket::SocketSuccess;
+    errno = SocketSuccess;
 
 #ifdef _WIN32
     //-------------------------------------------------------------------------
     // Data structure containing general Windows Sockets Info
     //-------------------------------------------------------------------------
-    memset(&m_hWSAData, 0, sizeof(m_hWSAData));
-    WSAStartup(MAKEWORD(2, 0), &m_hWSAData);
+    memset(&m_hWsaData, 0, sizeof(m_hWsaData));
+    WSAStartup(MAKEWORD(2, 0), &m_hWsaData);
 #endif
 
     //-------------------------------------------------------------------------
@@ -199,7 +211,7 @@ bool CSimpleSocket::BindInterface(const char *pInterface)
 
           // Bind the listening socket using the
           // information in the sockaddr structure
-          if ((bind(m_socket, (sockaddr*)&saThisMachine, sizeof(saThisMachine))) == CSimpleSocket::SocketError)
+          if ((bind(m_socket, (sockaddr*)&saThisMachine, sizeof(saThisMachine))) == SocketError)
           {
              TranslateSocketError();
           }
@@ -223,7 +235,7 @@ bool CSimpleSocket::SetMulticast(bool bEnable, uint8 multicastTTL)
 {
     bool bRetVal = false;
 
-    if (GetSocketType() == CSimpleSocket::SocketTypeUdp)
+    if (GetSocketType() == SocketTypeUdp)
     {
         m_bIsMulticast = bEnable;
         if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_MULTICAST_TTL, (void *)&multicastTTL, sizeof(multicastTTL)) == SocketError)
@@ -238,7 +250,7 @@ bool CSimpleSocket::SetMulticast(bool bEnable, uint8 multicastTTL)
     }
     else
     {
-        m_socketErrno = CSimpleSocket::SocketProtocolError;
+        m_socketErrno = SocketProtocolError;
     }
 
     return bRetVal;
@@ -308,7 +320,7 @@ uint32 CSimpleSocket::GetWindowSize(uint32 nOptionName)
     //-------------------------------------------------------------------------
     // no socket given, return system default allocate our own new socket
     //-------------------------------------------------------------------------
-    if (m_socket != CSimpleSocket::SocketError)
+    if (m_socket != SocketError)
     {
         socklen_t nLen = sizeof(nTcpWinSize);
 
@@ -320,7 +332,7 @@ uint32 CSimpleSocket::GetWindowSize(uint32 nOptionName)
     }
     else
     {
-        SetSocketError(CSimpleSocket::SocketInvalidSocket);
+        SetSocketError(SocketInvalidSocket);
     }
 
     return nTcpWinSize;
@@ -337,14 +349,14 @@ uint32 CSimpleSocket::SetWindowSize(uint32 nOptionName, uint32 nWindowSize)
     //-------------------------------------------------------------------------
     // no socket given, return system default allocate our own new socket
     //-------------------------------------------------------------------------
-    if (m_socket != CSimpleSocket::SocketError)
+    if (m_socket != SocketError)
     {
         SETSOCKOPT(m_socket, SOL_SOCKET, nOptionName, &nWindowSize, sizeof(nWindowSize));
         TranslateSocketError();
     }
     else
     {
-        SetSocketError(CSimpleSocket::SocketInvalidSocket);
+        SetSocketError(SocketInvalidSocket);
     }
 
     return nWindowSize;
@@ -411,7 +423,7 @@ int32 CSimpleSocket::Send(const uint8 *pBuf, size_t bytesToSend)
 
     switch(m_nSocketType)
     {
-    case CSimpleSocket::SocketTypeTcp:
+    case SocketTypeTcp:
     {
         if (IsSocketValid())
         {
@@ -428,14 +440,14 @@ int32 CSimpleSocket::Send(const uint8 *pBuf, size_t bytesToSend)
                 {
                     m_nBytesSent = SEND(m_socket, pBuf, bytesToSend, 0);
                     TranslateSocketError();
-                } while (GetSocketError() == CSimpleSocket::SocketInterrupted);
+                } while (GetSocketError() == SocketInterrupted);
 
                 m_timer.SetEndTime();
             }
         }
         break;
     }
-    case CSimpleSocket::SocketTypeUdp:
+    case SocketTypeUdp:
     {
         if (IsSocketValid())
         {
@@ -455,7 +467,7 @@ int32 CSimpleSocket::Send(const uint8 *pBuf, size_t bytesToSend)
                 //                            m_nBytesSent = SENDTO(m_socket, pBuf, bytesToSend, 0, (const sockaddr *)&m_stMulticastGroup,
                 //                                                  sizeof(m_stMulticastGroup));
                 //                            TranslateSocketError();
-                //                        } while (GetSocketError() == CSimpleSocket::SocketInterrupted);
+                //                        } while (GetSocketError() == SocketInterrupted);
                 //                    }
                 //                    else
                 {
@@ -463,7 +475,7 @@ int32 CSimpleSocket::Send(const uint8 *pBuf, size_t bytesToSend)
                     {
                         m_nBytesSent = SENDTO(m_socket, pBuf, bytesToSend, 0, (const sockaddr *)&m_stServerSockaddr, sizeof(m_stServerSockaddr));
                         TranslateSocketError();
-                    } while (GetSocketError() == CSimpleSocket::SocketInterrupted);
+                    } while (GetSocketError() == SocketInterrupted);
                 }
 
                 m_timer.SetEndTime();
@@ -502,7 +514,7 @@ bool CSimpleSocket::Close(void)
     //--------------------------------------------------------------------------
     if (IsSocketValid())
     {
-        if (CLOSE(m_socket) != CSimpleSocket::SocketError)
+        if (CLOSE(m_socket) != SocketError)
         {
             m_socket = INVALID_SOCKET;
             bRetVal = true;
@@ -520,14 +532,14 @@ bool CSimpleSocket::Close(void)
 // Shtudown()
 //
 //------------------------------------------------------------------------------
-bool CSimpleSocket::Shutdown(CShutdownMode nShutdown)
+bool CSimpleSocket::Shutdown(EShutdownMode nShutdown)
 {
-    CSocketError nRetVal = SocketEunknown;
+    ESocketError nRetVal = SocketEunknown;
 
-    nRetVal = (CSocketError)shutdown(m_socket, CSimpleSocket::Sends);
+    nRetVal = (ESocketError)shutdown(m_socket, Sends);
     TranslateSocketError();
 
-    return (nRetVal == CSimpleSocket::SocketSuccess) ? true: false;
+    return (nRetVal == SocketSuccess) ? true: false;
 }
 
 
@@ -556,7 +568,7 @@ bool CSimpleSocket::Flush()
             //------------------------------------------------------------------
             // Send empty byte stream to flush the TCP send buffer
             //------------------------------------------------------------------
-            if (Send(&tmpbuf, 0) != CSimpleSocket::SocketError)
+            if (Send(&tmpbuf, 0) != SocketError)
             {
                 bRetVal = true;
             }
@@ -591,7 +603,7 @@ int32 CSimpleSocket::Writev(const struct iovec *pVector, size_t nCount)
     //--------------------------------------------------------------------------
     for (i = 0; i < (int32)nCount; i++)
     {
-        if ((nBytes = Send((uint8 *)pVector[i].iov_base, pVector[i].iov_len)) == CSimpleSocket::SocketError)
+        if ((nBytes = Send((uint8 *)pVector[i].iov_base, pVector[i].iov_len)) == SocketError)
         {
             break;
         }
@@ -618,7 +630,7 @@ int32 CSimpleSocket::Send(const struct iovec *sendVector, int32 nNumItems)
     SetSocketError(SocketSuccess);
     m_nBytesSent = 0;
 
-    if ((m_nBytesSent = WRITEV(m_socket, sendVector, nNumItems)) == CSimpleSocket::SocketError)
+    if ((m_nBytesSent = WRITEV(m_socket, sendVector, nNumItems)) == SocketError)
     {
         TranslateSocketError();
     }
@@ -645,7 +657,7 @@ bool CSimpleSocket::SetReceiveTimeout(int32 nRecvTimeoutSec, int32 nRecvTimeoutU
     // Sanity check to make sure the options are supported!
     //--------------------------------------------------------------------------
     if (SETSOCKOPT(m_socket, SOL_SOCKET, SO_RCVTIMEO, &m_stRecvTimeout,
-                   sizeof(struct timeval)) == CSimpleSocket::SocketError)
+                   sizeof(struct timeval)) == SocketError)
     {
         bRetVal = false;
         TranslateSocketError();
@@ -672,7 +684,7 @@ bool CSimpleSocket::SetSendTimeout(int32 nSendTimeoutSec, int32 nSendTimeoutUsec
     // Sanity check to make sure the options are supported!
     //--------------------------------------------------------------------------
     if (SETSOCKOPT(m_socket, SOL_SOCKET, SO_SNDTIMEO, &m_stSendTimeout,
-                   sizeof(struct timeval)) == CSimpleSocket::SocketError)
+                   sizeof(struct timeval)) == SocketError)
     {
         bRetVal = false;
         TranslateSocketError();
@@ -692,7 +704,7 @@ bool CSimpleSocket::SetOptionReuseAddr()
     bool  bRetVal = false;
     int32 nReuse  = IPTOS_LOWDELAY;
 
-    if (SETSOCKOPT(m_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&nReuse, sizeof(int32)) == 0)
+    if (SETSOCKOPT(m_socket, SOL_SOCKET, SO_REUSEADDR, &nReuse, sizeof(int32)) == 0)
     {
         bRetVal = true;
     }
@@ -742,7 +754,7 @@ int32 CSimpleSocket::Receive(int32 nMaxBytes, uint8 * pBuffer )
     //--------------------------------------------------------------------------
     // If the socket is invalid then return false.
     //--------------------------------------------------------------------------
-    if (IsSocketValid() == false)
+    if (!IsSocketValid())
     {
         return m_nBytesReceived;
     }
@@ -783,24 +795,24 @@ int32 CSimpleSocket::Receive(int32 nMaxBytes, uint8 * pBuffer )
         // If zero bytes are received, then return.  If SocketERROR is
         // received, free buffer and return CSocket::SocketError (-1) to caller.
         //----------------------------------------------------------------------
-    case CSimpleSocket::SocketTypeTcp:
+    case SocketTypeTcp:
     {
         do
         {
             m_nBytesReceived = RECV(m_socket, (pWorkBuffer + m_nBytesReceived),
                                     nMaxBytes, m_nFlags);
             TranslateSocketError();
-        } while ((GetSocketError() == CSimpleSocket::SocketInterrupted));
+        } while ((GetSocketError() == SocketInterrupted));
 
         break;
     }
-    case CSimpleSocket::SocketTypeUdp:
+    case SocketTypeUdp:
     {
         uint32 srcSize;
 
         srcSize = sizeof(struct sockaddr_in);
 
-        if (GetMulticast() == true)
+        if (GetMulticast())
         {
             do
             {
@@ -808,12 +820,12 @@ int32 CSimpleSocket::Receive(int32 nMaxBytes, uint8 * pBuffer )
                                             &m_stMulticastGroup, &srcSize);
                 TranslateSocketError();
 
-                if( CSimpleSocket::SocketMessageTooLong == GetSocketError() )
+                if( SocketMessageTooLong == GetSocketError() )
                 {
                    m_nBytesReceived = nMaxBytes;
                 }
 
-            } while ( GetSocketError() == CSimpleSocket::SocketInterrupted );
+            } while ( GetSocketError() == SocketInterrupted );
         }
         else
         {
@@ -822,7 +834,7 @@ int32 CSimpleSocket::Receive(int32 nMaxBytes, uint8 * pBuffer )
                 m_nBytesReceived = RECVFROM(m_socket, pWorkBuffer, nMaxBytes, 0,
                                             &m_stClientSockaddr, &srcSize);
                 TranslateSocketError();
-            } while ( GetSocketError() == CSimpleSocket::SocketInterrupted );
+            } while ( GetSocketError() == SocketInterrupted );
         }
 
         break;
@@ -840,7 +852,7 @@ int32 CSimpleSocket::Receive(int32 nMaxBytes, uint8 * pBuffer )
     // non-blocking.  This does not mean there is an error, but no data is
     // yet available on the socket.
     //--------------------------------------------------------------------------
-    if (m_nBytesReceived == CSimpleSocket::SocketError)
+    if (m_nBytesReceived == SocketError)
     {
         if (m_pBuffer != NULL)
         {
@@ -936,7 +948,7 @@ bool CSimpleSocket::SetBlocking(void)
 //------------------------------------------------------------------------------
 int32 CSimpleSocket::SendFile(int32 nOutFd, int32 nInFd, off_t *pOffset, int32 nCount)
 {
-    int32  nOutCount = CSimpleSocket::SocketError;
+    int32  nOutCount = SocketError;
 
     static char szData[SOCKET_SENDFILE_BLOCKSIZE];
     int32       nInCount = 0;
@@ -982,10 +994,10 @@ void CSimpleSocket::TranslateSocketError(void)
     switch (errno)
     {
     case EXIT_SUCCESS:
-        SetSocketError(CSimpleSocket::SocketSuccess);
+        SetSocketError(SocketSuccess);
         break;
     case ENOTCONN:
-        SetSocketError(CSimpleSocket::SocketNotconnected);
+        SetSocketError(SocketNotconnected);
         break;
     case ENOTSOCK:
     case EBADF:
@@ -997,43 +1009,43 @@ void CSimpleSocket::TranslateSocketError(void)
     case ENOMEM:
     case EPROTONOSUPPORT:
     case EPIPE:
-        SetSocketError(CSimpleSocket::SocketInvalidSocket);
+        SetSocketError(SocketInvalidSocket);
         break;
     case ECONNREFUSED :
-        SetSocketError(CSimpleSocket::SocketConnectionRefused);
+        SetSocketError(SocketConnectionRefused);
         break;
     case ETIMEDOUT:
-        SetSocketError(CSimpleSocket::SocketTimedout);
+        SetSocketError(SocketTimedout);
         break;
     case EINPROGRESS:
-        SetSocketError(CSimpleSocket::SocketEinprogress);
+        SetSocketError(SocketEinprogress);
         break;
     case EWOULDBLOCK:
         //        case EAGAIN:
-        SetSocketError(CSimpleSocket::SocketEwouldblock);
+        SetSocketError(SocketEwouldblock);
         break;
     case EINTR:
-        SetSocketError(CSimpleSocket::SocketInterrupted);
+        SetSocketError(SocketInterrupted);
         break;
     case ECONNABORTED:
-        SetSocketError(CSimpleSocket::SocketConnectionAborted);
+        SetSocketError(SocketConnectionAborted);
         break;
     case EINVAL:
     case EPROTO:
-        SetSocketError(CSimpleSocket::SocketProtocolError);
+        SetSocketError(SocketProtocolError);
         break;
     case EPERM:
-        SetSocketError(CSimpleSocket::SocketFirewallError);
+        SetSocketError(SocketFirewallError);
         break;
     case EFAULT:
-        SetSocketError(CSimpleSocket::SocketInvalidSocketBuffer);
+        SetSocketError(SocketInvalidSocketBuffer);
         break;
     case ECONNRESET:
     case ENOPROTOOPT:
-        SetSocketError(CSimpleSocket::SocketConnectionReset);
+        SetSocketError(SocketConnectionReset);
         break;
     default:
-        SetSocketError(CSimpleSocket::SocketEunknown);
+        SetSocketError(SocketEunknown);
         break;
     }
 #endif
@@ -1042,14 +1054,14 @@ void CSimpleSocket::TranslateSocketError(void)
     switch (nError)
     {
     case EXIT_SUCCESS:
-        SetSocketError(CSimpleSocket::SocketSuccess);
+        SetSocketError(SocketSuccess);
         break;
     case WSAEBADF:
     case WSAENOTCONN:
-        SetSocketError(CSimpleSocket::SocketNotconnected);
+        SetSocketError(SocketNotconnected);
         break;
     case WSAEINTR:
-        SetSocketError(CSimpleSocket::SocketInterrupted);
+        SetSocketError(SocketInterrupted);
         break;
     case WSAEACCES:
     case WSAEAFNOSUPPORT:
@@ -1057,43 +1069,43 @@ void CSimpleSocket::TranslateSocketError(void)
     case WSAEMFILE:
     case WSAENOBUFS:
     case WSAEPROTONOSUPPORT:
-        SetSocketError(CSimpleSocket::SocketInvalidSocket);
+        SetSocketError(SocketInvalidSocket);
         break;
     case WSAECONNREFUSED :
-        SetSocketError(CSimpleSocket::SocketConnectionRefused);
+        SetSocketError(SocketConnectionRefused);
         break;
     case WSAETIMEDOUT:
-        SetSocketError(CSimpleSocket::SocketTimedout);
+        SetSocketError(SocketTimedout);
         break;
     case WSAEINPROGRESS:
-        SetSocketError(CSimpleSocket::SocketEinprogress);
+        SetSocketError(SocketEinprogress);
         break;
     case WSAECONNABORTED:
-        SetSocketError(CSimpleSocket::SocketConnectionAborted);
+        SetSocketError(SocketConnectionAborted);
         break;
     case WSAEWOULDBLOCK:
-        SetSocketError(CSimpleSocket::SocketEwouldblock);
+        SetSocketError(SocketEwouldblock);
         break;
     case WSAENOTSOCK:
-        SetSocketError(CSimpleSocket::SocketInvalidSocket);
+        SetSocketError(SocketInvalidSocket);
         break;
     case WSAECONNRESET:
-        SetSocketError(CSimpleSocket::SocketConnectionReset);
+        SetSocketError(SocketConnectionReset);
         break;
     case WSANO_DATA:
-        SetSocketError(CSimpleSocket::SocketInvalidAddress);
+        SetSocketError(SocketInvalidAddress);
         break;
     case WSAEADDRINUSE:
-        SetSocketError(CSimpleSocket::SocketAddressInUse);
+        SetSocketError(SocketAddressInUse);
         break;
     case WSAEFAULT:
-        SetSocketError(CSimpleSocket::SocketInvalidPointer);
+        SetSocketError(SocketInvalidPointer);
         break;
     case WSAEMSGSIZE:
-        SetSocketError( CSimpleSocket::SocketMessageTooLong );
+        SetSocketError( SocketMessageTooLong );
         break;
     default:
-        SetSocketError(CSimpleSocket::SocketEunknown);
+        SetSocketError(SocketEunknown);
         break;
     }
 #endif
@@ -1104,47 +1116,46 @@ void CSimpleSocket::TranslateSocketError(void)
 // DescribeError()
 //
 //------------------------------------------------------------------------------
-
-const char *CSimpleSocket::DescribeError(CSocketError err)
+const char *CSimpleSocket::DescribeError(ESocketError err)
 {
     switch (err) {
-        case CSimpleSocket::SocketError:
+        case SocketError:
             return "Generic socket error translates to error below.";
-        case CSimpleSocket::SocketSuccess:
+        case SocketSuccess:
             return "No socket error.";
-        case CSimpleSocket::SocketInvalidSocket:
+        case SocketInvalidSocket:
             return "Invalid socket handle.";
-        case CSimpleSocket::SocketInvalidAddress:
+        case SocketInvalidAddress:
             return "Invalid destination address specified.";
-        case CSimpleSocket::SocketInvalidPort:
+        case SocketInvalidPort:
             return "Invalid destination port specified.";
-        case CSimpleSocket::SocketConnectionRefused:
+        case SocketConnectionRefused:
             return "No server is listening at remote address.";
-        case CSimpleSocket::SocketTimedout:
+        case SocketTimedout:
             return "Timed out while attempting operation.";
-        case CSimpleSocket::SocketEwouldblock:
+        case SocketEwouldblock:
             return "Operation would block if socket were blocking.";
-        case CSimpleSocket::SocketNotconnected:
+        case SocketNotconnected:
             return "Currently not connected.";
-        case CSimpleSocket::SocketEinprogress:
+        case SocketEinprogress:
             return "Socket is non-blocking and the connection cannot be completed immediately";
-        case CSimpleSocket::SocketInterrupted:
+        case SocketInterrupted:
             return "Call was interrupted by a signal that was caught before a valid connection arrived.";
-        case CSimpleSocket::SocketConnectionAborted:
+        case SocketConnectionAborted:
             return "The connection has been aborted.";
-        case CSimpleSocket::SocketProtocolError:
+        case SocketProtocolError:
             return "Invalid protocol for operation.";
-        case CSimpleSocket::SocketFirewallError:
+        case SocketFirewallError:
             return "Firewall rules forbid connection.";
-        case CSimpleSocket::SocketInvalidSocketBuffer:
+        case SocketInvalidSocketBuffer:
             return "The receive buffer point outside the process's address space.";
-        case CSimpleSocket::SocketConnectionReset:
+        case SocketConnectionReset:
             return "Connection was forcibly closed by the remote host.";
-        case CSimpleSocket::SocketAddressInUse:
+        case SocketAddressInUse:
             return "Address already in use.";
-        case CSimpleSocket::SocketInvalidPointer:
+        case SocketInvalidPointer:
             return "Pointer type supplied as argument is invalid.";
-        case CSimpleSocket::SocketEunknown:
+        case SocketEunknown:
             return "Unknown error";
         default:
             return "No such CSimpleSocket error";
@@ -1176,31 +1187,30 @@ bool CSimpleSocket::Select(int32 nTimeoutSec, int32 nTimeoutUSec)
     // to NULL which will block until a descriptor is ready for read/write
     // or an error has occurred.
     //---------------------------------------------------------------------
-    if ((nTimeoutSec > 0) || (nTimeoutUSec > 0))
+    if ( nTimeoutSec || nTimeoutUSec )
     {
         timeout.tv_sec = nTimeoutSec;
         timeout.tv_usec = nTimeoutUSec;
         pTimeout = &timeout;
     }
 
-    nNumDescriptors = SELECT(m_socket+1, &m_readFds, &m_writeFds, &m_errorFds, pTimeout);
-//    nNumDescriptors = SELECT(m_socket+1, &m_readFds, NULL, NULL, pTimeout);
+    nNumDescriptors = SELECT(m_socket + 1, &m_readFds, &m_writeFds, &m_errorFds, pTimeout);
 
     //----------------------------------------------------------------------
     // Handle timeout
     //----------------------------------------------------------------------
     if (nNumDescriptors == 0)
     {
-        SetSocketError(CSimpleSocket::SocketTimedout);
+        SetSocketError(SocketTimedout);
     }
+
     //----------------------------------------------------------------------
     // If a file descriptor (read/write) is set then check the
     // socket error (SO_ERROR) to see if there is a pending error.
     //----------------------------------------------------------------------
-    else if ((FD_ISSET(m_socket, &m_readFds)) || (FD_ISSET(m_socket, &m_writeFds)))
+    else if (FD_ISSET(m_socket, &m_readFds) || FD_ISSET(m_socket, &m_writeFds))
     {
         int32 nLen = sizeof(nError);
-
         if (GETSOCKOPT(m_socket, SOL_SOCKET, SO_ERROR, &nError, &nLen) == 0)
         {
             errno = nError;
@@ -1215,15 +1225,13 @@ bool CSimpleSocket::Select(int32 nTimeoutSec, int32 nTimeoutUSec)
     }
 
     return bRetVal;
-bool CSimpleSocket::IsReadable( DWORD dwTimeoutInMs )
-{
-   timeval timeout;
-   timeout.tv_sec = dwTimeoutInMs / 1000;
-   timeout.tv_usec = dwTimeoutInMs % 1000;
-   fd_set fds;
-   FD_ZERO( &fds );
-   FD_SET( m_socket, &fds );
-
-   return (select( m_socket +1 , &fds, NULL, NULL, &timeout ) == 1);
 }
 
+bool CSimpleSocket::IsReadable( uint64 nTimeoutInMs )
+{
+   timeval timeout;
+   timeout.tv_sec = nTimeoutInMs / 1000;
+   timeout.tv_usec = nTimeoutInMs % 1000;
+
+   return Select(timeout.tv_sec, timeout.tv_usec);
+}

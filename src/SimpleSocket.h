@@ -45,10 +45,8 @@
 #define __SOCKET_H__
 
 #include <sys/stat.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <errno.h>
+#include <cstdlib>
+#include <cstdio>
 
 #if defined(_LINUX) || defined (_DARWIN)
 #include <sys/socket.h>
@@ -75,7 +73,6 @@
 #endif
 
 #ifdef _WIN32
-#include <io.h>
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 
@@ -94,79 +91,75 @@
 
 #define SOCKET_SENDFILE_BLOCKSIZE 8192
 
+/// Defines the three possible states for shuting down a socket.
+enum EShutdownMode
+{
+    Receives = SHUT_RD, ///< Shutdown passive socket.
+    Sends = SHUT_WR,    ///< Shutdown active socket.
+    Both = SHUT_RDWR    ///< Shutdown both active and passive sockets.
+};
+
+/// Defines the socket types defined by CSimpleSocket class.
+enum ESocketType
+{
+    SocketTypeInvalid,   ///< Invalid socket type.
+    SocketTypeTcp,       ///< Defines socket as TCP socket.
+    SocketTypeUdp,       ///< Defines socket as UDP socket.
+    SocketTypeTcp6,      ///< Defines socket as IPv6 TCP socket.
+    SocketTypeUdp6,      ///< Defines socket as IPv6 UDP socket.
+    SocketTypeRaw        ///< Provides raw network protocol access.
+};
+
+/// Defines all error codes handled by the CSimpleSocket class.
+enum ESocketError
+{
+    SocketError = -1,          ///< Generic socket error translates to error below.
+    SocketSuccess = 0,         ///< No socket error.
+    SocketInvalidSocket,       ///< Invalid socket handle.
+    SocketInvalidAddress,      ///< Invalid destination address specified.
+    SocketInvalidPort,         ///< Invalid destination port specified.
+    SocketConnectionRefused,   ///< No server is listening at remote address.
+    SocketTimedout,            ///< Timed out while attempting operation.
+    SocketEwouldblock,         ///< Operation would block if socket were blocking.
+    SocketNotconnected,        ///< Currently not connected.
+    SocketEinprogress,         ///< Socket is non-blocking and the connection cannot be completed immediately
+    SocketInterrupted,         ///< Call was interrupted by a signal that was caught before a valid connection arrived.
+    SocketConnectionAborted,   ///< The connection has been aborted.
+    SocketProtocolError,       ///< Invalid protocol for operation.
+    SocketFirewallError,       ///< Firewall rules forbid connection.
+    SocketInvalidSocketBuffer, ///< The receive buffer point outside the process's address space.
+    SocketConnectionReset,     ///< Connection was forcibly closed by the remote host.
+    SocketAddressInUse,        ///< Address already in use.
+    SocketInvalidPointer,      ///< Pointer type supplied as argument is invalid.
+    SocketMessageTooLong,      ///< Error when recieving multicast udp message which are too long for windows.
+    SocketEunknown             ///< Unknown error please report to mark@carrierlabs.com
+};
+
 /// Provides a platform independent class to for socket development.
 /// This class is designed to abstract socket communication development in a
 /// platform independent manner.
 /// - Socket types
 ///  -# CActiveSocket Class
 ///  -# CPassiveSocket Class
-class CSimpleSocket {
+class CSimpleSocket
+{
 public:
-    /// Defines the three possible states for shuting down a socket.
-    typedef enum
-    {
-        Receives = SHUT_RD, ///< Shutdown passive socket.
-        Sends = SHUT_WR,    ///< Shutdown active socket.
-        Both = SHUT_RDWR    ///< Shutdown both active and passive sockets.
-    } CShutdownMode;
+    explicit CSimpleSocket(ESocketType eType = SocketTypeTcp);
 
-    /// Defines the socket types defined by CSimpleSocket class.
-    typedef enum
-    {
-        SocketTypeInvalid,   ///< Invalid socket type.
-        SocketTypeTcp,       ///< Defines socket as TCP socket.
-        SocketTypeUdp,       ///< Defines socket as UDP socket.
-        SocketTypeTcp6,      ///< Defines socket as IPv6 TCP socket.
-        SocketTypeUdp6,      ///< Defines socket as IPv6 UDP socket.
-        SocketTypeRaw        ///< Provides raw network protocol access.
-    } CSocketType;
+    CSimpleSocket(CSimpleSocket&& socket) noexcept;
+    CSimpleSocket& operator=(CSimpleSocket&& socket) noexcept;
 
-    /// Defines all error codes handled by the CSimpleSocket class.
-    typedef enum
-    {
-        SocketError = -1,          ///< Generic socket error translates to error below.
-        SocketSuccess = 0,         ///< No socket error.
-        SocketInvalidSocket,       ///< Invalid socket handle.
-        SocketInvalidAddress,      ///< Invalid destination address specified.
-        SocketInvalidPort,         ///< Invalid destination port specified.
-        SocketConnectionRefused,   ///< No server is listening at remote address.
-        SocketTimedout,            ///< Timed out while attempting operation.
-        SocketEwouldblock,         ///< Operation would block if socket were blocking.
-        SocketNotconnected,        ///< Currently not connected.
-        SocketEinprogress,         ///< Socket is non-blocking and the connection cannot be completed immediately
-        SocketInterrupted,         ///< Call was interrupted by a signal that was caught before a valid connection arrived.
-        SocketConnectionAborted,   ///< The connection has been aborted.
-        SocketProtocolError,       ///< Invalid protocol for operation.
-        SocketFirewallError,       ///< Firewall rules forbid connection.
-        SocketInvalidSocketBuffer, ///< The receive buffer point outside the process's address space.
-        SocketConnectionReset,     ///< Connection was forcibly closed by the remote host.
-        SocketAddressInUse,        ///< Address already in use.
-        SocketInvalidPointer,      ///< Pointer type supplied as argument is invalid.
-        SocketEunknown             ///< Unknown error please report to mark@carrierlabs.com
-    } CSocketError;
-
-public:
-    CSimpleSocket(CSocketType type = SocketTypeTcp);
-    CSimpleSocket(CSimpleSocket &socket);
-
-    virtual ~CSimpleSocket()
-    {
-        if (m_pBuffer != NULL)
-        {
-            delete [] m_pBuffer;
-            m_pBuffer = NULL;
-        }
-    };
+    virtual ~CSimpleSocket();
 
     /// Initialize instance of CSocket.  This method MUST be called before an
     /// object can be used. Errors : CSocket::SocketProtocolError,
     /// CSocket::SocketInvalidSocket,
     /// @return true if properly initialized.
-    virtual bool Initialize(void);
+    virtual bool Initialize();
 
     /// Close socket
     /// @return true if successfully closed otherwise returns false.
-    virtual bool Close(void);
+    virtual bool Close();
 
     /// Shutdown shut down socket send and receive operations
     ///    CShutdownMode::Receives - Disables further receive operations.
@@ -174,7 +167,7 @@ public:
     ///    CShutdownBoth::         - Disables further send and receive operations.
     /// @param nShutdown specifies the type of shutdown.
     /// @return true if successfully shutdown otherwise returns false.
-    virtual bool Shutdown(CShutdownMode nShutdown);
+    virtual bool Shutdown(EShutdownMode nShutdown);
 
     /// Examine the socket descriptor sets currently owned by the instance of
     /// the socket class (the readfds, writefds, and errorfds parameters) to
@@ -182,9 +175,10 @@ public:
     /// for writing, or have an exceptional condition pending, respectively.
     /// Block until an event happens on the specified file descriptors.
     /// @return true if socket has data ready, or false if not ready or timed out.
-    virtual bool Select(void) {
+    virtual bool Select()
+    {
         return Select(0,0);
-    };
+    }
 
     /// Examine the socket descriptor sets currently owned by the instance of
     /// the socket class (the readfds, writefds, and errorfds parameters) to
@@ -195,34 +189,42 @@ public:
     /// @return true if socket has data ready, or false if not ready or timed out.
     virtual bool Select(int32 nTimeoutSec, int32 nTimeoutUSec);
 
+    /// Determines whether the socket is in a usable state, if and operation
+    /// is pending, or in an exceptional state.
+    /// @param nTimeoutInMs timeout in miliseconds for select.
+    /// @return true if socket has data ready, or false if not ready or timed out.
+    bool IsReadable(uint64 nTimeoutInMs);
+
     /// Does the current instance of the socket object contain a valid socket
     /// descriptor.
     ///  @return true if the socket object contains a valid socket descriptor.
-    virtual bool IsSocketValid(void) {
-        return (m_socket != SocketError);
-    };
+    virtual bool IsSocketValid()
+    {
+        return m_socket != INVALID_SOCKET;
+    }
 
     /// Provides a standard error code for cross platform development by
     /// mapping the operating system error to an error defined by the CSocket
     /// class.
-    void TranslateSocketError(void);
+    void TranslateSocketError();
 
     /// Returns a human-readable description of the given error code
     /// or the last error code of a socket
-    static const char *DescribeError(CSocketError err);
-    inline const char *DescribeError() {
+    static const char* DescribeError(ESocketError err);
+    const char* DescribeError() const
+    {
         return DescribeError(m_socketErrno);
-    };
+    }
 
     /// Attempts to receive a block of data on an established connection.
     /// @param nMaxBytes maximum number of bytes to receive.
-    /// @param pBuffer, memory where to receive the data,
+    /// @param pBuffer memory where to receive the data,
     ///        NULL receives to internal buffer returned with GetData()
     ///        Non-NULL receives directly there, but GetData() will return WRONG ptr!
     /// @return number of bytes actually received.
     /// @return of zero means the connection has been shutdown on the other side.
     /// @return of -1 means that an error has occurred.
-    virtual int32 Receive(int32 nMaxBytes = 1, uint8 * pBuffer = 0);
+    virtual int32 Receive(int32 nMaxBytes = 1, uint8* pBuffer = 0);
 
     /// Attempts to send a block of data on an established connection.
     /// @param pBuf block of data to be sent.
@@ -230,7 +232,7 @@ public:
     /// @return number of bytes actually sent.
     /// @return of zero means the connection has been shutdown on the other side.
     /// @return of -1 means that an error has occurred.
-    virtual int32 Send(const uint8 *pBuf, size_t bytesToSend);
+    virtual int32 Send(const uint8* pBuf, size_t bytesToSend);
 
     /// Attempts to send at most nNumItem blocks described by sendVector
     /// to the socket descriptor associated with the socket object.
@@ -258,39 +260,43 @@ public:
 
     /// Returns blocking/non-blocking state of socket.
     /// @return true if the socket is non-blocking, else return false.
-    bool IsNonblocking(void) {
-        return (m_bIsBlocking == false);
-    };
+    bool IsNonblocking() const
+    {
+        return ! m_bIsBlocking;
+    }
 
     /// Set the socket to blocking.
     /// @return true if successful set to blocking, else return false;
-    bool SetBlocking(void);
+    bool SetBlocking();
 
     /// Set the socket as non-blocking.
     /// @return true if successful set to non-blocking, else return false;
-    bool SetNonblocking(void);
+    bool SetNonblocking();
 
     /// Get a pointer to internal receive buffer.  The user MUST not free this
     /// pointer when finished.  This memory is managed internally by the CSocket
     /// class.
     /// @return pointer to data if valid, else returns NULL.
-    uint8 *GetData(void)  {
+    uint8 *GetData() const
+    {
         return m_pBuffer;
     };
 
     /// Returns the number of bytes received on the last call to
     /// CSocket::Receive().
     /// @return number of bytes received.
-    int32 GetBytesReceived(void) {
+    int32 GetBytesReceived() const
+    {
         return m_nBytesReceived;
-    };
+    }
 
     /// Returns the number of bytes sent on the last call to
     /// CSocket::Send().
     /// @return number of bytes sent.
-    int32 GetBytesSent(void) {
+    int32 GetBytesSent() const
+    {
         return m_nBytesSent;
-    };
+    }
 
     /// Controls the actions taken when CSimpleSocket::Close is executed on a
     /// socket object that has unsent data.  The default value for this option
@@ -318,16 +324,18 @@ public:
     /// Gets the timeout value that specifies the maximum number of seconds a
     /// call to CSimpleSocket::Open waits until it completes.
     /// @return the length of time in seconds
-    int32 GetConnectTimeoutSec(void) {
+    int32 GetConnectTimeoutSec() const
+    {
         return  m_stConnectTimeout.tv_sec;
-    };
+    }
 
     /// Gets the timeout value that specifies the maximum number of microseconds
     /// a call to CSimpleSocket::Open waits until it completes.
     /// @return the length of time in microseconds
-    int32 GetConnectTimeoutUSec(void) {
+    int32 GetConnectTimeoutUSec() const
+    {
         return  m_stConnectTimeout.tv_usec;
-    };
+    }
 
     /// Sets the timeout value that specifies the maximum amount of time a call
     /// to CSimpleSocket::Receive waits until it completes. Use the method
@@ -343,21 +351,23 @@ public:
     {
         m_stConnectTimeout.tv_sec = nConnectTimeoutSec;
         m_stConnectTimeout.tv_usec = nConnectTimeoutUsec;
-    };
+    }
 
     /// Gets the timeout value that specifies the maximum number of seconds a
     /// a call to CSimpleSocket::Receive waits until it completes.
     /// @return the length of time in seconds
-    int32 GetReceiveTimeoutSec(void) {
+    int32 GetReceiveTimeoutSec(void) const
+    {
         return  m_stRecvTimeout.tv_sec;
-    };
+    }
 
     /// Gets the timeout value that specifies the maximum number of microseconds
     /// a call to CSimpleSocket::Receive waits until it completes.
     /// @return the length of time in microseconds
-    int32 GetReceiveTimeoutUSec(void) {
+    int32 GetReceiveTimeoutUSec(void) const
+    {
         return  m_stRecvTimeout.tv_usec;
-    };
+    }
 
     /// Sets the timeout value that specifies the maximum amount of time a call
     /// to CSimpleSocket::Receive waits until it completes. Use the method
@@ -380,9 +390,10 @@ public:
 
     /// Return true if socket is multicast or false is socket is unicast
     /// @return true if multicast is enabled
-    bool GetMulticast() {
+    bool GetMulticast() const
+    {
         return m_bIsMulticast;
-    };
+    }
 
     /// Bind socket to a specific interface when using multicast.
     /// @return true if successfully bound to interface
@@ -391,16 +402,18 @@ public:
     /// Gets the timeout value that specifies the maximum number of seconds a
     /// a call to CSimpleSocket::Send waits until it completes.
     /// @return the length of time in seconds
-    int32 GetSendTimeoutSec(void) {
+    int32 GetSendTimeoutSec(void) const
+    {
         return  m_stSendTimeout.tv_sec;
-    };
+    }
 
     /// Gets the timeout value that specifies the maximum number of microseconds
     /// a call to CSimpleSocket::Send waits until it completes.
     /// @return the length of time in microseconds
-    int32 GetSendTimeoutUSec(void) {
+    int32 GetSendTimeoutUSec(void) const
+    {
         return  m_stSendTimeout.tv_usec;
-    };
+    }
 
     /// Gets the timeout value that specifies the maximum amount of time a call
     /// to CSimpleSocket::Send waits until it completes.
@@ -411,21 +424,24 @@ public:
     /// instance.  This method should be called immediately to retrieve the
     /// error code for the failing mehtod call.
     ///  @return last error that occured.
-    CSocketError GetSocketError(void) {
+    ESocketError GetSocketError(void) const
+    {
         return m_socketErrno;
-    };
+    }
 
     /// Get the total time the of the last operation in milliseconds.
     ///  @return number of milliseconds of last operation.
-    uint32 GetTotalTimeMs() {
+    uint32 GetTotalTimeMs()
+    {
         return m_timer.GetMilliSeconds();
-    };
+    }
 
     /// Get the total time the of the last operation in microseconds.
     ///  @return number of microseconds or last operation.
-    uint32 GetTotalTimeUsec() {
+    uint32 GetTotalTimeUsec()
+    {
         return m_timer.GetMicroSeconds();
-    };
+    }
 
     /// Return Differentiated Services Code Point (DSCP) value currently set on the socket object.
     /// @return DSCP for current socket object.
@@ -440,69 +456,79 @@ public:
 
     /// Return socket descriptor
     ///  @return socket descriptor which is a signed 32 bit integer.
-    SOCKET GetSocketDescriptor() {
+    SOCKET GetSocketDescriptor() const
+    {
         return m_socket;
-    };
+    }
 
     /// Return socket descriptor
     ///  @return socket descriptor which is a signed 32 bit integer.
-    CSocketType GetSocketType() {
+    ESocketType GetSocketType() const
+    {
         return m_nSocketType;
-    };
+    }
 
     /// Returns clients Internet host address as a string in standard numbers-and-dots notation.
     ///  @return NULL if invalid
-    const char *GetClientAddr() {
+    const char *GetClientAddr() const
+    {
         static char buffer[INET_ADDRSTRLEN];
         return inet_ntop(m_nSocketDomain, &( m_stClientSockaddr.sin_addr ), buffer, INET_ADDRSTRLEN );
-    };
+    }
 
     /// Returns the port number on which the client is connected.
     ///  @return client port number.
-    uint16 GetClientPort() {
+    uint16 GetClientPort() const
+    {
         return m_stClientSockaddr.sin_port;
-    };
+    }
 
     /// Returns server Internet host address as a string in standard numbers-and-dots notation.
     ///  @return NULL if invalid
-    const char *GetServerAddr() {
+    const char *GetServerAddr() const
+    {
         static char buffer[INET_ADDRSTRLEN];
         return inet_ntop(m_nSocketDomain, &( m_stServerSockaddr.sin_addr ), buffer, INET_ADDRSTRLEN );
-    };
+    }
 
     /// Returns the port number on which the server is connected.
     ///  @return server port number.
-    uint16 GetServerPort() {
+    uint16 GetServerPort() const
+    {
         return ntohs( m_stServerSockaddr.sin_port );
-    };
+    }
 
     /// Get the TCP receive buffer window size for the current socket object.
     /// <br><br>\b NOTE: Linux will set the receive buffer to twice the value passed.
     ///  @return zero on failure else the number of bytes of the TCP receive buffer window size if successful.
-    uint32 GetReceiveWindowSize() {
+    uint32 GetReceiveWindowSize()
+    {
         return GetWindowSize( SO_RCVBUF );
-    };
+    }
 
     /// Get the TCP send buffer window size for the current socket object.
     /// <br><br>\b NOTE: Linux will set the send buffer to twice the value passed.
     ///  @return zero on failure else the number of bytes of the TCP receive buffer window size if successful.
-    uint32 GetSendWindowSize() {
+    uint32 GetSendWindowSize()
+    {
         return GetWindowSize( SO_SNDBUF );
-    };
+    }
 
     /// Set the TCP receive buffer window size for the current socket object.
     /// <br><br>\b NOTE: Linux will set the receive buffer to twice the value passed.
     ///  @return zero on failure else the number of bytes of the TCP send buffer window size if successful.
-    uint32 SetReceiveWindowSize(uint32 nWindowSize) {
+    uint32 SetReceiveWindowSize(uint32 nWindowSize)
+    {
         return SetWindowSize( SO_RCVBUF, nWindowSize );
-    };
+    }
 
     /// Set the TCP send buffer window size for the current socket object.
     /// <br><br>\b NOTE: Linux will set the send buffer to twice the value passed.
     ///  @return zero on failure else the number of bytes of the TCP send buffer window size if successful.
-    uint32 SetSendWindowSize(uint32 nWindowSize) {
+    uint32 SetSendWindowSize(uint32 nWindowSize)
+    {
         return SetWindowSize( SO_SNDBUF, nWindowSize );
-    };
+    }
 
     /// Disable the Nagle algorithm (Set TCP_NODELAY to true)
     /// @return false if failed to set socket option otherwise return true;
@@ -515,16 +541,18 @@ public:
 
 protected:
     /// Set internal socket error to that specified error
-    ///  @param error type of error
-    void SetSocketError(CSimpleSocket::CSocketError error) {
-        m_socketErrno = error;
-    };
+    ///  @param eError type of error
+    void SetSocketError(const ESocketError eError)
+    {
+        m_socketErrno = eError;
+    }
 
     /// Set object socket handle to that specified as parameter
-    ///  @param socket value of socket descriptor
-    void SetSocketHandle(SOCKET socket) {
-        m_socket = socket;
-    };
+    ///  @param oSocket value of socket descriptor
+    void SetSocketHandle(const SOCKET oSocket)
+    {
+        m_socket = oSocket;
+    }
 
 private:
     /// Generic function used to get the send/receive window size
@@ -538,10 +566,10 @@ private:
 
     /// Attempts to send at most nNumItem blocks described by sendVector
     /// to the socket descriptor associated with the socket object.
-    /// @param sendVector pointer to an array of iovec structures
-    /// @param nNumItems number of items in the vector to process
     /// <br>\b Note: This implementation is for systems that don't natively
     /// support this functionality.
+    /// @param pVector pointer to an array of iovec structures
+    /// @param nCount number of items in the vector to process
     /// @return number of bytes actually sent, return of zero means the
     /// connection has been shutdown on the other side, and a return of -1
     /// means that an error has occurred.
@@ -551,34 +579,32 @@ private:
     /// @return true data was successfully sent, else return false;
     bool Flush();
 
-    CSimpleSocket *operator=(CSimpleSocket &socket);
-
 protected:
     SOCKET               m_socket;            /// socket handle
-    CSocketError         m_socketErrno;       /// number of last error
+    ESocketError         m_socketErrno;       /// number of last error
     uint8               *m_pBuffer;           /// internal send/receive buffer
     int32                m_nBufferSize;       /// size of internal send/receive buffer
     int32                m_nSocketDomain;     /// socket type PF_INET, PF_INET6
-    CSocketType          m_nSocketType;       /// socket type - UDP, TCP or RAW
+    ESocketType          m_nSocketType;       /// socket type - UDP, TCP or RAW
     int32                m_nBytesReceived;    /// number of bytes received
     int32                m_nBytesSent;        /// number of bytes sent
     uint32               m_nFlags;            /// socket flags
     bool                 m_bIsBlocking;       /// is socket blocking
-    bool                 m_bIsMulticast;      /// is the UDP socket multicast;
-    struct timeval       m_stConnectTimeout;  /// connection timeout
-    struct timeval       m_stRecvTimeout;     /// receive timeout
-    struct timeval       m_stSendTimeout;     /// send timeout
-    struct sockaddr_in   m_stServerSockaddr;  /// server address
-    struct sockaddr_in   m_stClientSockaddr;  /// client address
-    struct sockaddr_in   m_stMulticastGroup;  /// multicast group to bind to
-    struct linger        m_stLinger;          /// linger flag
+    bool                 m_bIsMulticast{};      /// is the UDP socket multicast;
+    struct timeval       m_stConnectTimeout{};  /// connection timeout
+    struct timeval       m_stRecvTimeout{};     /// receive timeout
+    struct timeval       m_stSendTimeout{};     /// send timeout
+    struct sockaddr_in   m_stServerSockaddr{};  /// server address
+    struct sockaddr_in   m_stClientSockaddr{};  /// client address
+    struct sockaddr_in   m_stMulticastGroup{};  /// multicast group to bind to
+    struct linger        m_stLinger{};          /// linger flag
     CStatTimer           m_timer;             /// internal statistics.
-    WSADATA              m_hWSAData;          /// Windows
 #ifdef _WIN32
+    WSADATA              m_hWsaData{};          /// Windows
 #endif
-    fd_set               m_writeFds;          /// write file descriptor set
-    fd_set               m_readFds;           /// read file descriptor set
-    fd_set               m_errorFds;          /// error file descriptor set
+    fd_set               m_writeFds{};          /// write file descriptor set
+    fd_set               m_readFds{};           /// read file descriptor set
+    fd_set               m_errorFds{};          /// error file descriptor set
 };
 
 

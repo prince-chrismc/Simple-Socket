@@ -43,7 +43,7 @@
  *----------------------------------------------------------------------------*/
 #include "ActiveSocket.h"
 
-CActiveSocket::CActiveSocket(CSocketType nType) : CSimpleSocket(nType)
+CActiveSocket::CActiveSocket(ESocketType nType) : CSimpleSocket(nType)
 {
 }
 
@@ -97,8 +97,8 @@ bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
     m_timer.Initialize();
     m_timer.SetStartTime();
 
-    if (connect(m_socket, (struct sockaddr*)&m_stServerSockaddr, sizeof(m_stServerSockaddr)) ==
-            CSimpleSocket::SocketError)
+    if (connect(m_socket, (sockaddr*)&m_stServerSockaddr, sizeof(m_stServerSockaddr)) ==
+        CSimpleSocket::SocketError)
     {
         //--------------------------------------------------------------
         // Get error value this might be a non-blocking socket so we
@@ -113,8 +113,8 @@ bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
         // Linux returns EINPROGRESS and Windows returns WSAEWOULDBLOCK.
         //--------------------------------------------------------------
         if ((IsNonblocking()) &&
-                ((GetSocketError() == CSimpleSocket::SocketEwouldblock) ||
-                 (GetSocketError() == CSimpleSocket::SocketEinprogress)))
+            ((GetSocketError() == CSimpleSocket::SocketEwouldblock) ||
+            (GetSocketError() == CSimpleSocket::SocketEinprogress)))
         {
             bRetVal = Select(GetConnectTimeoutSec(), GetConnectTimeoutUSec());
         }
@@ -253,17 +253,17 @@ bool CActiveSocket::ConnectRAW(const char *pAddr, uint16 nPort)
 // Open() - Create a connection to a specified address on a specified port
 //
 //------------------------------------------------------------------------------
-bool CActiveSocket::Open(const char *pAddr, uint16 nPort)
+bool CActiveSocket::Open(const char* pAddr, uint16 nPort)
 {
     bool bRetVal = false;
 
-    if (IsSocketValid() == false)
+    if (!IsSocketValid())
     {
         SetSocketError(CSimpleSocket::SocketInvalidSocket);
         return bRetVal;
     }
 
-    if (pAddr == NULL)
+    if (pAddr == nullptr)
     {
         SetSocketError(CSimpleSocket::SocketInvalidAddress);
         return bRetVal;
@@ -277,17 +277,17 @@ bool CActiveSocket::Open(const char *pAddr, uint16 nPort)
 
     switch (m_nSocketType)
     {
-    case CSimpleSocket::SocketTypeTcp :
+    case CSimpleSocket::SocketTypeTcp:
     {
         bRetVal = ConnectTCP(pAddr, nPort);
         break;
     }
-    case CSimpleSocket::SocketTypeUdp :
+    case CSimpleSocket::SocketTypeUdp:
     {
         bRetVal = ConnectUDP(pAddr, nPort);
         break;
     }
-    case CSimpleSocket::SocketTypeRaw :
+    case CSimpleSocket::SocketTypeRaw:
         break;
     default:
         break;

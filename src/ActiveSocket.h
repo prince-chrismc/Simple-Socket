@@ -56,7 +56,7 @@ class CActiveSocket : public CSimpleSocket {
 public:
     friend class CPassiveSocket;
 
-    CActiveSocket(CSocketType type = SocketTypeTcp);
+    CActiveSocket(ESocketType type = SocketTypeTcp);
     virtual ~CActiveSocket() {
         Close();
     };

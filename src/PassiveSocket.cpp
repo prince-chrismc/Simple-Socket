@@ -45,7 +45,7 @@
 
 
 
-CPassiveSocket::CPassiveSocket(CSocketType nType) : CSimpleSocket(nType)
+CPassiveSocket::CPassiveSocket(ESocketType nType) : CSimpleSocket(nType)
 {
 }
 
@@ -148,7 +148,7 @@ HRESULT CPassiveSocket::Join(const uint8 *pGroup)
     m_stMulticastRequest.imr_interface.s_addr = m_stMulticastGroup.sin_addr.s_addr;
 
     if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-        (void *)&m_stMulticastRequest,
+        &m_stMulticastRequest,
         sizeof(m_stMulticastRequest)) == CSimpleSocket::SocketSuccess)
     {
         bRetVal = true;
@@ -191,7 +191,7 @@ HRESULT CPassiveSocket::Leave(const uint8 *pGroup)
     m_stMulticastRequest.imr_interface.s_addr = m_stMulticastGroup.sin_addr.s_addr;
 
     if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_DROP_MEMBERSHIP,
-        (void *)&m_stMulticastRequest,
+        &m_stMulticastRequest,
         sizeof(m_stMulticastRequest)) == CSimpleSocket::SocketSuccess)
     {
         bRetVal = true;
@@ -217,26 +217,20 @@ HRESULT CPassiveSocket::Leave(const uint8 *pGroup)
 // Listen() -
 //
 //------------------------------------------------------------------------------
-HRESULT CPassiveSocket::Listen(const uint8 *pAddr, int16 nPort, int32 nConnectionBacklog)
+bool CPassiveSocket::Listen(const uint8 *pAddr, int16 nPort, int32 nConnectionBacklog)
 {
-    bool           bRetVal = false;
-    CMvHResult oHr;
-#if LINUX_PLATFORM
-    int32          nReuse = IPTOS_LOWDELAY;
-    in_addr_t      inAddr;
-#else // LINUX_PLATFORM 
-    ULONG          inAddr;
-#endif // LINUX_PLATFORM
+    bool    bRetVal = false;
+    int32   nReuse = IPTOS_LOWDELAY;
+    in_addr inAddr;
 
     //--------------------------------------------------------------------------
     // Set the following socket option SO_REUSEADDR.  This will allow the file
     // descriptor to be reused immediately after the socket is closed instead
     // of setting in a TIMED_WAIT state.
     //--------------------------------------------------------------------------
-#ifdef LINUX_PLATFORM
-    SETSOCKOPT(m_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&nReuse, sizeof(int32));
+
+    bRetVal = SetOptionReuseAddr();
     SETSOCKOPT(m_socket, IPPROTO_TCP, IP_TOS, &nReuse, sizeof(int32));
-#endif
 
     memset(&m_stServerSockaddr, 0, sizeof(m_stServerSockaddr));
     m_stServerSockaddr.sin_family = AF_INET;
@@ -246,7 +240,7 @@ HRESULT CPassiveSocket::Listen(const uint8 *pAddr, int16 nPort, int32 nConnectio
     // If no IP Address (interface ethn) is supplied, or the loop back is
     // specified then bind to any interface, else bind to specified interface.
     //--------------------------------------------------------------------------
-    if ((pAddr == NULL) || (!strlen(pAddr)))
+    if (pAddr == nullptr || !strlen(pAddr))
     {
         m_stServerSockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     }
@@ -265,7 +259,7 @@ HRESULT CPassiveSocket::Listen(const uint8 *pAddr, int16 nPort, int32 nConnectio
     //--------------------------------------------------------------------------
     // Bind to the specified port
     //--------------------------------------------------------------------------
-    if (bind(m_socket, (struct sockaddr *)&m_stServerSockaddr, sizeof(m_stServerSockaddr)) != CSimpleSocket::SocketError)
+    if (bind(m_socket, &m_stServerSockaddr, sizeof(m_stServerSockaddr)) != CSimpleSocket::SocketError)
     {
         if (m_nSocketType == CSimpleSocket::SocketTypeTcp)
         {
@@ -290,7 +284,7 @@ HRESULT CPassiveSocket::Listen(const uint8 *pAddr, int16 nPort, int32 nConnectio
 
     if (bRetVal == false)
     {
-        CSocketError err = GetSocketError();
+        ESocketError err = GetSocketError();
         Close();
         SetSocketError(err);
     }
@@ -323,7 +317,7 @@ CActiveSocket *CPassiveSocket::Accept()
     //--------------------------------------------------------------------------
     if (pClientSocket != NULL)
     {
-        CSocketError socketErrno = SocketSuccess;
+        ESocketError socketErrno = SocketSuccess;
 
         m_timer.Initialize();
         m_timer.SetStartTime();
