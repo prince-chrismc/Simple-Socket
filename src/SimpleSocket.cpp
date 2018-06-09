@@ -172,7 +172,7 @@ bool CSimpleSocket::BindInterface(const char *pInterface)
     bool           bRetVal = false;
     struct in_addr stInterfaceAddr;
 
-    if (GetMulticast() == true)
+    if (GetMulticast())
     {
         if (pInterface)
         {
@@ -922,12 +922,12 @@ int32 CSimpleSocket::SendFile(int32 nOutFd, int32 nInFd, off_t *pOffset, int32 n
     {
         nInCount = (nCount - nOutCount) < SOCKET_SENDFILE_BLOCKSIZE ? (nCount - nOutCount) : SOCKET_SENDFILE_BLOCKSIZE;
 
-        if ((READ(nInFd, szData, nInCount)) != (int32)nInCount)
+        if (READ(nInFd, szData, nInCount) != nInCount)
         {
             return -1;
         }
 
-        if ((SEND(nOutFd, szData, nInCount, 0)) != (int32)nInCount)
+        if (SEND(nOutFd, szData, nInCount, 0) != nInCount)
         {
             return -1;
         }

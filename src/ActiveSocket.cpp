@@ -62,7 +62,7 @@ bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
     memset(&m_stServerSockaddr, 0, sizeof(m_stServerSockaddr));
     m_stServerSockaddr.sin_family = AF_INET;
 
-    addrinfo hints;
+    addrinfo hints {};
     memset(&hints, 0, sizeof(hints));
     hints.ai_flags = AI_ALL;
     hints.ai_family = AF_INET;
@@ -138,7 +138,6 @@ bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
 bool CActiveSocket::ConnectUDP(const char *pAddr, uint16 nPort)
 {
     bool           bRetVal = false;
-    struct in_addr stIpAddress;
 
     //------------------------------------------------------------------
     // Pre-connection setup that must be preformed
@@ -146,7 +145,14 @@ bool CActiveSocket::ConnectUDP(const char *pAddr, uint16 nPort)
     memset(&m_stServerSockaddr, 0, sizeof(m_stServerSockaddr));
     m_stServerSockaddr.sin_family = AF_INET;
 
-    if ((m_pHE = GETHOSTBYNAME(pAddr)) == NULL)
+    addrinfo hints {};
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_flags = AI_ALL;
+    hints.ai_family = AF_INET;
+    addrinfo* pResult = NULL;
+    int errcode = getaddrinfo(pAddr, NULL, &hints, &pResult); /// https://codereview.stackexchange.com/a/17866
+
+    if (errcode != 0)
     {
 #ifdef WIN32
         TranslateSocketError();
@@ -159,8 +165,8 @@ bool CActiveSocket::ConnectUDP(const char *pAddr, uint16 nPort)
         return bRetVal;
     }
 
-    memcpy(&stIpAddress, m_pHE->h_addr_list[0], m_pHE->h_length);
-    m_stServerSockaddr.sin_addr.s_addr = stIpAddress.s_addr;
+    m_stServerSockaddr.sin_addr.s_addr = *((unsigned long*)&(((sockaddr_in*)pResult->ai_addr)->sin_addr));
+    m_stServerSockaddr.sin_port = htons(nPort);
 
     if ((int32)m_stServerSockaddr.sin_addr.s_addr == CSimpleSocket::SocketError)
     {
@@ -197,14 +203,21 @@ bool CActiveSocket::ConnectUDP(const char *pAddr, uint16 nPort)
 bool CActiveSocket::ConnectRAW(const char *pAddr, uint16 nPort)
 {
     bool           bRetVal = false;
-    struct in_addr stIpAddress;
+
     //------------------------------------------------------------------
     // Pre-connection setup that must be preformed
     //------------------------------------------------------------------
     memset(&m_stServerSockaddr, 0, sizeof(m_stServerSockaddr));
     m_stServerSockaddr.sin_family = AF_INET;
 
-    if ((m_pHE = GETHOSTBYNAME(pAddr)) == NULL)
+    addrinfo hints {};
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_flags = AI_ALL;
+    hints.ai_family = AF_INET;
+    addrinfo* pResult = NULL;
+    int errcode = getaddrinfo(pAddr, NULL, &hints, &pResult); /// https://codereview.stackexchange.com/a/17866
+
+    if (errcode != 0)
     {
 #ifdef WIN32
         TranslateSocketError();
@@ -217,8 +230,8 @@ bool CActiveSocket::ConnectRAW(const char *pAddr, uint16 nPort)
         return bRetVal;
     }
 
-    memcpy(&stIpAddress, m_pHE->h_addr_list[0], m_pHE->h_length);
-    m_stServerSockaddr.sin_addr.s_addr = stIpAddress.s_addr;
+    m_stServerSockaddr.sin_addr.s_addr = *((unsigned long*)&(((sockaddr_in*)pResult->ai_addr)->sin_addr));
+    m_stServerSockaddr.sin_port = htons(nPort);
 
     if ((int32)m_stServerSockaddr.sin_addr.s_addr == CSimpleSocket::SocketError)
     {
@@ -235,7 +248,7 @@ bool CActiveSocket::ConnectRAW(const char *pAddr, uint16 nPort)
     m_timer.Initialize();
     m_timer.SetStartTime();
 
-    if (connect(m_socket, (struct sockaddr*)&m_stServerSockaddr, sizeof(m_stServerSockaddr)) != CSimpleSocket::SocketError)
+    if (connect(m_socket, (sockaddr*)&m_stServerSockaddr, sizeof(m_stServerSockaddr)) != CSimpleSocket::SocketError)
     {
         bRetVal = true;
     }
@@ -257,7 +270,7 @@ bool CActiveSocket::Open(const char *pAddr, uint16 nPort)
 {
     bool bRetVal = false;
 
-    if (IsSocketValid() == false)
+    if ( ! IsSocketValid() )
     {
         SetSocketError(CSimpleSocket::SocketInvalidSocket);
         return bRetVal;
@@ -298,14 +311,14 @@ bool CActiveSocket::Open(const char *pAddr, uint16 nPort)
     //--------------------------------------------------------------------------
     if (bRetVal)
     {
-        socklen_t nSockLen = sizeof(struct sockaddr);
+        socklen_t nSockLen = sizeof(m_stServerSockaddr);
 
         memset(&m_stServerSockaddr, 0, nSockLen);
-        getpeername(m_socket, (struct sockaddr *)&m_stServerSockaddr, &nSockLen);
+        getpeername(m_socket, (sockaddr*)&m_stServerSockaddr, &nSockLen);
 
         nSockLen = sizeof(struct sockaddr);
         memset(&m_stClientSockaddr, 0, nSockLen);
-        getsockname(m_socket, (struct sockaddr *)&m_stClientSockaddr, &nSockLen);
+        getsockname(m_socket, (sockaddr*)&m_stClientSockaddr, &nSockLen);
 
         SetSocketError(SocketSuccess);
     }
