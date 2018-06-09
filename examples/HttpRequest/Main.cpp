@@ -14,7 +14,8 @@ int main(int argc, char **argv)
     if (retval)
         retval = oClient.Open("www.google.ca", 80);
 
-    if (retval) {
+    if (retval)
+    {
         HttpRequest oReq(HttpRequestGet, "/", HttpVersion11, "www.google.ca");
         oReq.SetContentType(HttpContentHtml);
         std::string sRawRequest = oReq.GetWireFormat();
@@ -26,15 +27,9 @@ int main(int argc, char **argv)
     {
         uint8* buffer = new uint8[5120];
         int32 bytes_rcvd = oClient.Receive(5120, buffer);
-        if (bytes_rcvd == 5120)
-            sData.append((char*)buffer, bytes_rcvd);
-        else if(bytes_rcvd  < 0)
-            retval = false;
-        else if (bytes_rcvd  < 5120)
-        {
-            sData.append((char*)buffer, bytes_rcvd);
-            retval = false;
-        }
+        if (bytes_rcvd > 0) sData.append((char*)buffer, bytes_rcvd);
+        if (bytes_rcvd == 5120) retval = false;
+
         delete[] buffer;
     }
 
