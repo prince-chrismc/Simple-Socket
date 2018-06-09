@@ -103,6 +103,9 @@ if(UNIX)
 
         ADD_EXECUTABLE(echoclient-example.run examples/EchoClient.cpp)
         TARGET_LINK_LIBRARIES(echoclient-example.run clsocket)
+
+        ADD_EXECUTABLE(dnsclient-example.run examples/Dns/Main.cpp)
+        TARGET_LINK_LIBRARIES(dnsclient-example.run clsocket)
         
         ADD_EXECUTABLE(clsocket-tester.run tests/main.cpp)
         TARGET_LINK_LIBRARIES(clsocket-tester.run clsocket pthread)
