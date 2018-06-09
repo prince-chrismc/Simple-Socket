@@ -45,28 +45,32 @@
 
 
 
-CPassiveSocket::CPassiveSocket(ESocketType nType) : CSimpleSocket(nType)
+CPassiveSocket::CPassiveSocket(CSocketType nType) : CSimpleSocket(nType)
 {
 }
 
 bool CPassiveSocket::BindMulticast(const char *pInterface, const char *pGroup, uint16 nPort)
 {
-    bool    bRetVal = false;
-    in_addr inAddr;
+    bool           bRetVal = false;
+#ifdef WIN32
+    ULONG          inAddr;
+#else
+    in_addr_t      inAddr;
+#endif
 
     //--------------------------------------------------------------------------
     // Set the following socket option SO_REUSEADDR.  This will allow the file
     // descriptor to be reused immediately after the socket is closed instead
     // of setting in a TIMED_WAIT state.
     //--------------------------------------------------------------------------
-    memset(&m_stMulticastGroup, 0, sizeof(m_stMulticastGroup));
+    memset(&m_stMulticastGroup,0,sizeof(m_stMulticastGroup));
     m_stMulticastGroup.sin_family = AF_INET;
     m_stMulticastGroup.sin_port = htons(nPort);
 
     //--------------------------------------------------------------------------
-   // If no IP Address ( interface ethn ) is supplied, or the loop back is
-   // specified then bind to any interface, else bind to specified interface.
-   //--------------------------------------------------------------------------
+    // If no IP Address (interface ethn) is supplied, or the loop back is
+    // specified then bind to any interface, else bind to specified interface.
+    //--------------------------------------------------------------------------
     if ((pInterface == NULL) || (!strlen(pInterface)))
     {
         m_stMulticastGroup.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -74,17 +78,10 @@ bool CPassiveSocket::BindMulticast(const char *pInterface, const char *pGroup, u
     else
     {
         inet_pton(m_nSocketDomain, pInterface, &inAddr);
-        if (inAddr.s_addr != INADDR_NONE)
+        if (inAddr != INADDR_NONE)
         {
-            m_stMulticastGroup.sin_addr.s_addr = inAddr.s_addr;
+            m_stMulticastGroup.sin_addr.s_addr = inAddr;
         }
-    }
-
-    //Ensure multiple process can access the same multicast address at the same time
-    int8 nReuse = 1;
-    if (SETSOCKOPT(m_socket, SOL_SOCKET, SO_REUSEADDR, &nReuse, sizeof(int8)) == CSimpleSocket::SocketError)
-    {
-        return false;
     }
 
     //--------------------------------------------------------------------------
@@ -99,7 +96,7 @@ bool CPassiveSocket::BindMulticast(const char *pInterface, const char *pGroup, u
         m_stMulticastRequest.imr_interface.s_addr = m_stMulticastGroup.sin_addr.s_addr;
 
         if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &m_stMulticastRequest,
-            sizeof(m_stMulticastRequest)) == CSimpleSocket::SocketSuccess)
+                       sizeof(m_stMulticastRequest)) == CSimpleSocket::SocketSuccess)
         {
             bRetVal = true;
         }
@@ -128,111 +125,30 @@ bool CPassiveSocket::BindMulticast(const char *pInterface, const char *pGroup, u
 
 //------------------------------------------------------------------------------
 //
-// Join -
-//
-//------------------------------------------------------------------------------
-HRESULT CPassiveSocket::Join(const uint8 *pGroup)
-{
-    bool bRetVal = false;
-
-    //----------------------------------------------------------------------
-    // Join the multicast group
-    //----------------------------------------------------------------------
-    static char buffer[INET_ADDRSTRLEN];
-
-    if (inet_pton(AF_INET, (const char *)pGroup, buffer))
-    {
-        m_stMulticastRequest.imr_multiaddr.s_addr = *(ULONG *)buffer;
-    }
-
-    m_stMulticastRequest.imr_interface.s_addr = m_stMulticastGroup.sin_addr.s_addr;
-
-    if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-        &m_stMulticastRequest,
-        sizeof(m_stMulticastRequest)) == CSimpleSocket::SocketSuccess)
-    {
-        bRetVal = true;
-    }
-
-    //--------------------------------------------------------------------------
-    // If there was a socket error then close the socket to clean out the
-    // connection in the backlog.
-    //--------------------------------------------------------------------------
-    TranslateSocketError();
-
-    if (bRetVal == false)
-    {
-        CSimpleSocket::Close();
-    }
-
-    return bRetVal;
-}
-
-
-//------------------------------------------------------------------------------
-//
-// Leave -
-//
-//------------------------------------------------------------------------------
-HRESULT CPassiveSocket::Leave(const uint8 *pGroup)
-{
-    bool bRetVal = false;
-
-    //----------------------------------------------------------------------
-    // Leave the multicast group
-    //----------------------------------------------------------------------
-    static char buffer[INET_ADDRSTRLEN];
-
-    if (inet_pton(AF_INET, (const char *)pGroup, buffer))
-    {
-        m_stMulticastRequest.imr_multiaddr.s_addr = *(ULONG *)buffer;
-    }
-
-    m_stMulticastRequest.imr_interface.s_addr = m_stMulticastGroup.sin_addr.s_addr;
-
-    if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_DROP_MEMBERSHIP,
-        &m_stMulticastRequest,
-        sizeof(m_stMulticastRequest)) == CSimpleSocket::SocketSuccess)
-    {
-        bRetVal = true;
-    }
-
-    //--------------------------------------------------------------------------
-    // If there was a socket error then close the socket to clean out the
-    // connection in the backlog.
-    //--------------------------------------------------------------------------
-    TranslateSocketError();
-
-    if (bRetVal == false)
-    {
-        CSimpleSocket::Close();
-    }
-
-    return bRetVal;
-}
-
-
-//------------------------------------------------------------------------------
-//
 // Listen() -
 //
 //------------------------------------------------------------------------------
-bool CPassiveSocket::Listen(const uint8 *pAddr, int16 nPort, int32 nConnectionBacklog)
+bool CPassiveSocket::Listen(const char *pAddr, uint16 nPort, int32 nConnectionBacklog)
 {
-    bool    bRetVal = false;
-    int32   nReuse = IPTOS_LOWDELAY;
-    in_addr inAddr;
+    bool           bRetVal = false;
+#ifdef WIN32
+    ULONG          inAddr;
+#else
+    in_addr_t      inAddr;
+
+    int32          nReuse;
+    nReuse = IPTOS_LOWDELAY;
 
     //--------------------------------------------------------------------------
     // Set the following socket option SO_REUSEADDR.  This will allow the file
     // descriptor to be reused immediately after the socket is closed instead
     // of setting in a TIMED_WAIT state.
     //--------------------------------------------------------------------------
-
-    bRetVal = SetOptionReuseAddr();
+    SETSOCKOPT(m_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&nReuse, sizeof(int32));
     SETSOCKOPT(m_socket, IPPROTO_TCP, IP_TOS, &nReuse, sizeof(int32));
+#endif
 
-    memset(&m_stServerSockaddr, 0, sizeof(m_stServerSockaddr));
+    memset(&m_stServerSockaddr,0,sizeof(m_stServerSockaddr));
     m_stServerSockaddr.sin_family = AF_INET;
     m_stServerSockaddr.sin_port = htons(nPort);
 
@@ -240,7 +156,7 @@ bool CPassiveSocket::Listen(const uint8 *pAddr, int16 nPort, int32 nConnectionBa
     // If no IP Address (interface ethn) is supplied, or the loop back is
     // specified then bind to any interface, else bind to specified interface.
     //--------------------------------------------------------------------------
-    if (pAddr == nullptr || !strlen(pAddr))
+    if ((pAddr == NULL) || (!strlen(pAddr)))
     {
         m_stServerSockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     }
@@ -259,7 +175,7 @@ bool CPassiveSocket::Listen(const uint8 *pAddr, int16 nPort, int32 nConnectionBa
     //--------------------------------------------------------------------------
     // Bind to the specified port
     //--------------------------------------------------------------------------
-    if (bind(m_socket, &m_stServerSockaddr, sizeof(m_stServerSockaddr)) != CSimpleSocket::SocketError)
+    if (bind(m_socket, (struct sockaddr *)&m_stServerSockaddr, sizeof(m_stServerSockaddr)) != CSimpleSocket::SocketError)
     {
         if (m_nSocketType == CSimpleSocket::SocketTypeTcp)
         {
@@ -284,7 +200,7 @@ bool CPassiveSocket::Listen(const uint8 *pAddr, int16 nPort, int32 nConnectionBa
 
     if (bRetVal == false)
     {
-        ESocketError err = GetSocketError();
+        CSocketError err = GetSocketError();
         Close();
         SetSocketError(err);
     }
@@ -317,7 +233,7 @@ CActiveSocket *CPassiveSocket::Accept()
     //--------------------------------------------------------------------------
     if (pClientSocket != NULL)
     {
-        ESocketError socketErrno = SocketSuccess;
+        CSocketError socketErrno = SocketSuccess;
 
         m_timer.Initialize();
         m_timer.SetStartTime();
@@ -377,7 +293,7 @@ int32 CPassiveSocket::Send(const uint8 *pBuf, size_t bytesToSend)
     SetSocketError(SocketSuccess);
     m_nBytesSent = 0;
 
-    switch (m_nSocketType)
+    switch(m_nSocketType)
     {
     case CSimpleSocket::SocketTypeUdp:
     {
@@ -389,8 +305,8 @@ int32 CPassiveSocket::Send(const uint8 *pBuf, size_t bytesToSend)
                 m_timer.SetStartTime();
 
                 m_nBytesSent = SENDTO(m_socket, pBuf, bytesToSend, 0,
-                    (const sockaddr *)&m_stClientSockaddr,
-                    sizeof(m_stClientSockaddr));
+                                      (const sockaddr *)&m_stClientSockaddr,
+                                      sizeof(m_stClientSockaddr));
 
                 m_timer.SetEndTime();
 

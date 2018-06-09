@@ -55,14 +55,14 @@
 /// types.
 class CPassiveSocket : public CSimpleSocket {
 public:
-    CPassiveSocket(ESocketType type = SocketTypeTcp);
+    CPassiveSocket(CSocketType type = SocketTypeTcp);
     virtual ~CPassiveSocket() {
         Close();
     };
 
     /// Extracts the first connection request on the queue of pending
     /// connections and creates a newly connected socket.  Used with
-    /// ESocketType CSimpleSocket::SocketTypeTcp.  It is the responsibility of
+    /// CSocketType CSimpleSocket::SocketTypeTcp.  It is the responsibility of
     /// the caller to delete the returned object when finished.
     ///  @return if successful a pointer to a newly created CActiveSocket object
     ///          will be returned and the internal error condition of the CPassiveSocket
@@ -111,13 +111,6 @@ public:
     /// <br>\b Note: This function is used only for a socket of type
     /// CSimpleSocket::SocketTypeUdp
     virtual int32 Send(const uint8 *pBuf, size_t bytesToSend);
-
-
-
-
-    HRESULT         Join(const uint8 *pGroup);
-    HRESULT         Leave(const uint8 *pGroup);
-    virtual HRESULT Listen(const unsigned char* in_kpszAddress, unsigned short in_ushPort);
 
 private:
     struct ip_mreq  m_stMulticastRequest;   /// group address for multicast

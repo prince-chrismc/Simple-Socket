@@ -45,7 +45,7 @@
 
 #include <string.h>
 
-#if _WIN32
+#if WIN32
   #include <Winsock2.h>
   #include <time.h>
 #endif
@@ -57,7 +57,7 @@
 
 #include "Host.h"
 
-#if defined(_WIN32)
+#if defined(WIN32)
   #define GET_CLOCK_COUNT(x) QueryPerformanceCounter((LARGE_INTEGER *)x)
 #else
   #define GET_CLOCK_COUNT(x) gettimeofday(x, NULL)
