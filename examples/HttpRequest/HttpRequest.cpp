@@ -1,6 +1,4 @@
 
-#include "HttpRequest.h"
-
 /*  EXAMPLE REQUEST
 
 GET /x-nmos/node/v1.0/self/ HTTP/1.1

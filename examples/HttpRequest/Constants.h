@@ -1,9 +1,12 @@
+
+#pragma once
+
 enum HttpVersion
 {
-   VersionInvalid = 0,
-   Version10,
-   Version11,
-   VersionLast
+   HttpVersionInvalid = 0,
+   HttpVersion10,
+   HttpVersion11,
+   HttpVersionLast
 };
 
 enum HttpStatus
@@ -26,8 +29,8 @@ enum HttpStatus
 
 enum HttpContentType
 {
-   ContentText,
-   ContentHtml,
-   ContentJson,
-   ContentInvalid
+   HttpContentText,
+   HttpContentHtml,
+   HttpContentJson,
+   HttpContentInvalid
 };

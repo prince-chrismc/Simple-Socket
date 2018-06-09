@@ -6,17 +6,17 @@
 
 enum HttpRequestMethod
 {
-   keHttpRequestInvalid = 0,
-   keHttpRequestOptions,
-   keHttpRequestGet,
-   keHttpRequestHead,
-   keHttpRequestPost,
-   keHttpRequestPut,
-   keHttpRequestDelete,
-   keHttpRequestTrace,
-   keHttpRequestConnect,
-   keHttpRequestPatch,
-   keHttpRequestLast
+   HttpRequestInvalid = 0,
+   HttpRequestOptions,
+   HttpRequestGet,
+   HttpRequestHead,
+   HttpRequestPost,
+   HttpRequestPut,
+   HttpRequestDelete,
+   HttpRequestTrace,
+   HttpRequestConnect,
+   HttpRequestPatch,
+   HttpRequestLast
 };
 
 class HttpRequest

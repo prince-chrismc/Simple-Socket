@@ -18,7 +18,7 @@ HTTP/1.1 200 OK
 Cache-Control: no-cache
 Server: libnhttpd
 Date: Wed Jul 4 15:38:53 2012
-Connection: Keep-Alive:
+Connection: ep-Alive:
 Content-Type: application/json;charset=UTF-8
 Content-Length: 286
 
@@ -31,7 +31,7 @@ HttpResponse::HttpResponse( const HttpVersion & in_kreVersion, const HttpStatus 
    m_eVersion( in_kreVersion ),
    m_eStatusCode( in_kreStatusCode ),
    m_sReasonPhrase( in_krsReasonPhrase ),
-   m_eContentType( keHttpContentInvalid ),
+   m_eContentType( HttpContentInvalid ),
    m_sBody( "" )
 {
    std::remove( m_sReasonPhrase.begin(), m_sReasonPhrase.end(), '\r' );
@@ -54,38 +54,38 @@ void HttpResponse::AppendMessageBody( const std::string & in_krsToAdd )
 
 std::string HttpResponse::GetResponseLine() const
 {
-   return CMvHttpRequest::STATIC_VersionAsString( m_eVersion ) + " " + std::to_string( ( unsigned long long )m_eStatusCode ) + " " +
+   return HttpRequest::STATIC_VersionAsString( m_eVersion ) + " " + std::to_string( ( unsigned long long )m_eStatusCode ) + " " +
       m_sReasonPhrase + CRLF;
 }
 
 std::string HttpResponse::GetRawResponse() const
 {
-   return GetResponseLine() + CMvHttpRequest::STATIC_ContentTypeAsString( m_eContentType ) + CRLF + CRLF + m_sBody;
+   return GetResponseLine() + HttpRequest::STATIC_ContentTypeAsString( m_eContentType ) + CRLF + CRLF + m_sBody;
 }
 
 std::string HttpResponse::GetWireFormat() const
 {
-   return GetResponseLine() + "User-Agent: clsocket_example/1.0" + CRLF + "cache-control: no-cache" + CRLF +
-      "Connection: keep-alive" + CRLF + "Content-Length: " + std::to_string( ( unsigned long long )m_sBody.size() ) +
-      CRLF + CMvHttpRequest::STATIC_ContentTypeAsString( m_eContentType ) + CRLF + CRLF + m_sBody;
+   return GetResponseLine() + "User-Agent: clsoct_example/1.0" + CRLF + "cache-control: no-cache" + CRLF +
+      "Connection: ep-alive" + CRLF + "Content-Length: " + std::to_string( ( unsigned long long )m_sBody.size() ) +
+      CRLF + HttpRequest::STATIC_ContentTypeAsString( m_eContentType ) + CRLF + CRLF + m_sBody;
 }
 
 HttpResponse HttpResponseParser::GetHttpResponse()
 {
-   HttpResponse oResponse( CMvHttpRequestParser::STATIC_ParseForVersion( m_sResponseToParse ),
+   HttpResponse oResponse( HttpRequestParser::STATIC_ParseForVersion( m_sResponseToParse ),
                              STATIC_ParseForStatus( m_sResponseToParse ),
                              STATIC_ParseForReasonPhrase( m_sResponseToParse ) );
 
-   oResponse.SetContentType( CMvHttpRequestParser::STATIC_ParseForContentType( m_sResponseToParse ) );
+   oResponse.SetContentType( HttpRequestParser::STATIC_ParseForContentType( m_sResponseToParse ) );
 
-   oResponse.AppendMessageBody( CMvHttpRequestParser::STATIC_ParseForBody( m_sResponseToParse ) );
+   oResponse.AppendMessageBody( HttpRequestParser::STATIC_ParseForBody( m_sResponseToParse ) );
 
    return oResponse;
 }
 
 HttpStatus HttpResponseParser::STATIC_ParseForStatus( const std::string & in_krsRequest )
 {
-   if( in_krsRequest.empty() ) return keHttpStatusInvalid;
+   if( in_krsRequest.empty() ) return HttpStatusInvalid;
 
    size_t ulStart = in_krsRequest.find( " " ) + sizeof( " " ) - 1;
    size_t ulEnd = in_krsRequest.find( " ", ulStart );

@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(clsocket)
 
 # set up versioning.
-set(BUILD_MAJOR "1")
-set(BUILD_MINOR "4")
-set(BUILD_VERSION "3")
+set(BUILD_MAJOR "2")
+set(BUILD_MINOR "0")
+set(BUILD_VERSION "0")
 set(BUILD_VERSION ${BUILD_MAJOR}.${BUILD_MINOR}.${BUILD_VERSION})
 
 include_directories(src)
