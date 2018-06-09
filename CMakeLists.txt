@@ -43,7 +43,7 @@ if(UNIX)
         add_definitions(-D_DARWIN)
     endif()
 elseif(WIN32)
-    add_definitions(-DWIN32)
+    add_definitions(-D_WIN32)
     SET(PROJECT_LIBS Ws2_32.lib)
     if(MINGW)
         # Special MINGW stuff here
@@ -78,8 +78,6 @@ TARGET_LINK_LIBRARIES(clsocket ${PROJECT_LIBS})
 if(NOT CLSOCKET_DEP_ONLY)
     install(TARGETS clsocket ARCHIVE DESTINATION lib LIBRARY DESTINATION lib)
     install(FILES ${CLSOCKET_HEADERS} DESTINATION include)
-else()
-
 endif()
 
 set_target_properties(clsocket PROPERTIES VERSION ${BUILD_VERSION}
@@ -113,8 +111,7 @@ if(UNIX)
 elseif(WIN32)
     OPTION(CLSOCKET_EXAMPLES "Build the examples" ON)
     
-        if(CLSOCKET_EXAMPLES)
-		
+    if(CLSOCKET_EXAMPLES)
         ADD_EXECUTABLE(querydaytime-example examples/QueryDayTime.cpp)
         TARGET_LINK_LIBRARIES(querydaytime-example clsocket)
 
@@ -126,6 +123,10 @@ elseif(WIN32)
         
         ADD_EXECUTABLE(clsocket-tester tests/main.cpp)
         TARGET_LINK_LIBRARIES(clsocket-tester clsocket)
+        
+        FILE(GLOB HTTPREQ "examples/HttpRequest/*")
+        ADD_EXECUTABLE(httpclient-example ${HTTPREQ})
+        TARGET_LINK_LIBRARIES(httpclient-example clsocket)
     endif()
 endif()
 
