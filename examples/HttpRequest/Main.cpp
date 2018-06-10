@@ -1,7 +1,7 @@
 
-#include "ActiveSocket.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
+#include "ActiveSocket.h"
 
 
 int main(int argc, char **argv)
@@ -22,7 +22,7 @@ int main(int argc, char **argv)
         retval = oClient.Send((uint8*)sRawRequest.c_str(), sRawRequest.size());
     }
 
-    std::string sData = "";
+    std::string sData;
     while (retval)
     {
         uint8* buffer = new uint8[5120];

@@ -1,8 +1,8 @@
 
-#include "ActiveSocket.h"       // Include header for active socket object definition
 #include <string>
+#include "ActiveSocket.h"       // Include header for active socket object definition
 
-#define MAX_PACKET 4096 
+#define MAX_PACKET 4096
 
 int main(int argc, char **argv)
 {
@@ -12,23 +12,20 @@ int main(int argc, char **argv)
     retval = oClient.Initialize();
 
     if(retval)
-    {
         retval = oClient.Open("8.8.8.8", 53);
-    }
 
     if(retval)
-    {
         retval = oClient.Send((const uint8*)"\n", sizeof("\n"));
-    }
 
-    if(retval)
+    std::string sData;
+    while (retval)
     {
-        retval = ( oClient.Receive(49) > 0 );
-    }
+        uint8* buffer = new uint8[5120];
+        int32 bytes_rcvd = oClient.Receive(5120, buffer);
+        if (bytes_rcvd > 0) sData.append((char*)buffer, bytes_rcvd);
+        if (bytes_rcvd == 5120) retval = false;
 
-    if(retval)
-    {
-        std::string sData( (const char*)oClient.GetData());
+        delete[] buffer;
     }
 
     oClient.Close();
