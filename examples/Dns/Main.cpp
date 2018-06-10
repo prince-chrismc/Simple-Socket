@@ -1,5 +1,6 @@
 
 #include <string>
+#include "DnsQuery.h"
 #include "ActiveSocket.h"       // Include header for active socket object definition
 
 #define MAX_PACKET 4096
