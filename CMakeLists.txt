@@ -102,15 +102,20 @@ if(UNIX)
         ADD_EXECUTABLE(echoclient-example.run examples/EchoClient.cpp)
         TARGET_LINK_LIBRARIES(echoclient-example.run clsocket)
 
-        ADD_EXECUTABLE(dnsclient-example.run examples/Dns/Main.cpp)
+        FILE(GLOB DNS "examples/Dns/*")
+        ADD_EXECUTABLE(dnsclient-example.run ${DNS})
         TARGET_LINK_LIBRARIES(dnsclient-example.run clsocket)
-        
+
+        FILE(GLOB HTTPREQ "examples/HttpRequest/*")
+        ADD_EXECUTABLE(httpclient-example.run ${HTTPREQ})
+        TARGET_LINK_LIBRARIES(httpclient-example.run clsocket)
+
         ADD_EXECUTABLE(clsocket-tester.run tests/main.cpp)
         TARGET_LINK_LIBRARIES(clsocket-tester.run clsocket pthread)
     endif()
 elseif(WIN32)
     OPTION(CLSOCKET_EXAMPLES "Build the examples" ON)
-    
+
     if(CLSOCKET_EXAMPLES)
         ADD_EXECUTABLE(querydaytime-example examples/QueryDayTime.cpp)
         TARGET_LINK_LIBRARIES(querydaytime-example clsocket)
@@ -120,10 +125,14 @@ elseif(WIN32)
 
         ADD_EXECUTABLE(echoclient-example examples/EchoClient.cpp)
         TARGET_LINK_LIBRARIES(echoclient-example clsocket)
-        
+
         ADD_EXECUTABLE(clsocket-tester tests/main.cpp)
         TARGET_LINK_LIBRARIES(clsocket-tester clsocket)
-        
+
+        FILE(GLOB DNS "examples/Dns/*")
+        ADD_EXECUTABLE(dnsclient-example ${DNS})
+        TARGET_LINK_LIBRARIES(dnsclient-example clsocket)
+
         FILE(GLOB HTTPREQ "examples/HttpRequest/*")
         ADD_EXECUTABLE(httpclient-example ${HTTPREQ})
         TARGET_LINK_LIBRARIES(httpclient-example clsocket)
