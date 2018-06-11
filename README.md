@@ -8,23 +8,21 @@ This ~fork~ repository aims to have the original library compile and work reliab
 4. [Examples](#Examples)
 
 ## History
-Written by Mark Carrier to provide a mechanism for writing cross platform socket code. This library was originally written to only support blocking TCP sockets. Over the years it has been extended to support UDP and RAW sockets as well. This is the first official release of the library and the following functionality is supported:
+Written by Mark Carrier to provide a mechanism for writing cross platform socket code. This library was originally written to only support blocking TCP sockets. Over the years it has been extended to support UDP and RAW sockets as well with many contribution from the Dwarf Fortress community. This library supports:
+* Cross platform abstraction
+   * Windows
+   * Linux
+   * Mac OSX
+* Multiple IO modes
+   * sychronious
+   * asychronious
+* Supports TCP Streams, UDP Datagrams, Raw Sockets
+* Thread Safe and Signal Safe
 
-    * Cross platform socket support.
-          o Windows 95, Windows 98, Windows XP
-          o Linux, Unix
-          o Macintosh OSX
-    * Support for sychronious, and asychronious sockets
-    * Supports TCP Streams
-    * Supports UDP Datagrams
-    * Supports Raw Sockets
-    * Thread Safe
-    * Signal Safe
+The library's original release notes can be found [here](https://github.com/DFHack/clsocket/blob/master/ReleaseNotes) for more details.
 
 ## Building and Installing	
-This is a very small library and is very easy to build and configure. To build and install
-make sure you are logged in as a user who has access to the recommend GNU installation 
-directories. Then type `make -BUILD=Release && make install` That is it now you are off and running.
+This is a very small library, it iss very easy to build and configure and requires no third-party support. To build and install, use CMake to generate the files required for your platform and execute the appropriate build command or procedure.
 
 ## Class Overview
 Network communications via sockets can be abstracted into two categories of functionality; the active socket and the passive socket. The active socket object initiates a connection with a known host, whereas the passive socket object waits (or listens) for inbound requests for communication. The functionality of both objects is identical as far as sending and receiving data. This library makes distinction between the two objects because the operations for constructing and destructing the two are different.
@@ -38,11 +36,19 @@ The simple socket library is comprised of two class which can be used to represe
 * Passive Socket Class 
 
 ## Examples
-When operating on a socket object most methods will return true or false
-Simple Active Socket
-As mentioned previously the active socket (CActiveSocket) is used to initiate a connections with a server on some known port. So you want to connect to an existing server...
+When operating on a socket object most methods will return true or false make validation very clean
 
-How do you do it?
+There are two application specific examples:
+- an [HTTP client](https://github.com/prince-chrismc/clsocket/tree/master/examples/HttpRequest)
+- a [DNS client](https://github.com/prince-chrismc/clsocket/tree/master/examples/Dns)
+which may help with specific details for each.
+
+##### Simple Active Socket
+As mentioned previously the active socket (CActiveSocket) is used to initiate a connections with a server on some known port. 
+
+> So you want to connect to an existing server...
+>
+> How do you do it?
 
 There are many ways using the existing Berkley Socket API, but the goal of this class is to remove the many calls and man page lookups and replace them with clear, concise set of methods which allow a developer to focus on the logic of network programming.
 
@@ -81,9 +87,12 @@ int main(int argc, char **argv)
 ```
 
 You can see that the amount of code required to an object for network communciation is very small and simple.
-Simple Passive Socket
-Now you want to build a server.
 
+##### Simple Passive Socket
+As mentioned previously the passive socket (CPassiveSocket) is used to listen for incomming connections on some defines port. 
+
+> Now you want to build a server...
+>
 > How do you do it?
 
 For a practical test lets build an echo server. The server will listen on port 6789 an repsond back with what ever has been sent to the server.
