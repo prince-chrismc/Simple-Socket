@@ -1,4 +1,4 @@
-# CSimpleSocket [![Build Status](https://travis-ci.org/prince-chrismc/clsocket.svg?branch=master)](https://travis-ci.org/prince-chrismc/clsocket)
+# Simple-Socket [![Build Status](https://travis-ci.org/prince-chrismc/clsocket.svg?branch=master)](https://travis-ci.org/prince-chrismc/clsocket)
 This ~fork~ repository aims to have the original library compile and work reliably using modern c++ compilers ( MSVC 15.7 / GCC 7.3 ) with a focus on the async and multicast functionality.
 
 ### Table of Contents
@@ -55,14 +55,13 @@ There are many ways using the existing Berkley Socket API, but the goal of this 
 The following code will connect to a DAYTIME server on port 13, query for the current time, and close the socket.
 
 ```cpp
-#include <string.h>
+#include <string>
 #include "ActiveSocket.h"       // Include header for active socket object definition
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     CActiveSocket socket;       // Instantiate active socket object (defaults to TCP).
-    char          time[50];
-    memset(&time, 0, 50);
+    std::string   time;
 
     // Initialize our socket object 
     socket.Initialize();
@@ -74,7 +73,7 @@ int main(int argc, char **argv)
         {
             // Receive response from the server.
             socket.Receive(49);
-            memcpy(&time, socket.GetData(), 49);
+            time.assign((const char*)socket.GetData());
             printf("%s\n", time);
 
             // Close the connection.
