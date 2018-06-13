@@ -1,7 +1,7 @@
 
 #include "PassiveSocket.h"       // Include header for active socket object definition
 
-#define MAX_PACKET 4096 
+#define MAX_PACKET 4096
 
 int main(int argc, char **argv)
 {
@@ -9,7 +9,7 @@ int main(int argc, char **argv)
     CActiveSocket *pClient = NULL;
 
     //--------------------------------------------------------------------------
-    // Initialize our socket object 
+    // Initialize our socket object
     //--------------------------------------------------------------------------
     socket.Initialize();
 
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
                 //------------------------------------------------------------------
                 // Send response to client and close connection to the client.
                 //------------------------------------------------------------------
-                pClient->Send( pClient->GetData(), pClient->GetBytesReceived() );
+                pClient->Send(pClient->GetData(), pClient->GetBytesReceived());
                 pClient->Close();
             }
 
