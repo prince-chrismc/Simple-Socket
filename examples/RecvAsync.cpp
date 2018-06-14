@@ -1,15 +1,6 @@
-#include <pthread.h>
+
+#include <thread>
 #include "PassiveSocket.h"
-
-#ifdef WIN32
-#include <windows.h>
-
-  // usually defined with #include <unistd.h>
-  static void sleep( unsigned int seconds )
-  {
-    Sleep( seconds * 1000 );
-  }
-#endif
 
 #define MAX_PACKET  4096
 #define TEST_PACKET "Test Packet"
@@ -43,7 +34,7 @@ void *CreateTCPEchoServer(void *param)
             }
         }
 
-        sleep(100);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
 
         delete pClient;
     }
@@ -55,18 +46,20 @@ void *CreateTCPEchoServer(void *param)
 
 int main(int argc, char **argv)
 {
-    pthread_t          threadId;
-    struct thread_data thData;
+    std::thread*       thread = nullptr;
+    thread_data* thData = new thread_data();
     CActiveSocket      client;
     char result[1024];
 
-    thData.pszServerAddr = "127.0.0.1";
-    thData.nPort = 6789;
-    thData.nNumBytesToReceive = 1;
-    thData.nTotalPayloadSize = (int)strlen(TEST_PACKET);
+    thData->pszServerAddr = "127.0.0.1";
+    thData->nPort = 6789;
+    thData->nNumBytesToReceive = 1;
+    thData->nTotalPayloadSize = (int)strlen(TEST_PACKET);
 
-    pthread_create(&threadId, 0, CreateTCPEchoServer, &thData);
-    sleep(1); // allow a second for the thread to create and listen
+    thread = new std::thread(CreateTCPEchoServer, thData);
+    thread->detach();
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     client.Initialize();
     client.SetNonblocking();
@@ -98,4 +91,8 @@ int main(int argc, char **argv)
             }
         }
     }
+
+    thread->join();
+    delete thread;
+    delete thData;
 }
