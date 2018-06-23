@@ -98,7 +98,7 @@ if(SIMPLE_SOCKET_EXAMPLES)
         TARGET_LINK_LIBRARIES(querydaytime-example.run simple-socket)
 
         ADD_EXECUTABLE(echoserver-example.run examples/EchoServer.cpp)
-        TARGET_LINK_LIBRARIES(echoserver-example.run simple-socket)
+        TARGET_LINK_LIBRARIES(echoserver-example.run simple-socket pthread)
 
         ADD_EXECUTABLE(echoclient-example.run examples/EchoClient.cpp)
         TARGET_LINK_LIBRARIES(echoclient-example.run simple-socket)
