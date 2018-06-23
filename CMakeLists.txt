@@ -32,6 +32,7 @@ LIST(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS})
 if(UNIX)
     # linux / normal unix
     add_definitions(-D_LINUX)
+    set(CMAKE_CXX_STANDARD 17)
     ADD_CUSTOM_TARGET(debug
       COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Debug ${CMAKE_SOURCE_DIR}
       COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all)
@@ -49,6 +50,7 @@ elseif(WIN32)
         # Special MINGW stuff here
     elseif(MSVC)
         # Special MSVC stuff here
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
     else()
         # No idea what it is, but there's a good chance it's too weird.
         MESSAGE( FATAL_ERROR "Using unknown WIN32 compiler... NOT. Please add to build system." )
