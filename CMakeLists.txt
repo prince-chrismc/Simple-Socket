@@ -23,6 +23,10 @@ src/ActiveSocket.cpp
 src/PassiveSocket.cpp
 )
 
+set(DATA_FILE
+README.md
+)
+
 # mark headers as headers...
 SET_SOURCE_FILES_PROPERTIES( ${SIMPLE_SOCKET_HEADERS} PROPERTIES HEADER_FILE_ONLY TRUE )
 # append to sources so that dependency checks work on headers
@@ -63,15 +67,15 @@ OPTION(SIMPLE_SOCKET_DEP_ONLY "Build for use inside other CMake projects as depe
 # make the lib
 if(SIMPLE_SOCKET_SHARED)
     if(SIMPLE_SOCKET_DEP_ONLY)
-        ADD_LIBRARY(simple-socket SHARED EXCLUDE_FROM_ALL ${SIMPLE_SOCKET_SOURCES})
+        ADD_LIBRARY(simple-socket SHARED EXCLUDE_FROM_ALL ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
     else()
-        ADD_LIBRARY(simple-socket SHARED ${SIMPLE_SOCKET_SOURCES})
+        ADD_LIBRARY(simple-socket SHARED ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
     endif()
 else()
     if(SIMPLE_SOCKET_DEP_ONLY)
-        ADD_LIBRARY(simple-socket STATIC EXCLUDE_FROM_ALL ${SIMPLE_SOCKET_SOURCES})
+        ADD_LIBRARY(simple-socket STATIC EXCLUDE_FROM_ALL ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
     else()
-        ADD_LIBRARY(simple-socket STATIC ${SIMPLE_SOCKET_SOURCES})
+        ADD_LIBRARY(simple-socket STATIC ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
     endif()
 endif()
 TARGET_LINK_LIBRARIES(simple-socket ${PROJECT_LIBS})
