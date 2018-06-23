@@ -48,7 +48,7 @@ struct DNS_HEADER
     unsigned    short add_count;     // number of resource entries
 };
 
-struct  RR_DATA
+struct RR_DATA
 {
     unsigned short type;   //two octets containing one of the RR TYPE codes
     unsigned short _class;
@@ -58,7 +58,6 @@ struct  RR_DATA
 #define DNS_OFFSET_MASK       0xC0 //1100
 #define DNS_RR_DATA_HEAD_SIZE (3*sizeof(unsigned short)+ sizeof(unsigned int))
 
-using namespace std;
 struct DNS_QUESTION
 {
     unsigned char* qname;
