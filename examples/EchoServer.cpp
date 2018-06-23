@@ -1,44 +1,41 @@
 
-#include "PassiveSocket.h"       // Include header for active socket object definition
+#include <future>
+#include <chrono>
+#include "PassiveSocket.h" // Include header for passive socket object definition
 
-#define MAX_PACKET 4096
+static constexpr const int32 MAX_PACKET = 4096;
+using namespace std::chrono_literals;
 
-int main(int argc, char **argv)
+int main( int argc, char** argv )
 {
-    CPassiveSocket socket;
-    CActiveSocket *pClient = NULL;
+   CPassiveSocket oSocket;
+   std::promise<void> oExitSignal;
 
-    //--------------------------------------------------------------------------
-    // Initialize our socket object
-    //--------------------------------------------------------------------------
-    socket.Initialize();
+   oSocket.Initialize(); // Initialize our socket object
+   oSocket.Listen( "127.0.0.1", 6789 ); // Bind to local host on port 6789 for ability to wait for incomming connections
 
-    socket.Listen("127.0.0.1", 6789);
-
-    while (true)
-    {
-        if ((pClient = socket.Accept()) != NULL)
-        {
-            //----------------------------------------------------------------------
-            // Receive request from the client.
-            //----------------------------------------------------------------------
-            if (pClient->Receive(MAX_PACKET))
+   auto oRetval = std::async( std::launch::deferred, [ &oSocket, oExitEvent = oExitSignal.get_future() ]() {
+         while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
+         {
+            CActiveSocket* pClient = nullptr;
+            if( ( pClient = oSocket.Accept() ) != nullptr ) // Wait for an incomming connection
             {
-                //------------------------------------------------------------------
-                // Send response to client and close connection to the client.
-                //------------------------------------------------------------------
-                pClient->Send(pClient->GetData(), pClient->GetBytesReceived());
-                pClient->Close();
+               if( pClient->Receive( MAX_PACKET ) ) // Receive request from the client.
+               {
+                  pClient->Send( pClient->GetData(), pClient->GetBytesReceived() ); // Send response to client and close connection to the client.
+                  pClient->Close(); // Close socket since we have completed transmission
+               }
+
+               delete pClient; // Delete memory
             }
+         }
+      }
+   );
 
-            delete pClient;
-        }
-    }
+   std::this_thread::sleep_for( 1h );
+   oSocket.Close(); // Release the bound socket. Must be done to exit blocking accept call
+   oExitSignal.set_value();
+   oRetval.get();
 
-    //-----------------------------------------------------------------------------
-    // Receive request from the client.
-    //-----------------------------------------------------------------------------
-    socket.Close();
-
-    return 1;
+   return 1;
 }

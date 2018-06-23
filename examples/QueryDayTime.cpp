@@ -1,44 +1,29 @@
 
+#include <string>
+#include "ActiveSocket.h" // Include header for active socket object definition
 
-#include "ActiveSocket.h"       // Include header for active socket object definition
+constexpr const uint8* operator"" _byte( const char* text, std::size_t ) { return (const uint8 *)text; }
+auto WireToText = []( const uint8* text ) constexpr { return (const char*)text; };
 
-int main(int argc, char **argv)
+int main( int argc, char** argv )
 {
-    CActiveSocket socket;       // Instantiate active socket object (defaults to TCP).
-    char          time[50];
+   CActiveSocket oSocket; // Instantiate active socket object (defaults to TCP).
+   std::string   sTime;
 
-    memset(&time, 0, 50);
+   oSocket.Initialize(); // Initialize our socket object
 
-    //--------------------------------------------------------------------------
-    // Initialize our socket object 
-    //--------------------------------------------------------------------------
-    socket.Initialize();
+   if( oSocket.Open( "time-C.timefreq.bldrdoc.gov", 13 ) ) // Attempt connection to known remote server
+   {
 
-    //--------------------------------------------------------------------------
-    // Create a connection to the time server so that data can be sent
-    // and received.
-    //--------------------------------------------------------------------------
-    if (socket.Open("time-C.timefreq.bldrdoc.gov", 13))
-    {
-        //----------------------------------------------------------------------
-        // Send a requtest the server requesting the current time.
-        //----------------------------------------------------------------------
-        if (socket.Send((const uint8 *)"\n", 1))
-        {
-            //----------------------------------------------------------------------
-            // Receive response from the server.
-            //----------------------------------------------------------------------
-            socket.Receive(49);
-            memcpy(&time, socket.GetData(), 49);
-            printf("%s\n", time);
+      if( oSocket.Send( "\n"_byte, 1 ) ) // Send a request the server for the current time.
+      {
+         const int iBytes = oSocket.Receive( 49 ); // Receive response from the server.
+         sTime.assign( WireToText( oSocket.GetData() ), iBytes );
+         printf( "%s\n", sTime.c_str() );
+      }
+   }
 
-            //----------------------------------------------------------------------
-            // Close the connection.
-            //----------------------------------------------------------------------
-            socket.Close();
-        }
-    }
+   oSocket.Close(); // Close the connection.
 
-
-    return 1;
+   return 1;
 }

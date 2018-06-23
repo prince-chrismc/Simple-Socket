@@ -54,7 +54,7 @@ The simple socket library is comprised of two class which can be used to represe
 * Passive Socket Class
 
 ## Examples
-When operating on a socket object most methods will return true or false make validation very clean
+When operating on a socket object most methods will return true or false make validation very clean, see [below](#Simple-Active-Socket) of details.
 
 There are two application specific examples provided by this repository:
 - an [HTTP client](https://github.com/prince-chrismc/clsocket/tree/master/examples/HttpRequest)
@@ -77,32 +77,34 @@ The following code will connect to a DAYTIME server on port 13, query for the cu
 #include <string>
 #include "ActiveSocket.h" // Include header for active socket object definition
 
+constexpr const uint8* operator"" _byte( const char* text, std::size_t ) { return (const uint8 *)text; }
+auto WireToText = []( const uint8* text ) constexpr { return (const char*)text; };
+
 int main( int argc, char** argv )
 {
-    CActiveSocket socket;       // Instantiate active socket object (defaults to TCP).
-    std::string   time;
+   CActiveSocket oSocket; // Instantiate active socket object (defaults to TCP).
+   std::string   sTime;
 
-    // Initialize our socket object 
-    socket.Initialize();
+   oSocket.Initialize(); // Initialize our socket object
 
-    if (socket.Open("time-C.timefreq.bldrdoc.gov", 13))
-    {
-        // Send a requtest the server requesting the current time.
-        if (socket.Send((const uint8 *)"\n", 1))
+   if( oSocket.Open( "time-C.timefreq.bldrdoc.gov", 13 ) ) // Attempt connection to known remote server
    {
-            // Receive response from the server.
-            socket.Receive(49);
-            time.assign((const char*)socket.GetData());
-            printf("%s\n", time);
 
-            // Close the connection.
-            socket.Close();
+      if( oSocket.Send( "\n"_byte, 1 ) ) // Send a request the server for the current time.
+      {
+         const int iBytes = oSocket.Receive( 49 ); // Receive response from the server.
+         sTime.assign( WireToText( oSocket.GetData() ), iBytes );
+         printf( "%s\n", sTime.c_str() );
       }
    }
 
+   oSocket.Close(); // Close the connection.
+
    return 1;
 }
+
 ```
+_Note:_ This example requires C++1z to compile for an example which is C++03 compilant see [here](https://github.com/prince-chrismc/Simple-Socket/blob/d7b1c5d3a8436cdbc60793701ffed4f1f504c754/examples/QueryDayTime.cpp)
 
 You can see that the amount of code required to have an object perform network communciation is very small and simple.
 
@@ -116,35 +118,49 @@ As mentioned previously the passive socket ( `class CPassiveSocket` ) is used to
 For a practical test lets build an echo server. The server will listen on port 6789 an repsond back with what ever has been sent to the server.
 
 ```cpp
-#include "PassiveSocket.h"       // Include header for active socket object definition
 
-#define MAX_PACKET 4096 
+#include <future>
+#include <chrono>
+#include "PassiveSocket.h" // Include header for passive socket object definition
 
-int main(int argc, char **argv)
+static constexpr const int32 MAX_PACKET = 4096;
+using namespace std::chrono_literals;
+
+int main( int argc, char** argv )
 {
-    CPassiveSocket socket;
-    CActiveSocket *pClient = NULL;
+   CPassiveSocket oSocket;
+   std::promise<void> oExitSignal;
 
-    // Initialize our socket object 
-    socket.Initialize();
-    socket.Listen("127.0.0.1", 6789);
-    while (true)
-    {
-        if ((pClient = socket.Accept()) != NULL)
-        {
-            // Receive request from the client.
-            if (pClient->Receive(MAX_PACKET))
+   oSocket.Initialize(); // Initialize our socket object
+   oSocket.Listen( "127.0.0.1", 6789 ); // Bind to local host on port 6789 for ability to wait for incomming connections
+
+   auto oRetval = std::async( std::launch::deferred, [ &oSocket, oExitEvent = oExitSignal.get_future() ]() {
+         while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
+         {
+            CActiveSocket* pClient = nullptr;
+            if( ( pClient = oSocket.Accept() ) != nullptr ) // Wait for an incomming connection
             {
-                // Send response to client and close connection to the client.
-                pClient->Send( pClient->GetData(), pClient->GetBytesReceived() );
-                pClient->Close();
+               if( pClient->Receive( MAX_PACKET ) ) // Receive request from the client.
+               {
+                  pClient->Send( pClient->GetData(), pClient->GetBytesReceived() ); // Send response to client and close connection to the client.
+                  pClient->Close(); // Close socket since we have completed transmission
+               }
+
+               delete pClient; // Delete memory
             }
+         }
+      }
+   );
 
-            delete pClient;
-        }
-    }
-    socket.Close();
+   std::this_thread::sleep_for( 1h );
+   oSocket.Close(); // Release the bound socket. Must be done to exit blocking accept call
+   oExitSignal.set_value();
+   oRetval.get();
 
-    return 1;
+   return 1;
 }
 ```
+_Note:_ This example requires C++1z to compile for an example which is C++03 compilant see [here](https://github.com/prince-chrismc/Simple-Socket/blob/d7b1c5d3a8436cdbc60793701ffed4f1f504c754/examples/EchoServer.cpp)
+
+In this example the code is more involved because the `Accept()` on a blocking socket only returns with a new connection, in order to correctly close
+the socket `Close()` must be called from a seperate thread. This examples makes use of a deffered launch to obtain this effect.
