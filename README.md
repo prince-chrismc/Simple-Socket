@@ -28,6 +28,12 @@ The library's original release notes can be found [here](https://github.com/DFHa
 This is a very small library, it is very easy to build and configure and requires no third-party support.
 To build and install, use CMake to generate the files required for your platform and execute the appropriate build command or procedure.
 
+- Unix Systems: The commands are `make` and `make debug` which produce a release and debug version respectively.
+- Windows Systems: The usual MSVC files can be build through the IDE or via command line interface.
+
+Installation can be achieved by adding the runtime ( simply the .dll generate with the cmake SIMPLE_SOCKET_SHARED as ON ) to either the execution
+directory of your application or to a location of [PATH](http://www.linfo.org/path_env_var.html) variable.
+
 ## Class Overview
 Network communications via sockets can be abstracted into two categories of functionality; the active socket and the passive socket.
 The active socket object initiates a connection with a known host, whereas the passive socket object waits (or listens) for inbound requests for
@@ -50,13 +56,13 @@ The simple socket library is comprised of two class which can be used to represe
 ## Examples
 When operating on a socket object most methods will return true or false make validation very clean
 
-There are two application specific examples:
+There are two application specific examples provided by this repository:
 - an [HTTP client](https://github.com/prince-chrismc/clsocket/tree/master/examples/HttpRequest)
 - a [DNS client](https://github.com/prince-chrismc/clsocket/tree/master/examples/Dns)
 which may help with specific details for each.
 
 ##### Simple Active Socket
-As mentioned previously the active socket (CActiveSocket) is used to initiate a connections with a server on some known port. 
+As mentioned previously the active socket ( `class CActiveSocket` ) is used to initiate a connections with a server on some known address and port.
 
 > So you want to connect to an existing server...
 >
@@ -69,9 +75,9 @@ The following code will connect to a DAYTIME server on port 13, query for the cu
 
 ```cpp
 #include <string>
-#include "ActiveSocket.h"       // Include header for active socket object definition
+#include "ActiveSocket.h" // Include header for active socket object definition
 
-int main(int argc, char** argv)
+int main( int argc, char** argv )
 {
     CActiveSocket socket;       // Instantiate active socket object (defaults to TCP).
     std::string   time;
@@ -83,7 +89,7 @@ int main(int argc, char** argv)
     {
         // Send a requtest the server requesting the current time.
         if (socket.Send((const uint8 *)"\n", 1))
-        {
+   {
             // Receive response from the server.
             socket.Receive(49);
             time.assign((const char*)socket.GetData());
@@ -91,17 +97,17 @@ int main(int argc, char** argv)
 
             // Close the connection.
             socket.Close();
-        }
-    }
+      }
+   }
 
-    return 1;
+   return 1;
 }
 ```
 
-You can see that the amount of code required to an object for network communciation is very small and simple.
+You can see that the amount of code required to have an object perform network communciation is very small and simple.
 
 ##### Simple Passive Socket
-As mentioned previously the passive socket (CPassiveSocket) is used to listen for incomming connections on some defines port. 
+As mentioned previously the passive socket ( `class CPassiveSocket` ) is used to listen for incomming connections on some defines port.
 
 > Now you want to build a server...
 >
