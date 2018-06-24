@@ -38,14 +38,60 @@ static constexpr const char* TEST_PACKET = "Test Packet";
 static constexpr const unsigned int TEST_PACKET_SIZE = sizeof( "Test Packet" );
 static constexpr const char* LOCAL_HOST = "127.0.0.1";
 
-uint16 LaunchEchoServer( std::promise<void>* pExitSignal );
 
 int main( int argc, char** argv )
 {
    std::promise<void> oExitSignal;
 
-   const uint16 nPort = LaunchEchoServer( &oExitSignal );
+   std::promise<uint16> oPortEvent;
+   auto oPortRetval = oPortEvent.get_future();
 
+   // ---------------------------------------------------------------------------------------------
+   // Server Code
+   // ---------------------------------------------------------------------------------------------
+   auto oRetval = std::async( std::launch::async, [ oExitEvent = oExitSignal.get_future(), &oPortEvent ]() {
+      CPassiveSocket oSocket;
+
+      oSocket.Initialize(); // Initialize our socket object
+      oSocket.SetNonblocking(); // Configure this socket to be non-blocking
+      oSocket.Listen( LOCAL_HOST, 0 ); // Bind to local host on port any port
+
+      oPortEvent.set_value( oSocket.GetServerPort() );
+
+      while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
+      {
+         CActiveSocket* pClient = nullptr;
+         if( ( pClient = oSocket.Accept() ) != nullptr ) // Wait for an incomming connection
+         {
+            pClient->Select(); // Wait for an event to occur on the socket
+
+            uint32 iBytesLeftToReceive = -1;
+            std::string sMessage;
+
+            do
+            {
+               pClient->Receive( NEXT_BYTE ); // Receive next byte of request from the client.
+               sMessage.append( WireToText( pClient->GetData() ), pClient->GetBytesReceived() ); // Gather Message in a buffer
+               if( pClient->GetBytesReceived() ) --iBytesLeftToReceive;
+               if( sMessage.back() == '\n' ) { iBytesLeftToReceive = std::stoul( sMessage ); sMessage = ""; }
+            } while( iBytesLeftToReceive );
+
+            pClient->Send( TextToWire( sMessage.c_str() ), sMessage.size() ); // Send response to client and close connection to the client.
+            pClient->Close(); // Close socket since we have completed transmission
+
+            delete pClient; // Delete memory
+         }
+      }
+
+      oSocket.Close(); // Release the bound socket. Must be done to exit blocking accept call
+   }
+   );
+
+   const uint16 nPort = oPortRetval.get();
+
+   // ---------------------------------------------------------------------------------------------
+   // Client Code
+   // ---------------------------------------------------------------------------------------------
    CActiveSocket oClient;
 
    oClient.Initialize();
@@ -73,56 +119,12 @@ int main( int argc, char** argv )
             }
             else
             {
-               printf( "Received %d bytes\n", numBytes );
+               //printf( "Received %d bytes\n", numBytes );
             }
          }
       }
    }
+
+   oExitSignal.set_value();
 }
 
-
-
-
-uint16 LaunchEchoServer( std::promise<void>* pExitSignal )
-{
-   std::promise<uint16> oPortEvent;
-   auto oPortRetval = oPortEvent.get_future();
-
-   auto oRetval = std::async( std::launch::async, [ oExitEvent = pExitSignal->get_future(), &oPortEvent ]() {
-      CPassiveSocket oSocket;
-
-      oSocket.Initialize(); // Initialize our socket object
-      oSocket.SetNonblocking(); // Configure this socket to be non-blocking
-      oSocket.Listen( LOCAL_HOST, 0 ); // Bind to local host on port any port
-
-      oPortEvent.set_value( oSocket.GetServerPort() );
-
-      while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
-      {
-         CActiveSocket* pClient = nullptr;
-         if( ( pClient = oSocket.Accept() ) != nullptr ) // Wait for an incomming connection
-         {
-            pClient->Select(); // Wait for an event to occur on the socket
-
-            uint32 iBytesLeftToReceive = -1;
-            std::string sMessage;
-            while( pClient->Receive( NEXT_BYTE ) >= 0 && iBytesLeftToReceive ) // Receive request from the client.
-            {
-               sMessage.append( WireToText( pClient->GetData() ), pClient->GetBytesReceived() ); // Gather Message in a buffer
-               if( sMessage.back() == '\n' ) { iBytesLeftToReceive = std::stoul( sMessage ); sMessage = ""; }
-               --iBytesLeftToReceive;
-            }
-
-            pClient->Send( TextToWire( sMessage.c_str() ), sMessage.size() ); // Send response to client and close connection to the client.
-            pClient->Close(); // Close socket since we have completed transmission
-
-            delete pClient; // Delete memory
-         }
-      }
-
-      oSocket.Close(); // Release the bound socket. Must be done to exit blocking accept call
-   }
-   );
-
-   return oPortRetval.get();
-}
