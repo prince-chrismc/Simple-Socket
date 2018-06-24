@@ -1,98 +1,128 @@
+/*
 
-#include <thread>
-#include "PassiveSocket.h"
+MIT License
 
-#define MAX_PACKET  4096
-#define TEST_PACKET "Test Packet"
+Copyright (c) 2018 Chris McArthur, prince.chrismc(at)gmail(dot)com
 
-struct thread_data
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+
+#include <string>
+#include <future>
+#include "PassiveSocket.h" // Include header for both passive and active socket object definition
+
+using namespace std::chrono_literals;
+
+auto TextToWire = []( const char* text ) constexpr { return (const uint8*)text; };
+auto WireToText = []( const uint8* text ) constexpr { return (const char*)text; };
+
+static constexpr const int32 NEXT_BYTE = 1;
+static constexpr const char* TEST_PACKET = "Test Packet";
+static constexpr const unsigned int TEST_PACKET_SIZE = sizeof( "Test Packet" );
+static constexpr const char* LOCAL_HOST = "127.0.0.1";
+
+uint16 LaunchEchoServer( std::promise<void>* pExitSignal );
+
+int main( int argc, char** argv )
 {
-    const char *pszServerAddr;
-    short int   nPort;
-    int         nNumBytesToReceive;
-    int         nTotalPayloadSize;
-};
+   std::promise<void> oExitSignal;
 
+   const uint16 nPort = LaunchEchoServer( &oExitSignal );
 
-void *CreateTCPEchoServer(void *param)
-{
-    CPassiveSocket socket;
-    CActiveSocket *pClient = NULL;
-    struct thread_data *pData = (struct thread_data *)param;
-    int            nBytesReceived = 0;
+   CActiveSocket oClient;
 
-    socket.Initialize();
-    socket.Listen(pData->pszServerAddr, pData->nPort);
+   oClient.Initialize();
+   oClient.SetNonblocking();
 
-    if ((pClient = socket.Accept()) != NULL)
-    {
-        while (nBytesReceived != pData->nTotalPayloadSize)
-        {
-            if (nBytesReceived += pClient->Receive(pData->nNumBytesToReceive))
+   if( oClient.Open( LOCAL_HOST, nPort ) )
+   {
+      if( oClient.Send( TextToWire( ( std::to_string( TEST_PACKET_SIZE ) + "\n" + TEST_PACKET ).c_str() ), TEST_PACKET_SIZE ) )
+      {
+         int numBytes = -1;
+         int bytesReceived = 0;
+
+         oClient.Select();
+
+         while( bytesReceived != TEST_PACKET_SIZE )
+         {
+            numBytes = oClient.Receive( NEXT_BYTE );
+
+            if( numBytes > 0 )
             {
-                pClient->Send((const uint8 *)pClient->GetData(), pClient->GetBytesReceived());
+               std::string result;
+               bytesReceived += numBytes;
+               result.assign( WireToText( oClient.GetData() ), numBytes );
+               printf( "received %d bytes: '%s'\n", numBytes, result.c_str() );
             }
-        }
-
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-
-        delete pClient;
-    }
-
-    socket.Close();
-
-    return NULL;
+            else
+            {
+               printf( "Received %d bytes\n", numBytes );
+            }
+         }
+      }
+   }
 }
 
-int main(int argc, char **argv)
+
+
+
+uint16 LaunchEchoServer( std::promise<void>* pExitSignal )
 {
-    std::thread*       thread = nullptr;
-    thread_data* thData = new thread_data();
-    CActiveSocket      client;
-    char result[1024];
+   std::promise<uint16> oPortEvent;
+   auto oPortRetval = oPortEvent.get_future();
 
-    thData->pszServerAddr = "127.0.0.1";
-    thData->nPort = 6789;
-    thData->nNumBytesToReceive = 1;
-    thData->nTotalPayloadSize = (int)strlen(TEST_PACKET);
+   auto oRetval = std::async( std::launch::async, [ oExitEvent = pExitSignal->get_future(), &oPortEvent ]() {
+      CPassiveSocket oSocket;
 
-    thread = new std::thread(CreateTCPEchoServer, thData);
-    thread->detach();
+      oSocket.Initialize(); // Initialize our socket object
+      oSocket.SetNonblocking(); // Configure this socket to be non-blocking
+      oSocket.Listen( LOCAL_HOST, 0 ); // Bind to local host on port any port
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+      oPortEvent.set_value( oSocket.GetServerPort() );
 
-    client.Initialize();
-    client.SetNonblocking();
+      while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
+      {
+         CActiveSocket* pClient = nullptr;
+         if( ( pClient = oSocket.Accept() ) != nullptr ) // Wait for an incomming connection
+         {
+            pClient->Select(); // Wait for an event to occur on the socket
 
-    if (client.Open("127.0.0.1", 6789))
-    {
-        if (client.Send((uint8 *)TEST_PACKET, strlen(TEST_PACKET)))
-        {
-            int numBytes = -1;
-            int bytesReceived = 0;
-
-            client.Select();
-
-            while (bytesReceived != strlen(TEST_PACKET))
+            uint32 iBytesLeftToReceive = -1;
+            std::string sMessage;
+            while( pClient->Receive( NEXT_BYTE ) >= 0 && iBytesLeftToReceive ) // Receive request from the client.
             {
-                numBytes = client.Receive(MAX_PACKET);
-
-                if (numBytes > 0)
-                {
-                    bytesReceived += numBytes;
-                    memset(result, 0, 1024);
-                    memcpy(result, client.GetData(), numBytes);
-                    printf("received %d bytes: '%s'\n", numBytes, result);
-                }
-                else
-                {
-                    printf("Received %d bytes\n", numBytes);
-                }
+               sMessage.append( WireToText( pClient->GetData() ), pClient->GetBytesReceived() ); // Gather Message in a buffer
+               if( sMessage.back() == '\n' ) { iBytesLeftToReceive = std::stoul( sMessage ); sMessage = ""; }
+               --iBytesLeftToReceive;
             }
-        }
-    }
 
-    thread->join();
-    delete thread;
-    delete thData;
+            pClient->Send( TextToWire( sMessage.c_str() ), sMessage.size() ); // Send response to client and close connection to the client.
+            pClient->Close(); // Close socket since we have completed transmission
+
+            delete pClient; // Delete memory
+         }
+      }
+
+      oSocket.Close(); // Release the bound socket. Must be done to exit blocking accept call
+   }
+   );
+
+   return oPortRetval.get();
 }

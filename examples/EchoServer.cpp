@@ -28,8 +28,9 @@ SOFTWARE.
 #include <chrono>
 #include "PassiveSocket.h" // Include header for passive socket object definition
 
-static constexpr const int32 MAX_PACKET = 4096;
 using namespace std::chrono_literals;
+
+static constexpr const int32 MAX_PACKET = 4096;
 
 int main( int argc, char** argv )
 {
