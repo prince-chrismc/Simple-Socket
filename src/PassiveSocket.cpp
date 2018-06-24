@@ -203,6 +203,13 @@ bool CPassiveSocket::Listen(const char *pAddr, uint16 nPort, int32 nConnectionBa
         Close();
         SetSocketError(err);
     }
+    else
+    {
+       socklen_t nSockLen = sizeof( struct sockaddr );
+
+       memset( &m_stServerSockaddr, 0, nSockLen );
+       getsockname( m_socket, ( struct sockaddr * )&m_stServerSockaddr, &nSockLen );
+    }
 
     return bRetVal;
 }
