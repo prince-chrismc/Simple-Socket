@@ -35,7 +35,7 @@ auto WireToText = []( const uint8* text ) constexpr { return (const char*)text; 
 
 static constexpr const int32 NEXT_BYTE = 1;
 static constexpr const char* TEST_PACKET = "Test Packet";
-static constexpr const unsigned int TEST_PACKET_SIZE = sizeof( "Test Packet" );
+static constexpr const unsigned int TEST_PACKET_SIZE = sizeof( TEST_PACKET );
 static constexpr const char* LOCAL_HOST = "127.0.0.1";
 
 
@@ -68,13 +68,13 @@ int main( int argc, char** argv )
             uint32 iBytesLeftToReceive = -1;
             std::string sMessage;
 
-            do
-            {
-               pClient->Receive( NEXT_BYTE ); // Receive next byte of request from the client.
+            //do
+            //{
+               pClient->Receive( 128 ); // Receive next byte of request from the client.
                sMessage.append( WireToText( pClient->GetData() ), pClient->GetBytesReceived() ); // Gather Message in a buffer
-               if( pClient->GetBytesReceived() ) --iBytesLeftToReceive;
-               if( sMessage.back() == '\n' ) { iBytesLeftToReceive = std::stoul( sMessage ); sMessage = ""; }
-            } while( iBytesLeftToReceive );
+            //   if( pClient->GetBytesReceived() ) --iBytesLeftToReceive;
+            //   if( sMessage.back() == '\n' ) { iBytesLeftToReceive = std::stoul( sMessage ); sMessage = ""; }
+            //} while( iBytesLeftToReceive );
 
             pClient->Send( TextToWire( sMessage.c_str() ), sMessage.size() ); // Send response to client and close connection to the client.
             pClient->Close(); // Close socket since we have completed transmission
@@ -101,30 +101,26 @@ int main( int argc, char** argv )
    {
       if( oClient.Send( TextToWire( ( std::to_string( TEST_PACKET_SIZE ) + "\n" + TEST_PACKET ).c_str() ), TEST_PACKET_SIZE ) )
       {
-         int numBytes = -1;
-         int bytesReceived = 0;
-
          oClient.Select();
 
-         while( bytesReceived != TEST_PACKET_SIZE )
+         int iTotalBytes = 0;
+         while( iTotalBytes != TEST_PACKET_SIZE )
          {
-            numBytes = oClient.Receive( NEXT_BYTE );
+            const int iBytesReceived = oClient.Receive( NEXT_BYTE );
 
-            if( numBytes > 0 )
+            if( iBytesReceived > 0 )
             {
-               std::string result;
-               bytesReceived += numBytes;
-               result.assign( WireToText( oClient.GetData() ), numBytes );
-               printf( "received %d bytes: '%s'\n", numBytes, result.c_str() );
-            }
-            else
-            {
-               //printf( "Received %d bytes\n", numBytes );
+               std::string sResult;
+               iTotalBytes += iBytesReceived;
+               sResult.assign( WireToText( oClient.GetData() ), iBytesReceived );
+               printf( "received %d bytes: '%s'\n", iBytesReceived, sResult.c_str() );
             }
          }
       }
    }
 
    oExitSignal.set_value();
-}
+   oRetval.get();
 
+   return 1;
+}
