@@ -89,7 +89,6 @@ int main( int argc, char** argv )
 
    if( oSocket.Open( "time-C.timefreq.bldrdoc.gov", 13 ) ) // Attempt connection to known remote server
    {
-
       if( oSocket.Send( "\n"_byte, 1 ) ) // Send a request the server for the current time.
       {
          const int iBytes = oSocket.Receive( 49 ); // Receive response from the server.
@@ -142,7 +141,8 @@ int main( int argc, char** argv )
             {
                if( pClient->Receive( MAX_PACKET ) ) // Receive request from the client.
                {
-                  pClient->Send( pClient->GetData(), pClient->GetBytesReceived() ); // Send response to client and close connection to the client.
+                  // Send response to client and close connection to the client.
+                  pClient->Send( pClient->GetData(), pClient->GetBytesReceived() );
                   pClient->Close(); // Close socket since we have completed transmission
                }
 
