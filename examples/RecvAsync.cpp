@@ -56,7 +56,7 @@ public:
 
    constexpr const std::string& ToString() const { return m_sMessage; }
 
-   constexpr const uint8* GetWireFormat() const { return TextToWire( m_sMessage.c_str() ); }
+   const uint8* GetWireFormat() const { return (const uint8*)m_sMessage.c_str(); }
    size_t GetWireFormatSize() const { return m_sMessage.size(); }
 
 private:
@@ -170,8 +170,8 @@ int main( int argc, char** argv )
       {
          oClient.Select();
 
-         int iTotalBytes = 0;
-         while( iTotalBytes != TEST_PACKET_SIZE )
+         size_t iTotalBytes = 0;
+         while( iTotalBytes != oMessage.GetWireFormatSize() )
          {
             const int iBytesReceived = oClient.Receive( NEXT_BYTE );
 
