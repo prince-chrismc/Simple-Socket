@@ -30,14 +30,11 @@ SOFTWARE.
 
 using namespace std::chrono_literals;
 
-auto TextToWire = []( const char* text ) constexpr { return (const uint8*)text; };
 auto WireToText = []( const uint8* text ) constexpr { return (const char*)text; };
 
 static constexpr const int32 NEXT_BYTE = 1;
 static constexpr const char* TEST_PACKET = "Test Packet";
-static constexpr const unsigned int TEST_PACKET_SIZE = sizeof( TEST_PACKET );
 static constexpr const char* LOCAL_HOST = "127.0.0.1";
-
 
 // ---------------------------------------------------------------------------------------------
 // Message Utility Code
@@ -137,18 +134,19 @@ int main( int argc, char** argv )
          CActiveSocket* pClient = nullptr;
          if( ( pClient = oSocket.Accept() ) != nullptr ) // Wait for an incomming connection
          {
-            pClient->Select(); // Wait for an event to occur on the socket
+            pClient->SetNonblocking(); // Configure new client connection to be non-blocking
 
             AsyncMessageBuilder oBuilder;
 
             do
             {
-               pClient->Receive( NEXT_BYTE ); // Receive next byte of request from the client.
+               pClient->Receive( NEXT_BYTE * 3 ); // Receive next byte of request from the client.
                oBuilder.Append( pClient->GetData(), pClient->GetBytesReceived() ); // Gather Message in a buffer
             } while( ! oBuilder.IsComplete() );
 
             AsyncMessage oEchoMessage( oBuilder.ExtractMessage() );
             pClient->Send( oEchoMessage.GetWireFormat(), oEchoMessage.GetWireFormatSize() ); // Send response to client and close connection to the client.
+            pClient->Select(); // Wait for the client to read the message
             pClient->Close(); // Close socket since we have completed transmission
 
             delete pClient; // Delete memory
@@ -166,20 +164,20 @@ int main( int argc, char** argv )
    // ---------------------------------------------------------------------------------------------
    CActiveSocket oClient;
 
-   oClient.Initialize();
-   oClient.SetNonblocking();
+   oClient.Initialize(); // Initialize our socket object
+   oClient.SetNonblocking(); // Configure this socket to be non-blocking
 
-   if( oClient.Open( LOCAL_HOST, nPort ) )
+   if( oClient.Open( LOCAL_HOST, nPort ) ) // Attempt connection to local server and reported port
    {
       AsyncMessage oMessage( TEST_PACKET );
-      if( oClient.Send( oMessage.GetWireFormat(), oMessage.GetWireFormatSize() ) )
+      if( oClient.Send( oMessage.GetWireFormat(), oMessage.GetWireFormatSize() ) ) // Send a message the server
       {
          oClient.Select();
 
          size_t iTotalBytes = 0;
          while( iTotalBytes != oMessage.GetWireFormatSize() )
          {
-            const int iBytesReceived = oClient.Receive( NEXT_BYTE );
+            const int iBytesReceived = oClient.Receive( NEXT_BYTE ); // Receive one byte of response from the server.
 
             if( iBytesReceived > 0 )
             {
@@ -192,6 +190,7 @@ int main( int argc, char** argv )
       }
    }
 
+   oClient.Close(); // Close the connection.
    oExitSignal.set_value();
    oRetval.get();
 
