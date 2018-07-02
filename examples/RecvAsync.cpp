@@ -39,6 +39,74 @@ static constexpr const unsigned int TEST_PACKET_SIZE = sizeof( TEST_PACKET );
 static constexpr const char* LOCAL_HOST = "127.0.0.1";
 
 
+// ---------------------------------------------------------------------------------------------
+// Message Utility Code
+// ---------------------------------------------------------------------------------------------
+class AsyncMessage final
+{
+   friend class AsyncMessageBuilder;
+public:
+   AsyncMessage( const std::string& sMessage ) : m_sMessage( std::to_string( sMessage.size() ) + "\n" + sMessage ) {}
+   AsyncMessage( const AsyncMessage& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; }
+   AsyncMessage( const AsyncMessage&& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; }
+   ~AsyncMessage() = default;
+
+   void operator=( const AsyncMessage& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; }
+   void operator=( const AsyncMessage&& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; }
+
+   constexpr const std::string& ToString() const { return m_sMessage; }
+
+   constexpr const uint8* GetWireFormat() const { return TextToWire( m_sMessage.c_str() ); }
+   size_t GetWireFormatSize() const { return m_sMessage.size(); }
+
+private:
+   std::string m_sMessage;
+};
+
+class AsyncMessageBuilder final
+{
+public:
+   AsyncMessageBuilder() : m_oMessage( "" ), m_iExpectedSize( incomplete ) {}
+   explicit AsyncMessageBuilder( const AsyncMessage& oMessage ) : m_oMessage( oMessage ), m_iExpectedSize( incomplete ) { _ParseMessage(); }
+   AsyncMessageBuilder( const AsyncMessageBuilder& ) = delete;
+   AsyncMessageBuilder( const AsyncMessageBuilder&& ) = delete;
+   ~AsyncMessageBuilder() = default;
+
+   const AsyncMessageBuilder& operator=( const AsyncMessageBuilder& ) = delete;
+   const AsyncMessageBuilder& operator=( const AsyncMessageBuilder&& ) = delete;
+
+   static constexpr size_t incomplete = -1;
+
+   constexpr bool IsComplete() const {
+      return m_iExpectedSize != incomplete
+         && m_iExpectedSize == m_oMessage.m_sMessage.size();
+   }
+
+   size_t Append( const uint8* pData, const size_t iSize )
+   {
+      m_oMessage.m_sMessage.append( WireToText( pData ), iSize );
+      if( ! IsComplete() ) _ParseMessage();
+      return m_iExpectedSize;
+   }
+
+   const AsyncMessage&& ExtractMessage() { m_iExpectedSize = incomplete; return std::move( m_oMessage ); }
+
+private:
+   AsyncMessage m_oMessage;
+   size_t m_iExpectedSize;
+
+   void _ParseMessage()
+   {
+      const size_t iNewLineIndex = m_oMessage.m_sMessage.find_first_of( '\n' );
+      if( iNewLineIndex != std::string::npos )
+      {
+         m_oMessage.m_sMessage = m_oMessage.m_sMessage.substr( iNewLineIndex + 1 );
+         m_iExpectedSize = std::stoull( m_oMessage.m_sMessage );
+      }
+   }
+};
+
+
 int main( int argc, char** argv )
 {
    std::promise<void> oExitSignal;
@@ -65,18 +133,16 @@ int main( int argc, char** argv )
          {
             pClient->Select(); // Wait for an event to occur on the socket
 
-            uint32 iBytesLeftToReceive = -1;
-            std::string sMessage;
+            AsyncMessageBuilder oBuilder;
 
-            //do
-            //{
-               pClient->Receive( 128 ); // Receive next byte of request from the client.
-               sMessage.append( WireToText( pClient->GetData() ), pClient->GetBytesReceived() ); // Gather Message in a buffer
-            //   if( pClient->GetBytesReceived() ) --iBytesLeftToReceive;
-            //   if( sMessage.back() == '\n' ) { iBytesLeftToReceive = std::stoul( sMessage ); sMessage = ""; }
-            //} while( iBytesLeftToReceive );
+            do
+            {
+               pClient->Receive( NEXT_BYTE ); // Receive next byte of request from the client.
+               oBuilder.Append( pClient->GetData(), pClient->GetBytesReceived() ); // Gather Message in a buffer
+            } while( ! oBuilder.IsComplete() );
 
-            pClient->Send( TextToWire( sMessage.c_str() ), sMessage.size() ); // Send response to client and close connection to the client.
+            AsyncMessage oEchoMessage( oBuilder.ExtractMessage() );
+            pClient->Send( oEchoMessage.GetWireFormat(), oEchoMessage.GetWireFormatSize() ); // Send response to client and close connection to the client.
             pClient->Close(); // Close socket since we have completed transmission
 
             delete pClient; // Delete memory
@@ -99,7 +165,8 @@ int main( int argc, char** argv )
 
    if( oClient.Open( LOCAL_HOST, nPort ) )
    {
-      if( oClient.Send( TextToWire( ( std::to_string( TEST_PACKET_SIZE ) + "\n" + TEST_PACKET ).c_str() ), TEST_PACKET_SIZE ) )
+      AsyncMessage oMessage( TEST_PACKET );
+      if( oClient.Send( oMessage.GetWireFormat(), oMessage.GetWireFormatSize() ) )
       {
          oClient.Select();
 
