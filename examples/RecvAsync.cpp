@@ -66,7 +66,7 @@ private:
 class AsyncMessageBuilder final
 {
 public:
-   AsyncMessageBuilder() : m_oMessage( "" ), m_iExpectedSize( incomplete ) {}
+   AsyncMessageBuilder() : m_oMessage( "" ), m_iExpectedSize( incomplete ) { m_oMessage.m_sMessage.clear(); }
    explicit AsyncMessageBuilder( const AsyncMessage& oMessage ) : m_oMessage( oMessage ), m_iExpectedSize( incomplete ) { _ParseMessage(); }
    AsyncMessageBuilder( const AsyncMessageBuilder& ) = delete;
    AsyncMessageBuilder( const AsyncMessageBuilder&& ) = delete;
@@ -77,7 +77,8 @@ public:
 
    static constexpr size_t incomplete = -1;
 
-   constexpr bool IsComplete() const {
+   constexpr bool IsComplete() const
+   {
       return m_iExpectedSize != incomplete
          && m_iExpectedSize == m_oMessage.m_sMessage.size();
    }
@@ -89,7 +90,12 @@ public:
       return m_iExpectedSize;
    }
 
-   const AsyncMessage&& ExtractMessage() { m_iExpectedSize = incomplete; return std::move( m_oMessage ); }
+   const AsyncMessage&& ExtractMessage()
+   {
+      m_oMessage.m_sMessage = std::to_string( m_iExpectedSize ) + "\n" + m_oMessage.m_sMessage;
+      m_iExpectedSize = incomplete;
+      return std::move( m_oMessage );
+   }
 
 private:
    AsyncMessage m_oMessage;
@@ -100,8 +106,8 @@ private:
       const size_t iNewLineIndex = m_oMessage.m_sMessage.find_first_of( '\n' );
       if( iNewLineIndex != std::string::npos )
       {
+         m_iExpectedSize = std::stoull( m_oMessage.m_sMessage.substr( 0, iNewLineIndex ) );
          m_oMessage.m_sMessage = m_oMessage.m_sMessage.substr( iNewLineIndex + 1 );
-         m_iExpectedSize = std::stoull( m_oMessage.m_sMessage );
       }
    }
 };
