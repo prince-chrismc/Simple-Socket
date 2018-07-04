@@ -3,5 +3,5 @@
 * [mDns](https://tools.ietf.org/html/rfc6762#page-47)
 * [dns-sd](https://tools.ietf.org/html/rfc6763)
 * [dns](https://www.ietf.org/rfc/rfc1035.txt)
-* [bitcoin](https://github.com/emercoin/emercoin/blob/master/src/emcdns.h [source](https://github.com/emercoin/emercoin/blob/master/src/emcdns.cpp)
+* [bitcoin](https://github.com/emercoin/emercoin/blob/master/src/emcdns.h) [source](https://github.com/emercoin/emercoin/blob/master/src/emcdns.cpp)
 * [DNS Query Code in C with linux sockets](https://gist.github.com/fffaraz/9d9170b57791c28ccda9255b48315168)
