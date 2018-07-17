@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 int EchoServerThread(std::future<void> exitEvent)
 {
     CPassiveSocket socket;
-    CActiveSocket *pClient = NULL;
+    std::unique_ptr<CActiveSocket> pClient = nullptr;
 
     // Initialize our socket object
     socket.Initialize();
@@ -114,7 +114,7 @@ int EchoServerThread(std::future<void> exitEvent)
 
     while (exitEvent.wait_for(std::chrono::milliseconds(10)) == std::future_status::timeout)
     {
-        if ((pClient = socket.Accept()) != NULL)
+        if ((pClient = socket.Accept()) != nullptr)
         {
 #ifdef _LINUX
             const char* clientAddr = pClient->GetClientAddr();
@@ -133,8 +133,6 @@ int EchoServerThread(std::future<void> exitEvent)
                 pClient->Send(pClient->GetData(), pClient->GetBytesReceived());
                 pClient->Close();
             }
-
-            delete pClient;
         }
     }
 

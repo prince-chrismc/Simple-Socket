@@ -220,10 +220,10 @@ bool CPassiveSocket::Listen(const char *pAddr, uint16 nPort, int32 nConnectionBa
 // Accept() -
 //
 //------------------------------------------------------------------------------
-CActiveSocket *CPassiveSocket::Accept()
+std::unique_ptr<CActiveSocket> CPassiveSocket::Accept()
 {
     uint32         nSockLen;
-    CActiveSocket *pClientSocket = NULL;
+    std::unique_ptr<CActiveSocket> pClientSocket = nullptr;
     SOCKET         socket = CSimpleSocket::SocketError;
 
     if (m_nSocketType != CSimpleSocket::SocketTypeTcp)
@@ -232,12 +232,12 @@ CActiveSocket *CPassiveSocket::Accept()
         return pClientSocket;
     }
 
-    pClientSocket = new CActiveSocket();
+    pClientSocket = std::make_unique<CActiveSocket>();
 
     //--------------------------------------------------------------------------
     // Wait for incoming connection.
     //--------------------------------------------------------------------------
-    if (pClientSocket != NULL)
+    if (pClientSocket != nullptr)
     {
         CSocketError socketErrno = SocketSuccess;
 
@@ -280,8 +280,7 @@ CActiveSocket *CPassiveSocket::Accept()
 
         if (socketErrno != CSimpleSocket::SocketSuccess)
         {
-            delete pClientSocket;
-            pClientSocket = NULL;
+            pClientSocket.reset( nullptr );
         }
     }
 

@@ -42,6 +42,8 @@
  *----------------------------------------------------------------------------*/
 #ifndef __PASSIVESOCKET_H__
 #define __PASSIVESOCKET_H__
+
+#include <memory>
 #include "ActiveSocket.h"
 
 /// Provides a platform independent class to create a passive socket.
@@ -70,7 +72,7 @@ public:
     ///    CPassiveSocket::SocketEwouldblock, CPassiveSocket::SocketInvalidSocket,
     ///    CPassiveSocket::SocketConnectionAborted, CPassiveSocket::SocketInterrupted
     ///    CPassiveSocket::SocketProtocolError, CPassiveSocket::SocketFirewallError
-    virtual CActiveSocket *Accept(void);
+    virtual std::unique_ptr<CActiveSocket> Accept(void);
 
     /// Bind to a multicast group on  a specified interface, multicast group, and port
     ///

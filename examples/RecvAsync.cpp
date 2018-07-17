@@ -131,7 +131,7 @@ int main( int argc, char** argv )
 
       while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
       {
-         CActiveSocket* pClient = nullptr;
+         std::unique_ptr<CActiveSocket> pClient = nullptr;
          if( ( pClient = oSocket.Accept() ) != nullptr ) // Wait for an incomming connection
          {
             pClient->SetNonblocking(); // Configure new client connection to be non-blocking
@@ -148,8 +148,6 @@ int main( int argc, char** argv )
             pClient->Send( oEchoMessage.GetWireFormat(), oEchoMessage.GetWireFormatSize() ); // Send response to client and close connection to the client.
             pClient->Select(); // Wait for the client to read the message
             pClient->Close(); // Close socket since we have completed transmission
-
-            delete pClient; // Delete memory
          }
       }
 
