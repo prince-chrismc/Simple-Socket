@@ -51,7 +51,7 @@ public:
     std::string GetPairValue(std::string name);
 
 private:
-    void _parse(int argc, char** argv);
+    void Parse(int argc, char** argv);
 
     std::vector<std::string>  m_vecArgs;   // all args written on command line
     std::string               m_sCommand;  // the name of the program invoked

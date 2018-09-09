@@ -28,10 +28,10 @@ SOFTWARE.
 
 CommandLineParser::CommandLineParser(int argc, char** argv)
 {
-    _parse(argc, argv);
+    Parse(argc, argv);
 }
 
-void CommandLineParser::_parse(int argc, char** argv)
+void CommandLineParser::Parse(int argc, char** argv)
 {
     m_sCommand = argv[0];          // Save filename
     for (int i = 1; i < argc; i++) // Then save each arg
