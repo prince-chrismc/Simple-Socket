@@ -40,9 +40,9 @@ public:
 
    const HttpVersion&     GetVersion() const { return m_eVersion; }
    const HttpStatus&      GetStatusCode() const { return m_eStatusCode; }
-   const std::string&        GetPhrase() const { return m_sReasonPhrase; }
+   const std::string&     GetPhrase() const { return m_sReasonPhrase; }
    const HttpContentType& GetContentType() const { return m_eContentType; }
-   const std::string&        GetBody() const { return m_sBody; }
+   const std::string&     GetBody() const { return m_sBody; }
 
    // Returns the response line ( minimal requirement )
    std::string GetResponseLine() const;
@@ -75,4 +75,17 @@ public:
 
 private:
    std::string m_sResponseToParse;
+};
+
+class CMvHttpResponseParserAdvance
+{
+public:
+   CMvHttpResponseParserAdvance() : m_sHttpHeader( "" ), m_sResponseBody( "" ) { }
+
+   bool AppendResponseData( const std::string& in_krsData );
+   CMvHttpResponse GetHttpResponse();
+
+private:
+   std::string m_sHttpHeader;
+   std::string m_sResponseBody;
 };

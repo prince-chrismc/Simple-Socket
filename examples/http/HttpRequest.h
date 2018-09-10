@@ -29,21 +29,6 @@ SOFTWARE.
 #include <string>
 #include "Constants.h"
 
-enum HttpRequestMethod
-{
-   HttpRequestInvalid = 0,
-   HttpRequestOptions,
-   HttpRequestGet,
-   HttpRequestHead,
-   HttpRequestPost,
-   HttpRequestPut,
-   HttpRequestDelete,
-   HttpRequestTrace,
-   HttpRequestConnect,
-   HttpRequestPatch,
-   HttpRequestLast
-};
-
 class HttpRequest
 {
 public:
@@ -57,21 +42,26 @@ public:
    void AppendMessageBody( const std::string & in_krsToAdd );
 
    const HttpRequestMethod& GetMethod() const { return m_eMethod; }
-   const std::string&          GetUri() const { return m_sRequestUri; }
+   const std::string&       GetUri() const { return m_sRequestUri; }
    const HttpVersion&       GetVersion() const { return m_eVersion; }
-   const std::string&          GetHostAndPort() const { return m_sHostAndPort; }
+   const std::string&       GetHostAndPort() const { return m_sHostAndPort; }
    const HttpContentType&   GetContentType() const { return m_eContentType; }
-   const std::string&          GetBody() const { return m_sBody; }
+   const std::string&       GetBody() const { return m_sBody; }
 
    // Returns the basic information in request format does not include body
    std::string GetRawRequest() const;
 
-   // Returns a proper request with the basic information provided
+   // Returns a formatted request header ( without the body )
+   std::string GetHeader() const;
+
+   // Returns a complete request with the basic information provided
    std::string GetWireFormat() const;
+
 
    static std::string STATIC_MethodAsString( const HttpRequestMethod& in_kreMethod );
    static std::string STATIC_VersionAsString( const HttpVersion& in_kreVersion );
    static std::string STATIC_ContentTypeAsString( const HttpContentType& in_kreContentType );
+   static std::string STATIC_ContentLengthToString( size_t in_ullContentLength );
 
 private:
    HttpRequestMethod m_eMethod;
@@ -100,4 +90,21 @@ public:
 
 private:
    std::string m_sRequestToParse;
+};
+
+class CMvHttpRequestParserAdvance
+{
+public:
+   CMvHttpRequestParserAdvance() : m_sHttpHeader( "" ), m_sRequestBody( "" ) { }
+
+   bool AppendRequestData( const std::string& in_krsData );
+   HttpRequest GetHttpRequest();
+
+   static size_t STATIC_ParseForContentLength( const std::string& in_krsHttpHeader );
+   static bool STATIC_IsHeaderComplete(const std::string& in_krsHttpHeader);
+   static bool STATIC_AppendData( const std::string& in_krsData, std::string& io_krsHttpHeader, std::string& io_krsHttpBody );
+
+private:
+   std::string m_sHttpHeader;
+   std::string m_sRequestBody;
 };

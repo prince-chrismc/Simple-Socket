@@ -59,3 +59,18 @@ enum HttpContentType
    HttpContentJson,
    HttpContentInvalid
 };
+
+enum HttpRequestMethod
+{
+   HttpRequestInvalid = 0,
+   HttpRequestOptions,
+   HttpRequestGet,
+   HttpRequestHead,
+   HttpRequestPost,
+   HttpRequestPut,
+   HttpRequestDelete,
+   HttpRequestTrace,
+   HttpRequestConnect,
+   HttpRequestPatch,
+   HttpRequestLast
+};
