@@ -77,13 +77,13 @@ private:
    std::string m_sResponseToParse;
 };
 
-class CMvHttpResponseParserAdvance
+class HttpResponseParserAdvance
 {
 public:
-   CMvHttpResponseParserAdvance() : m_sHttpHeader( "" ), m_sResponseBody( "" ) { }
+   HttpResponseParserAdvance() : m_sHttpHeader( "" ), m_sResponseBody( "" ) { }
 
    bool AppendResponseData( const std::string& in_krsData );
-   CMvHttpResponse GetHttpResponse();
+   HttpResponse GetHttpResponse();
 
 private:
    std::string m_sHttpHeader;

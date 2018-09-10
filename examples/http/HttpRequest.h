@@ -92,10 +92,10 @@ private:
    std::string m_sRequestToParse;
 };
 
-class CMvHttpRequestParserAdvance
+class HttpRequestParserAdvance
 {
 public:
-   CMvHttpRequestParserAdvance() : m_sHttpHeader( "" ), m_sRequestBody( "" ) { }
+   HttpRequestParserAdvance() : m_sHttpHeader( "" ), m_sRequestBody( "" ) { }
 
    bool AppendRequestData( const std::string& in_krsData );
    HttpRequest GetHttpRequest();
