@@ -47,8 +47,9 @@ public:
     CommandLineParser(int argc, char** argv);
     ~CommandLineParser() = default;
 
-    bool        DoesArgExists(const std::string& name);
+    bool        DoesSwitchExists(const std::string& name);
     std::string GetPairValue(std::string name);
+    std::string GetNonInterpted(const size_t index);
 
 private:
     void Parse(int argc, char** argv);

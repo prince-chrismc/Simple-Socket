@@ -30,13 +30,14 @@ SOFTWARE.
 
 int main(int argc, char** argv)
 {
-    bool retval = true;
     CActiveSocket oClient;
 
-    retval = oClient.Initialize();
+    bool retval = oClient.Initialize();
 
     if (retval)
+    {
         retval = oClient.Open("www.google.ca", 80);
+    }
 
     if (retval)
     {

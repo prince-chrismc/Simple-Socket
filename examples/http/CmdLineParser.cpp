@@ -40,12 +40,13 @@ void CommandLineParser::Parse(int argc, char** argv)
     }
 }
 
-bool CommandLineParser::DoesArgExists(const std::string& name)
+bool CommandLineParser::DoesSwitchExists(const std::string& name)
 {
     if (name.empty()) return false;
 
     for (auto& arg : m_vecArgs)
     {
+        if( arg.front() != '/' || arg.front() != '-' ) continue;
         if (arg.find(name) != std::string::npos) // case insensitive search
         {
             return true;
@@ -69,6 +70,22 @@ std::string CommandLineParser::GetPairValue(std::string name)
             retval = pair.substr(switch_index + name.size() + 1);   // Return string after =.
             break;
         }
+    }
+
+    return retval;
+}
+
+std::string CommandLineParser::GetNonInterpted(const size_t index)
+{
+    if (m_vecArgs.size() > index) return "";
+
+    size_t nCounter = 0;
+    std::string retval;
+
+    for (auto& arg : m_vecArgs)
+    {
+        if( arg.front() == '/' || arg.front() == '-' ) continue;
+        else if( ++nCounter == index ) retval = arg;
     }
 
     return retval;
