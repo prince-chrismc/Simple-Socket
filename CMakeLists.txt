@@ -103,6 +103,9 @@ if(SIMPLE_SOCKET_EXAMPLES)
         ADD_EXECUTABLE(echoclient-example.run examples/EchoClient.cpp)
         TARGET_LINK_LIBRARIES(echoclient-example.run simple-socket)
 
+        ADD_EXECUTABLE(multicast-example.run examples/Multicast.cpp)
+        TARGET_LINK_LIBRARIES(multicast-example.run simple-socket pthread)
+
         FILE(GLOB DNS "examples/dns/*")
         ADD_EXECUTABLE(dnsclient-example.run ${DNS})
         TARGET_LINK_LIBRARIES(dnsclient-example.run simple-socket)
@@ -125,6 +128,9 @@ if(SIMPLE_SOCKET_EXAMPLES)
 
         ADD_EXECUTABLE(echoclient-example examples/EchoClient.cpp)
         TARGET_LINK_LIBRARIES(echoclient-example simple-socket)
+
+        ADD_EXECUTABLE(multicast-example examples/Multicast.cpp)
+        TARGET_LINK_LIBRARIES(multicast-example simple-socket)
 
         FILE(GLOB DNS "examples/dns/*")
         ADD_EXECUTABLE(dnsclient-example ${DNS})
