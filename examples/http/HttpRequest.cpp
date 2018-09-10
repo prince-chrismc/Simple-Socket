@@ -297,7 +297,7 @@ size_t HttpRequestParserAdvance::STATIC_ParseForContentLength( const std::string
 
    std::string sContentLength = in_krsHttpHeader.substr( sizeStart, sizeEnd - sizeStart );
 
-   if( sContentLength.find_first_not_of( "0123456789" ) == std::string::npos )
+   if( sContentLength.length() && sContentLength.find_first_not_of( "0123456789" ) == std::string::npos )
    {
       return std::stoull( sContentLength );
    }

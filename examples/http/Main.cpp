@@ -27,6 +27,7 @@ SOFTWARE.
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 #include "ActiveSocket.h"
+#include <iostream>
 
 int main(int argc, char** argv)
 {
@@ -53,14 +54,20 @@ int main(int argc, char** argv)
         int32 bytes_rcvd = -1;
         do
         {
-            int32 bytes_rcvd = oClient.Receive(1024);
-        } while( ! oParser.AppendResponseData( std::string( (const char*)oClient.GetData(), 
-                                               bytes_rcvd ) ) );
+            bytes_rcvd = oClient.Receive(1024);
+
+            if( bytes_rcvd <= 0 ) break; // Transmission completed
+
+        } while( ! oParser.AppendResponseData( 
+                        std::string( (const char*)oClient.GetData(), bytes_rcvd ) ) );
     }
 
     HttpResponse oRes = oParser.GetHttpResponse();
 
     oClient.Close();
+
+    std::cout << oRes.GetBody();
+    std::cout.flush();
 
     return 0;
 }
