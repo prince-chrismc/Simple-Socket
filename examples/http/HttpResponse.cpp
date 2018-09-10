@@ -52,6 +52,7 @@ Content-Length: 286
 
 #define CRLF "\r\n"
 
+//---------------------------------------------------------------------------------------------------------------------
 HttpResponse::HttpResponse( const HttpVersion & in_kreVersion, const HttpStatus & in_kreStatusCode,
                                   const std::string & in_krsReasonPhrase ) :
    m_eVersion( in_kreVersion ),
@@ -64,38 +65,49 @@ HttpResponse::HttpResponse( const HttpVersion & in_kreVersion, const HttpStatus 
    std::remove( m_sReasonPhrase.begin(), m_sReasonPhrase.end(), '\n' );
 }
 
+//---------------------------------------------------------------------------------------------------------------------
 HttpResponse::~HttpResponse()
 {
 }
 
+//---------------------------------------------------------------------------------------------------------------------
 void HttpResponse::SetContentType( const HttpContentType & in_kreContentType )
 {
    m_eContentType = in_kreContentType;
 }
 
+//---------------------------------------------------------------------------------------------------------------------
 void HttpResponse::AppendMessageBody( const std::string & in_krsToAdd )
 {
    m_sBody.append( in_krsToAdd.c_str() );
 }
 
+//---------------------------------------------------------------------------------------------------------------------
 std::string HttpResponse::GetResponseLine() const
 {
    return HttpRequest::STATIC_VersionAsString( m_eVersion ) + " " + std::to_string( ( unsigned long long )m_eStatusCode ) + " " +
       m_sReasonPhrase + CRLF;
 }
 
+//---------------------------------------------------------------------------------------------------------------------
 std::string HttpResponse::GetRawResponse() const
 {
    return GetResponseLine() + HttpRequest::STATIC_ContentTypeAsString( m_eContentType ) + CRLF + CRLF + m_sBody;
 }
 
+//---------------------------------------------------------------------------------------------------------------------
 std::string HttpResponse::GetWireFormat() const
 {
-   return GetResponseLine() + "User-Agent: clsoct_example/1.0" + CRLF + "cache-control: no-cache" + CRLF +
-      "Connection: ep-alive" + CRLF + "Content-Length: " + std::to_string( ( unsigned long long )m_sBody.size() ) +
-      CRLF + HttpRequest::STATIC_ContentTypeAsString( m_eContentType ) + CRLF + CRLF + m_sBody;
+   std::string sHeader = GetResponseLine() + "User-Agent: clsoct_example/1.0" + CRLF + "cache-control: no-cache" + CRLF +
+      "Connection: keep-alive" + CRLF + HttpRequest::STATIC_ContentLengthToString( m_sBody.size() );
+
+   if( m_eContentType != HttpContentInvalid )
+      sHeader += CRLF + HttpRequest::STATIC_ContentTypeAsString( m_eContentType );
+
+   return sHeader + CRLF + CRLF + m_sBody;
 }
 
+//---------------------------------------------------------------------------------------------------------------------
 HttpResponse HttpResponseParser::GetHttpResponse()
 {
    HttpResponse oResponse( HttpRequestParser::STATIC_ParseForVersion( m_sResponseToParse ),
@@ -109,6 +121,7 @@ HttpResponse HttpResponseParser::GetHttpResponse()
    return oResponse;
 }
 
+//---------------------------------------------------------------------------------------------------------------------
 HttpStatus HttpResponseParser::STATIC_ParseForStatus( const std::string & in_krsRequest )
 {
    if( in_krsRequest.empty() ) return HttpStatusInvalid;
@@ -121,6 +134,7 @@ HttpStatus HttpResponseParser::STATIC_ParseForStatus( const std::string & in_krs
    return HttpStatus( llCode );
 }
 
+//---------------------------------------------------------------------------------------------------------------------
 std::string HttpResponseParser::STATIC_ParseForReasonPhrase( const std::string & in_krsRequest )
 {
    if( in_krsRequest.empty() ) return "";
@@ -129,4 +143,28 @@ std::string HttpResponseParser::STATIC_ParseForReasonPhrase( const std::string &
    ulOffset = in_krsRequest.find( " ", ulOffset ) + sizeof( " " ) - 1;
    size_t ulEnd = in_krsRequest.find( CRLF, ulOffset );
    return in_krsRequest.substr( ulOffset, ulEnd - ulOffset );
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+//
+// HttpResponseParserAdvance
+//
+//---------------------------------------------------------------------------------------------------------------------
+bool HttpResponseParserAdvance::AppendResponseData( const std::string & in_krsData )
+{
+   return HttpRequestParserAdvance::STATIC_AppendData( in_krsData, m_sHttpHeader, m_sResponseBody );
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+HttpResponse HttpResponseParserAdvance::GetHttpResponse()
+{
+   HttpResponse oResponse( HttpRequestParser::STATIC_ParseForVersion( m_sHttpHeader ),
+                           HttpResponseParser::STATIC_ParseForStatus( m_sHttpHeader ),
+                           HttpResponseParser::STATIC_ParseForReasonPhrase( m_sHttpHeader ) );
+
+   oResponse.SetContentType( HttpRequestParser::STATIC_ParseForContentType( m_sHttpHeader ) );
+
+   oResponse.AppendMessageBody( m_sResponseBody );
+
+   return oResponse;
 }

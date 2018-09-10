@@ -31,6 +31,7 @@ SOFTWARE.
 int main(int argc, char** argv)
 {
     CActiveSocket oClient;
+    HttpResponseParserAdvance oParser;
 
     bool retval = oClient.Initialize();
 
@@ -47,18 +48,16 @@ int main(int argc, char** argv)
         retval = oClient.Send((uint8*)sRawRequest.c_str(), sRawRequest.size());
     }
 
-    std::string sData;
-    while (retval)
+    if (retval)
     {
-        uint8* buffer = new uint8[5120];
-        int32 bytes_rcvd = oClient.Receive(5120, buffer);
-        if (bytes_rcvd > 0) sData.append((char*)buffer, bytes_rcvd);
-        if (bytes_rcvd == 5120) retval = false;
-
-        delete[] buffer;
+        int32 bytes_rcvd = -1;
+        do
+        {
+            int32 bytes_rcvd = oClient.Receive(1024);
+        } while( ! oParser.AppendResponseData( std::string( (const char*)oClient.GetData(), 
+                                               bytes_rcvd ) ) );
     }
 
-    HttpResponseParser oParser(sData);
     HttpResponse oRes = oParser.GetHttpResponse();
 
     oClient.Close();
