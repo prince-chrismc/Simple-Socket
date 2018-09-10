@@ -110,8 +110,8 @@ if(SIMPLE_SOCKET_EXAMPLES)
         ADD_EXECUTABLE(dnsclient-example.run ${DNS})
         TARGET_LINK_LIBRARIES(dnsclient-example.run simple-socket)
 
-        FILE(GLOB HTTPREQ "examples/http/*")
-        ADD_EXECUTABLE(httpclient-example.run ${HTTPREQ})
+        FILE(GLOB HTTP "examples/http/*")
+        ADD_EXECUTABLE(httpclient-example.run ${HTTP})
         TARGET_LINK_LIBRARIES(httpclient-example.run simple-socket)
 
         ADD_EXECUTABLE(simple-socket-tester.run tests/main.cpp)
@@ -136,8 +136,8 @@ if(SIMPLE_SOCKET_EXAMPLES)
         ADD_EXECUTABLE(dnsclient-example ${DNS})
         TARGET_LINK_LIBRARIES(dnsclient-example simple-socket)
 
-        FILE(GLOB HTTPREQ "examples/http/*")
-        ADD_EXECUTABLE(httpclient-example ${HTTPREQ})
+        FILE(GLOB HTTP "examples/http/*")
+        ADD_EXECUTABLE(httpclient-example ${HTTP})
         TARGET_LINK_LIBRARIES(httpclient-example simple-socket)
 
         ADD_EXECUTABLE(simple-socket-tester tests/main.cpp)
