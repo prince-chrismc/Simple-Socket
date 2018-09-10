@@ -43,7 +43,7 @@ int main( int argc, char** argv )
    auto oRetval = std::async( std::launch::deferred, [ &oSocket, oExitEvent = oExitSignal.get_future() ]() {
          while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
          {
-            std::unique_ptr<CActiveSocket> pClient = nullptr;
+            std::unique_ptr<CActiveSocket> pClient;
             if( ( pClient = oSocket.Accept() ) != nullptr ) // Wait for an incomming connection
             {
                if( pClient->Receive( MAX_PACKET ) ) // Receive request from the client.
