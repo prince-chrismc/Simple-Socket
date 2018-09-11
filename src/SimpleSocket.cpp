@@ -179,7 +179,7 @@ bool CSimpleSocket::BindInterface(const char *pInterface)
             inet_pton(m_nSocketDomain, pInterface, &stInterfaceAddr.s_addr);
 
             bRetVal = (SETSOCKOPT(m_socket, IPPROTO_IP, IP_MULTICAST_IF,
-                                  &m_stMulticastGroup, sizeof(m_stMulticastGroup)) 
+                                  &stInterfaceAddr, sizeof(stInterfaceAddr)) 
                         == SocketSuccess);
             TranslateSocketError();
         }
@@ -285,6 +285,12 @@ bool CSimpleSocket::JoinMulticast(const char* pGroup, uint16 nPort)
         //----------------------------------------------------------------------
         bRetVal = (SETSOCKOPT(m_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &stMulticastRequest,
                               sizeof(stMulticastRequest)) == SocketSuccess);
+    }
+
+    if( bRetVal )
+    {
+        // save group address ( for sending ... rcv TBA )
+        inet_pton(m_nSocketDomain, pGroup, &m_stMulticastGroup.sin_addr.s_addr);
     }
 
     return bRetVal;

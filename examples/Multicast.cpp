@@ -51,9 +51,9 @@ int main(int argc, char** argv)
 
       bRetval = oSender.SetMulticast(true);
 
-     bRetval = oSender.BindInterface( "172.31.15.134" );
+      //bRetval = oSender.BindInterface( "172.31.15.134" );
 
-     bRetval = oSender.JoinMulticast( GROUP_ADDR, 60000 );
+      bRetval = oSender.JoinMulticast( GROUP_ADDR, 60000 );
 
       while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
       {
