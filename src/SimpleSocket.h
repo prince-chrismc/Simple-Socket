@@ -383,6 +383,13 @@ public:
         return m_bIsMulticast;
     };
 
+    /// IGMPv2 Join for a multicast group.This options is only valid for
+    /// socket descriptors of type CSimpleSocket::SocketTypeUdp and 
+    /// GetMulticast() is true
+    /// @return true if the operation completes sucessfully or else an 
+    /// error will be set.
+    bool JoinMulticast(const char* pGroup, uint16 nPort);
+
     /// Bind socket to a specific interface when using multicast.
     /// @return true if successfully bound to interface
     bool BindInterface(const char *pInterface);

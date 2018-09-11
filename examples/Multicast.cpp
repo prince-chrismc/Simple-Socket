@@ -27,8 +27,15 @@ SOFTWARE.
 #include <future>
 #include "SimpleSocket.h"       // Include header for simple socket object definition
 
-#define MAX_PACKET 4096
-#define TEST_PACKET "Test Packet"
+using namespace std::chrono_literals;
+
+constexpr const uint8* operator"" _byte( const char* text, std::size_t ) { return (const uint8 *)text; }
+
+static constexpr const char* GROUP_ADDR = "239.1.2.3";
+static constexpr const unsigned char* TEST_PACKET = "Test Packet"_byte;
+static constexpr unsigned int SIZEOF_TEST_PACKET = sizeof(TEST_PACKET);
+
+auto WireToText = []( const uint8* text ) constexpr { return (const char*)text; };
 
 int main(int argc, char** argv)
 {
@@ -39,6 +46,20 @@ int main(int argc, char** argv)
    // ---------------------------------------------------------------------------------------------
    auto oRetval = std::async( std::launch::async, [ oExitEvent = oExitSignal.get_future() ]() {
       CSimpleSocket oSender(CSimpleSocket::SocketTypeUdp);
+
+      oSender.Initialize();
+
+     oSender.BindInterface( "192.168.0.2" );
+
+      oSender.SetMulticast(true);
+
+     oSender.JoinMulticast( GROUP_ADDR );
+
+      while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
+      {
+          oSender.Send(TEST_PACKET,SIZEOF_TEST_PACKET);
+      }
+
    }
    );
 
@@ -47,5 +68,9 @@ int main(int argc, char** argv)
    // ---------------------------------------------------------------------------------------------
    CSimpleSocket oReceiver(CSimpleSocket::SocketTypeUdp);
 
+   std::this_thread::sleep_for( 5min );
+
+   oExitSignal.set_value();
+   oRetval.get();
    return 0;
 }

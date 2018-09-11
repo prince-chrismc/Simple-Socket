@@ -221,6 +221,59 @@ bool CSimpleSocket::SetMulticast(bool bEnable, uint8 multicastTTL)
     return bRetVal;
 }
 
+//------------------------------------------------------------------------------
+//
+// JoinMulticast()
+//
+//------------------------------------------------------------------------------
+bool CSimpleSocket::JoinMulticast(const char* pGroup, uint16 nPort)
+{
+    bool bRetVal = true;
+
+    if (GetSocketType() != CSimpleSocket::SocketTypeUdp || ! GetMulticast())
+    {
+        bRetVal = false;
+        m_socketErrno = CSimpleSocket::SocketProtocolError;
+    }
+
+    if( bRetVal )
+    {
+        bRetVal = SetOptionReuseAddr(); // Don't block the multicast address
+    }
+
+    if( bRetVal )
+    {
+        memset( &m_stMulticastGroup, 0, sizeof( m_stMulticastGroup ) );
+        m_stMulticastGroup.sin_family = AF_INET;
+        m_stMulticastGroup.sin_addr.s_addr = htonl( INADDR_ANY );
+        m_stMulticastGroup.sin_port   = htons( nPort );
+    }
+
+    if( bRetVal )
+    {
+        //--------------------------------------------------------------------------
+        // Bind to the specified port
+        //--------------------------------------------------------------------------
+        bRetVal = (bind(m_socket, (struct sockaddr *)&m_stMulticastGroup, sizeof(m_stMulticastGroup)) != CSimpleSocket::SocketSuccess)
+    }
+
+    if( bRetVal )
+    {
+        //----------------------------------------------------------------------
+        // Join the multicast group
+        //----------------------------------------------------------------------
+        inet_pton(m_nSocketDomain, pGroup, &m_stMulticastGroup.imr_multiaddr.s_addr);
+        m_stMulticastGroup.imr_interface.s_addr = m_stMulticastGroup.sin_addr.s_addr;
+
+        if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &m_stMulticastGroup,
+                       sizeof(m_stMulticastGroup)) == CSimpleSocket::SocketSuccess)
+        {
+            bRetVal = true;
+        }
+    }
+
+    return bRetVal;
+}
 
 //------------------------------------------------------------------------------
 //
@@ -421,20 +474,16 @@ int32 CSimpleSocket::Send(const uint8 *pBuf, size_t bytesToSend)
                 m_timer.Initialize();
                 m_timer.SetStartTime();
 
-                //---------------------------------------------------------
-                // Check error condition and attempt to resend if call
-                // was interrupted by a signal.
-                //---------------------------------------------------------
-                //                    if (GetMulticast())
-                //                    {
-                //                        do
-                //                        {
-                //                            m_nBytesSent = SENDTO(m_socket, pBuf, bytesToSend, 0, (const sockaddr *)&m_stMulticastGroup,
-                //                                                  sizeof(m_stMulticastGroup));
-                //                            TranslateSocketError();
-                //                        } while (GetSocketError() == CSimpleSocket::SocketInterrupted);
-                //                    }
-                //                    else
+                if (GetMulticast())
+                {
+                    do
+                    {
+                         m_nBytesSent = SENDTO(m_socket, pBuf, bytesToSend, 0, (const sockaddr *)&m_stMulticastGroup,
+                                               sizeof(m_stMulticastGroup));
+                         TranslateSocketError();
+                    } while (GetSocketError() == CSimpleSocket::SocketInterrupted);
+                }
+                else
                 {
                     do
                     {
