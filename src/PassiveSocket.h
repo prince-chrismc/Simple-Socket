@@ -74,18 +74,6 @@ public:
     ///    CPassiveSocket::SocketProtocolError, CPassiveSocket::SocketFirewallError
     virtual std::unique_ptr<CActiveSocket> Accept(void);
 
-    /// Bind to a multicast group on  a specified interface, multicast group, and port
-    ///
-    ///  @param pInterface - interface on which to bind.
-    ///  @param pGroup - multicast group address to bind.
-    ///  @param nPort - port on which multicast
-    ///  @return true if able to bind to interface and multicast group.
-    ///      If not successful, the false is returned and one of the following error
-    ///      condiitions will be set: CPassiveSocket::SocketAddressInUse, CPassiveSocket::SocketProtocolError,
-    ///      CPassiveSocket::SocketInvalidSocket.  The following socket errors are for Linux/Unix
-    ///      derived systems only: CPassiveSocket::SocketInvalidSocketBuffer
-    bool BindMulticast(const char *pInterface, const char *pGroup, uint16 nPort);
-
     /// Create a listening socket at local ip address 'x.x.x.x' or 'localhost'
     /// if pAddr is NULL on port nPort.
     ///
@@ -112,10 +100,6 @@ public:
     /// <br>\b Note: This function is used only for a socket of type
     /// CSimpleSocket::SocketTypeUdp
     virtual int32 Send(const uint8 *pBuf, size_t bytesToSend);
-
-private:
-    struct ip_mreq  m_stMulticastRequest;   /// group address for multicast
-
 };
 
 #endif // __PASSIVESOCKET_H__
