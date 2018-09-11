@@ -390,7 +390,7 @@ public:
     /// error will be set.
     bool JoinMulticast(const char* pGroup, uint16 nPort);
 
-    /// Bind socket to a specific interface when using multicast.
+    /// Bind socket to a specific interface when using unicast or multicast.
     /// @return true if successfully bound to interface
     bool BindInterface(const char *pInterface);
 

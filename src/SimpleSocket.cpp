@@ -168,28 +168,46 @@ bool CSimpleSocket::Initialize()
 //------------------------------------------------------------------------------
 bool CSimpleSocket::BindInterface(const char *pInterface)
 {
-    bool           bRetVal = false;
-    struct in_addr stInterfaceAddr;
+    bool bRetVal = false;
 
     if (GetMulticast())
     {
         if (pInterface)
         {
+            struct in_addr stInterfaceAddr;
+            memset( &stInterfaceAddr, 0, sizeof( stInterfaceAddr ) );
             inet_pton(m_nSocketDomain, pInterface, &stInterfaceAddr.s_addr);
-            if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_MULTICAST_IF, &stInterfaceAddr, sizeof(stInterfaceAddr)) == SocketSuccess)
+
+            bRetVal = (SETSOCKOPT(m_socket, IPPROTO_IP, IP_MULTICAST_IF,
+                                  &m_stMulticastGroup, sizeof(m_stMulticastGroup)) 
+                        == SocketSuccess);
+            TranslateSocketError();
+        }
+    }
+    else
+    {
+        if (pInterface)
+        {
+            struct sockaddr_in stInterfaceAddr;
+            // Set up the sockaddr structure
+            stInterfaceAddr.sin_family = AF_INET;
+            stInterfaceAddr.sin_addr.s_addr = inet_addr((char *)pInterface);
+            stInterfaceAddr.sin_port = 0;
+
+            // Bind the socket using the such that it only use a specified interface
+            if ( bind(m_socket, (sockaddr*)&stInterfaceAddr, sizeof(stInterfaceAddr)) == SocketError )
+            {
+                TranslateSocketError();
+            }
+            else
             {
                 bRetVal = true;
             }
         }
     }
-    else
-    {
-        SetSocketError(CSimpleSocket::SocketProtocolError);
-    }
 
     return bRetVal;
 }
-
 
 //------------------------------------------------------------------------------
 //
@@ -247,29 +265,26 @@ bool CSimpleSocket::JoinMulticast(const char* pGroup, uint16 nPort)
         m_stMulticastGroup.sin_family = AF_INET;
         m_stMulticastGroup.sin_addr.s_addr = htonl( INADDR_ANY );
         m_stMulticastGroup.sin_port   = htons( nPort );
-    }
 
-    if( bRetVal )
-    {
         //--------------------------------------------------------------------------
         // Bind to the specified port
         //--------------------------------------------------------------------------
-        bRetVal = (bind(m_socket, (struct sockaddr *)&m_stMulticastGroup, sizeof(m_stMulticastGroup)) != CSimpleSocket::SocketSuccess)
+        bRetVal = (bind(m_socket, (struct sockaddr *)&m_stMulticastGroup, 
+                        sizeof(m_stMulticastGroup)) == CSimpleSocket::SocketSuccess);
     }
 
     if( bRetVal )
     {
+        struct ip_mreq stMulticastRequest;
+
+        inet_pton(m_nSocketDomain, pGroup, &stMulticastRequest.imr_multiaddr.s_addr);
+        stMulticastRequest.imr_interface.s_addr = htonl(INADDR_ANY);
+        
         //----------------------------------------------------------------------
         // Join the multicast group
         //----------------------------------------------------------------------
-        inet_pton(m_nSocketDomain, pGroup, &m_stMulticastGroup.imr_multiaddr.s_addr);
-        m_stMulticastGroup.imr_interface.s_addr = m_stMulticastGroup.sin_addr.s_addr;
-
-        if (SETSOCKOPT(m_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &m_stMulticastGroup,
-                       sizeof(m_stMulticastGroup)) == CSimpleSocket::SocketSuccess)
-        {
-            bRetVal = true;
-        }
+        bRetVal = (SETSOCKOPT(m_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &stMulticastRequest,
+                              sizeof(stMulticastRequest)) == SocketSuccess);
     }
 
     return bRetVal;

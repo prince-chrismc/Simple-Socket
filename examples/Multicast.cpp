@@ -47,19 +47,20 @@ int main(int argc, char** argv)
    auto oRetval = std::async( std::launch::async, [ oExitEvent = oExitSignal.get_future() ]() {
       CSimpleSocket oSender(CSimpleSocket::SocketTypeUdp);
 
-      oSender.Initialize();
+      bool bRetval = oSender.Initialize();
 
-     oSender.BindInterface( "192.168.0.2" );
+      bRetval = oSender.SetMulticast(true);
 
-      oSender.SetMulticast(true);
+     bRetval = oSender.BindInterface( "172.31.15.134" );
 
-     oSender.JoinMulticast( GROUP_ADDR );
+     bRetval = oSender.JoinMulticast( GROUP_ADDR, 60000 );
 
       while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
       {
           oSender.Send(TEST_PACKET,SIZEOF_TEST_PACKET);
       }
 
+      return bRetval;
    }
    );
 
