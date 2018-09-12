@@ -69,7 +69,7 @@ int main( int argc, char** argv )
 
    bRetval = oReceiver.SetMulticast( true );
 
-   bRetval = oReceiver.BindInterface( "172.31.15.134" );
+   bRetval = oReceiver.JoinMulticast( GROUP_ADDR, 60000 );
 
    uint8 buffer[ SIZEOF_TEST_PACKET ];
    oReceiver.Receive( SIZEOF_TEST_PACKET, buffer );
