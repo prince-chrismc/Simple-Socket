@@ -29,15 +29,11 @@ SOFTWARE.
 
 using namespace std::chrono_literals;
 
-const uint8* operator"" _byte( const char* text, std::size_t ) { return (const uint8 *)text; }
-
 static constexpr const char* GROUP_ADDR = "239.1.2.3";
-static constexpr const unsigned char* TEST_PACKET = "Test Packet"_byte;
-static constexpr unsigned int SIZEOF_TEST_PACKET = sizeof(TEST_PACKET);
+static constexpr const char* TEST_PACKET = "Test Packet";
+static constexpr unsigned int SIZEOF_TEST_PACKET = sizeof( TEST_PACKET );
 
-auto WireToText = []( const uint8* text ) constexpr { return (const char*)text; };
-
-int main(int argc, char** argv)
+int main( int argc, char** argv )
 {
    std::promise<void> oExitSignal;
 
@@ -45,11 +41,11 @@ int main(int argc, char** argv)
    // Broadcaster Code
    // ---------------------------------------------------------------------------------------------
    auto oRetval = std::async( std::launch::async, [ oExitEvent = oExitSignal.get_future() ]() {
-      CSimpleSocket oSender(CSimpleSocket::SocketTypeUdp);
+      CSimpleSocket oSender( CSimpleSocket::SocketTypeUdp );
 
       bool bRetval = oSender.Initialize();
 
-      bRetval = oSender.SetMulticast(true);
+      bRetval = oSender.SetMulticast( true );
 
       //bRetval = oSender.BindInterface( "172.31.15.134" );
 
@@ -57,7 +53,7 @@ int main(int argc, char** argv)
 
       while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
       {
-          oSender.Send(TEST_PACKET,SIZEOF_TEST_PACKET);
+         oSender.Send( reinterpret_cast<const uint8*>(TEST_PACKET), SIZEOF_TEST_PACKET );
       }
 
       return bRetval;
@@ -67,7 +63,16 @@ int main(int argc, char** argv)
    // ---------------------------------------------------------------------------------------------
    // Listener Code
    // ---------------------------------------------------------------------------------------------
-   CSimpleSocket oReceiver(CSimpleSocket::SocketTypeUdp);
+   CSimpleSocket oReceiver( CSimpleSocket::SocketTypeUdp );
+
+   bool bRetval = oReceiver.Initialize();
+
+   bRetval = oReceiver.SetMulticast( true );
+
+   bRetval = oReceiver.BindInterface( "172.31.15.134" );
+
+   uint8 buffer[ SIZEOF_TEST_PACKET ];
+   oReceiver.Receive( SIZEOF_TEST_PACKET, buffer );
 
    std::this_thread::sleep_for( 5min );
 
