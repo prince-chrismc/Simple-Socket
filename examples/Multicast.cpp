@@ -29,7 +29,7 @@ SOFTWARE.
 
 using namespace std::chrono_literals;
 
-constexpr const uint8* operator"" _byte( const char* text, std::size_t ) { return (const uint8 *)text; }
+const uint8* operator"" _byte( const char* text, std::size_t ) { return (const uint8 *)text; }
 
 static constexpr const char* GROUP_ADDR = "239.1.2.3";
 static constexpr const unsigned char* TEST_PACKET = "Test Packet"_byte;
