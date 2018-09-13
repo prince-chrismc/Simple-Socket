@@ -57,9 +57,12 @@ The simple socket library is comprised of two class which can be used to represe
 When operating on a socket object most methods will return true or false make validation very clean, see [below](#Simple-Active-Socket) of details.
 
 There are two application specific examples provided by this repository:
-- an [HTTP client](https://github.com/prince-chrismc/clsocket/tree/master/examples/HttpRequest)
-- a [DNS client](https://github.com/prince-chrismc/clsocket/tree/master/examples/Dns)
-which may help with specific details for each.
+- an [HTTP client](https://github.com/prince-chrismc/clsocket/tree/master/examples/http)
+- a [DNS client](https://github.com/prince-chrismc/clsocket/tree/master/examples/dns)
+
+There are also general purpose examples for:
+- a [Multicast Sender/Receiver](https://github.com/prince-chrismc/Simple-Socket/blob/master/examples/Multicast.cpp)
+- an [Asynchronous Client/Server](https://github.com/prince-chrismc/Simple-Socket/blob/master/examples/RecvAsync.cpp)
 
 ##### Simple Active Socket
 As mentioned previously the active socket ( `class CActiveSocket` ) is used to initiate a connections with a server on some known address and port.
