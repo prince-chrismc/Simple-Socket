@@ -33,7 +33,6 @@ class HttpResponse
 {
 public:
    HttpResponse( const HttpVersion & in_kreVersion, const HttpStatus & in_kreStatusCode, const std::string & in_krsReasonPhrase );
-   ~HttpResponse();
 
    void SetContentType( const HttpContentType& in_kreContentType );
    void AppendMessageBody( const std::string & in_krsToAdd );

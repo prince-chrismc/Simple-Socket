@@ -44,16 +44,16 @@ SOFTWARE.
 class CommandLineParser
 {
 public:
-    CommandLineParser(int argc, char** argv);
-    ~CommandLineParser() = default;
+   CommandLineParser( int argc, char** argv );
+   ~CommandLineParser() = default;
 
-    bool        DoesSwitchExists(const std::string& name);
-    std::string GetPairValue(std::string name);
-    std::string GetNonInterpted(const size_t index);
+   bool        DoesSwitchExists( const std::string& name );
+   std::string GetPairValue( std::string name );
+   std::string GetNonInterpted( size_t index ); // Ignores switches and pairs
 
 private:
-    void Parse(int argc, char** argv);
+   void Parse( int argc, char** argv );
 
-    std::vector<std::string>  m_vecArgs;   // all args written on command line
-    std::string               m_sCommand;  // the name of the program invoked
+   std::vector<std::string>  m_vecArgs;   // all args written on command line
+   std::string               m_sCommand;  // the name of the program invoked
 };

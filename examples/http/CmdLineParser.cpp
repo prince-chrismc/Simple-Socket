@@ -25,68 +25,63 @@ SOFTWARE.
 */
 
 #include "CmdLineParser.h"
+#include <execution>
 
-CommandLineParser::CommandLineParser(int argc, char** argv)
+CommandLineParser::CommandLineParser( int argc, char** argv )
 {
-    Parse(argc, argv);
+   Parse( argc, argv );
 }
 
-void CommandLineParser::Parse(int argc, char** argv)
+void CommandLineParser::Parse( int argc, char** argv )
 {
-    m_sCommand = argv[0];          // Save filename
-    for (int i = 1; i < argc; i++) // Then save each arg
-    {
-        m_vecArgs.push_back(argv[i]);
-    }
+   m_sCommand = argv[ 0 ]; // Save filename
+   for( int i = 1; i < argc; i++ ) // Then save each arg
+   {
+      m_vecArgs.emplace_back( argv[ i ] );
+   }
 }
 
-bool CommandLineParser::DoesSwitchExists(const std::string& name)
+bool CommandLineParser::DoesSwitchExists( const std::string& name )
 {
-    if (name.empty()) return false;
+   if( name.empty() ) return false;
 
-    for (auto& arg : m_vecArgs)
-    {
-        if( arg.front() != '/' || arg.front() != '-' ) continue;
-        if (arg.find(name) != std::string::npos) // case insensitive search
-        {
-            return true;
-        }
-    }
-
-    return false;
+   return std::find_if( std::execution::par_unseq, m_vecArgs.begin(), m_vecArgs.end(), [ &name = name ]( const std::string& arg )->bool
+                        {
+                           return ( arg.front() == '/' || arg.front() == '-' ) && ( arg.find( name ) != std::string::npos );
+                        } ) != std::end( m_vecArgs );
 }
 
-std::string CommandLineParser::GetPairValue(std::string name)
+std::string CommandLineParser::GetPairValue( std::string name )
 {
-    if (name.empty()) return "";
+   if( name.empty() ) return "";
 
-    name += "=";
-    std::string retval;
-    for (auto& pair : m_vecArgs)
-    {
-        const size_t switch_index = pair.find(name);
-        if (switch_index != std::string::npos)
-        {
-            retval = pair.substr(switch_index + name.size() + 1);   // Return string after =.
-            break;
-        }
-    }
+   name += "=";
+   std::string retval;
+   for( auto& pair : m_vecArgs )
+   {
+      const size_t switch_index = pair.find( name );
+      if( switch_index != std::string::npos )
+      {
+         retval = pair.substr( switch_index + name.size() + 1 ); // Return string after =.
+         break;
+      }
+   }
 
-    return retval;
+   return retval;
 }
 
-std::string CommandLineParser::GetNonInterpted(const size_t index)
+std::string CommandLineParser::GetNonInterpted( size_t index )
 {
-    if (m_vecArgs.size() > index) return "";
+   if( m_vecArgs.size() > index ) return "";
 
-    size_t nCounter = 0;
-    std::string retval;
+   size_t nCounter = 0;
+   std::string retval;
 
-    for (auto& arg : m_vecArgs)
-    {
-        if( arg.front() == '/' || arg.front() == '-' ) continue;
-        else if( ++nCounter == index ) retval = arg;
-    }
+   for( auto& arg : m_vecArgs )
+   {
+      if( arg.front() == '/' || arg.front() == '-' ) continue;
+      if( ++nCounter == index ) retval = arg;
+   }
 
-    return retval;
+   return retval;
 }
