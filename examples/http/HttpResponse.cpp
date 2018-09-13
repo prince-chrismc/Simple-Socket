@@ -27,7 +27,8 @@ SOFTWARE.
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 #include <algorithm>
-#include <execution>
+//#include <execution>
+
 /*
 
 HTTP/1.1 200 OK
@@ -61,7 +62,7 @@ HttpResponse::HttpResponse( const HttpVersion & in_kreVersion, const HttpStatus 
    m_eContentType( HttpContentInvalid ),
    m_sBody( "" )
 {
-   m_sReasonPhrase.erase( std::remove_if( std::execution::par_unseq, m_sReasonPhrase.begin(), m_sReasonPhrase.end(),
+   m_sReasonPhrase.erase( std::remove_if( /*std::execution::par_unseq,*/ m_sReasonPhrase.begin(), m_sReasonPhrase.end(),
                           []( const char in_chChar )->bool { return ( in_chChar == '\r' ) || ( in_chChar == '\n' ); } ) );
 }
 
