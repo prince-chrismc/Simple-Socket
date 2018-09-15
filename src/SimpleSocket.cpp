@@ -577,7 +577,7 @@ bool CSimpleSocket::Shutdown( CShutdownMode nShutdown )
    nRetVal = (CSocketError)shutdown( m_socket, CSimpleSocket::Sends );
    TranslateSocketError();
 
-   return ( nRetVal == CSimpleSocket::SocketSuccess ) ? true : false;
+   return nRetVal == CSimpleSocket::SocketSuccess;
 }
 
 
@@ -792,7 +792,7 @@ int32 CSimpleSocket::Receive( int32 nMaxBytes, uint8 * pBuffer )
    //--------------------------------------------------------------------------
    // If the socket is invalid then return false.
    //--------------------------------------------------------------------------
-   if( IsSocketValid() == false )
+   if( !IsSocketValid() )
    {
       return m_nBytesReceived;
    }
@@ -1082,7 +1082,7 @@ void CSimpleSocket::TranslateSocketError( void )
    }
 #endif
 #ifdef WIN32
-   int32 nError = WSAGetLastError();
+   const int32 nError = WSAGetLastError();
    switch( nError )
    {
    case EXIT_SUCCESS:
@@ -1257,4 +1257,3 @@ bool CSimpleSocket::Select( int32 nTimeoutSec, int32 nTimeoutUSec )
 
    return bRetVal;
 }
-
