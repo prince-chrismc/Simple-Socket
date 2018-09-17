@@ -115,6 +115,7 @@ if(NOT SIMPLE_SOCKET_DEP_ONLY)
 
             FILE(GLOB HTTP "examples/http/*")
             ADD_EXECUTABLE(httpclient-example.run examples/HttpClient.cpp ${HTTP})
+            target_include_directories(httpclient-example.run PRIVATE examples/http/)
             TARGET_LINK_LIBRARIES(httpclient-example.run simple-socket)
 
             ADD_EXECUTABLE(simple-socket-tester.run tests/main.cpp)
