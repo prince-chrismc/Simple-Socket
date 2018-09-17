@@ -1,5 +1,5 @@
 # Simple-Socket [![Build Status](https://travis-ci.org/prince-chrismc/Simple-Socket.svg?branch=master)](https://travis-ci.org/prince-chrismc/Simple-Socket)
-This ~fork~ repository aims to have the original library compile and work reliably using modern c++ compilers ( MSVC 15.7 / GCC 7.3 ) with a focus on
+This ~fork~ repository aims to have the original library compile and work reliably using modern c++ compilers ( MSVC 15.7 / GCC 7.3 / Clang 6.0 ) with a focus on
 the async and multicast functionality.
 
 ### Table of Contents
