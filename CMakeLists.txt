@@ -39,9 +39,9 @@ if(UNIX)
     # linux / normal unix
     add_definitions(-D_LINUX)
     set(CMAKE_CXX_STANDARD 17)
-    ADD_CUSTOM_TARGET(debug
-      COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Debug ${CMAKE_SOURCE_DIR}
-      COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all)
+    if(NOT CMAKE_BUILD_TYPE) 
+       set(CMAKE_BUILD_TYPE Release)
+    endif()
     if(CYGWIN)
         # Special Cygwin stuff here
     elseif(APPLE)
