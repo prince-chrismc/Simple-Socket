@@ -9,6 +9,8 @@ set(BUILD_VERSION ${BUILD_MAJOR}.${BUILD_MINOR}.${BUILD_VERSION})
 
 include_directories(src)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 SET(SIMPLE_SOCKET_HEADERS
 src/ActiveSocket.h
 src/Host.h
