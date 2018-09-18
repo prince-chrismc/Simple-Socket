@@ -7,8 +7,6 @@ set(BUILD_MINOR "0")
 set(BUILD_VERSION "0")
 set(BUILD_VERSION ${BUILD_MAJOR}.${BUILD_MINOR}.${BUILD_VERSION})
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
 include_directories(src)
 
 SET(SIMPLE_SOCKET_HEADERS
@@ -141,6 +139,7 @@ if(NOT SIMPLE_SOCKET_DEP_ONLY)
 
             FILE(GLOB HTTP "examples/http/*")
             ADD_EXECUTABLE(httpclient-example examples/HttpClient.cpp ${HTTP})
+            target_include_directories(httpclient-example PRIVATE examples/http/)
             TARGET_LINK_LIBRARIES(httpclient-example simple-socket)
 
             ADD_EXECUTABLE(simple-socket-tester tests/main.cpp)
