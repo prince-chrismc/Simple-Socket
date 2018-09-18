@@ -28,7 +28,7 @@ The library's original release notes can be found [here](https://github.com/DFHa
 This is a very small library, it is very easy to build and configure and requires no third-party support.
 To build and install, use CMake to generate the files required for your platform and execute the appropriate build command or procedure.
 
-- Unix Systems: The commands are `make` and `make debug` which produce a release and debug version respectively.
+- Unix Systems: The command is `make` which produce a release and debug version depending on the `CMAKE_BUILD_TYPE` specified.
 - Windows Systems: The usual MSVC files can be build through the IDE or via command line interface.
 
 Installation can be achieved by adding the runtime ( simply the .dll generate with the cmake SIMPLE_SOCKET_SHARED as ON ) to either the execution
