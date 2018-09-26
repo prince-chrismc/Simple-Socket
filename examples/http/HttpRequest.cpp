@@ -71,15 +71,62 @@ Upgrade-Insecure-Requests: 1
 #define HTTP_CONTENT_LENGTH "Content-Length: "
 
 #define HTTP_BODY_SEPERATOR "\r\n\r\n"
+#define SIZE_OF_CRLF ( sizeof( CRLF ) - 1 )
 #define SIZE_OF_HTTP_BODY_SEPERATOR ( sizeof( HTTP_BODY_SEPERATOR ) - 1 )
+
+// Thanks to https://stackoverflow.com/a/1798170/8480874
+std::string trim( const std::string& str,
+                  const std::string& whitespace /*= " \t"*/ )
+{
+   const auto strBegin = str.find_first_not_of( whitespace );
+   if( strBegin == std::string::npos )
+      return ""; // no content
+
+   const auto strEnd = str.find_last_not_of( whitespace );
+   const auto strRange = strEnd - strBegin + 1;
+
+   return str.substr( strBegin, strRange );
+}
+
+std::string reduce( const std::string& str,
+                    const std::string& fill /*= " "*/,
+                    const std::string& whitespace /*= " \t"*/ )
+{
+    // trim first
+   auto result = trim( str, whitespace );
+
+   // replace sub ranges
+   auto beginSpace = result.find_first_of( whitespace );
+   while( beginSpace != std::string::npos )
+   {
+      const auto endSpace = result.find_first_not_of( whitespace, beginSpace );
+      const auto range = endSpace - beginSpace;
+
+      result.replace( beginSpace, range, fill );
+
+      const auto newStart = beginSpace + fill.length();
+      beginSpace = result.find_first_of( whitespace, newStart );
+   }
+
+   return result;
+}
 
 HttpRequest::HttpRequest( const HttpRequestMethod & in_kreMethod, const std::string & in_krsRequestUri,
                           const HttpVersion & in_kreVersion, const std::string & in_krsHostAndPort ) :
+   HttpRequest( in_kreMethod, in_krsRequestUri, in_kreVersion, in_krsHostAndPort, HttpContentInvalid, { ( in_kreVersion == HttpVersion11 ) ? "Connection: keep-alive" : ( in_kreVersion == HttpVersion10 ) ? "Connection: closed" : "",
+                "Cache-Control: no-cache", "Accept: */*", "Accept-Encoding: deflate" } )
+{
+}
+
+HttpRequest::HttpRequest( const HttpRequestMethod & in_kreMethod, const std::string & in_krsRequestUri,
+                          const HttpVersion & in_kreVersion, const std::string & in_krsHostAndPort,
+                          const HttpContentType & in_kreContentType, const std::initializer_list<std::string>& in_kroMessageHeaders ) :
    m_eMethod( in_kreMethod ),
    m_sRequestUri( in_krsRequestUri ),
    m_eVersion( in_kreVersion ),
    m_sHostAndPort( in_krsHostAndPort ),
-   m_eContentType( HttpContentInvalid ),
+   m_eContentType( in_kreContentType ),
+   m_vecsMessageHeaders( in_kroMessageHeaders ),
    m_sBody( "" )
 {
 }
@@ -95,22 +142,39 @@ void HttpRequest::SetContentType( const HttpContentType & in_kreContentType )
    m_eContentType = in_kreContentType;
 }
 
+void HttpRequest::AddMessageHeader( const std::string & in_krsFeildName, const std::string & in_krsFeildValue )
+{
+   m_vecsMessageHeaders.emplace_back( reduce( in_krsFeildName, "-" ) + ": " + reduce( in_krsFeildValue ) );
+}
+
 void HttpRequest::AppendMessageBody( const std::string & in_krsToAdd )
 {
    m_sBody.append( in_krsToAdd );
 }
 
-std::string HttpRequest::GetRawRequest() const
+std::string HttpRequest::GetRequestLine() const
 {
    return STATIC_MethodAsString( m_eMethod ) + " " + m_sRequestUri + " " + STATIC_VersionAsString( m_eVersion ) + CRLF + "Host: " + m_sHostAndPort + CRLF;
 }
 
+std::string HttpRequest::GetHeaders() const
+{
+   std::string sCostumHeaders( "User-Agent: clsocket_example/1.0" );
+   sCostumHeaders += CRLF;
+   sCostumHeaders += ( "Content-Length: " + std::to_string( m_sBody.size() ) + CRLF );
+
+   if( m_eContentType != HttpContentInvalid )
+      sCostumHeaders += CRLF + HttpRequest::STATIC_ContentTypeAsString( m_eContentType );
+
+   for( auto& sMessageHeader : m_vecsMessageHeaders )
+      sCostumHeaders += ( sMessageHeader + CRLF );
+
+   return sCostumHeaders;
+}
+
 std::string HttpRequest::GetWireFormat() const
 {
-   return GetRawRequest() + "User-Agent: clsoct_example/1.0" + CRLF + "cache-control: no-cache" + CRLF +
-      "Accept: */*" + CRLF + "Accept-Encoding: deflate" + CRLF +
-      "Connection: keep-alive" + CRLF + "Content-Length: " + std::to_string( m_sBody.size() ) +
-      CRLF + STATIC_ContentTypeAsString( m_eContentType ) + CRLF + CRLF + m_sBody;
+   return GetRequestLine() + GetHeaders() + CRLF + m_sBody;
 }
 
 std::string HttpRequest::STATIC_MethodAsString( const HttpRequestMethod & in_kreMethod )
@@ -156,7 +220,7 @@ std::string HttpRequest::STATIC_ContentTypeAsString( const HttpContentType & in_
 //---------------------------------------------------------------------------------------------------------------------
 std::string HttpRequest::STATIC_ContentLengthToString( size_t in_ullContentLength )
 {
-   return HTTP_CONTENT_LENGTH + std::to_string( ( unsigned long long )in_ullContentLength );
+   return HTTP_CONTENT_LENGTH + std::to_string( in_ullContentLength );
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -169,9 +233,11 @@ HttpRequest HttpRequestParser::GetHttpRequest()
    HttpRequest oRequest( STATIC_ParseForMethod( m_sRequestToParse ),
                          STATIC_ParseForRequestUri( m_sRequestToParse ),
                          STATIC_ParseForVersion( m_sRequestToParse ),
-                         STATIC_ParseForHostAndPort( m_sRequestToParse ) );
+                         STATIC_ParseForHostAndPort( m_sRequestToParse ),
+                         STATIC_ParseForContentType( m_sRequestToParse ),
+                         {} );
 
-   oRequest.SetContentType( STATIC_ParseForContentType( m_sRequestToParse ) );
+   STATIC_AppenedParsedHeaders( oRequest, m_sRequestToParse );
 
    oRequest.AppendMessageBody( STATIC_ParseForBody( m_sRequestToParse ) );
 
@@ -262,6 +328,20 @@ std::string HttpRequestParser::STATIC_ParseForBody( const std::string & in_krsRe
    return in_krsRequest.substr( ulOffset );
 }
 
+void HttpRequestParser::STATIC_AppenedParsedHeaders( HttpRequest & io_roRequest, const std::string & in_krsRequest )
+{
+   for( std::string sRawHeaders = in_krsRequest.substr( in_krsRequest.find( CRLF ) + sizeof( CRLF ) - 1 );
+        sRawHeaders.find( CRLF );
+        sRawHeaders = sRawHeaders.substr( sRawHeaders.find( CRLF ) + sizeof( CRLF ) - 1 ) )
+   {
+      std::string sNextHeader = sRawHeaders.substr( 0, sRawHeaders.find( CRLF ) );
+      const size_t iSeperatorIndex = sNextHeader.find( ':' );
+
+      if( iSeperatorIndex != std::string::npos )
+         io_roRequest.AddMessageHeader( sNextHeader.substr( 0, iSeperatorIndex ), sNextHeader.substr( iSeperatorIndex + 1 ) );
+   }
+}
+
 //---------------------------------------------------------------------------------------------------------------------
 //
 // HttpRequestParserAdvanced
@@ -278,9 +358,11 @@ HttpRequest HttpRequestParserAdvance::GetHttpRequest()
    HttpRequest oRequest( HttpRequestParser::STATIC_ParseForMethod( m_sHttpHeader ),
                          HttpRequestParser::STATIC_ParseForRequestUri( m_sHttpHeader ),
                          HttpRequestParser::STATIC_ParseForVersion( m_sHttpHeader ),
-                         HttpRequestParser::STATIC_ParseForHostAndPort( m_sHttpHeader ) );
+                         HttpRequestParser::STATIC_ParseForHostAndPort( m_sHttpHeader ),
+                         HttpRequestParser::STATIC_ParseForContentType( m_sHttpHeader ),
+                         {} );
 
-   oRequest.SetContentType( HttpRequestParser::STATIC_ParseForContentType( m_sHttpHeader ) );
+   HttpRequestParser::STATIC_AppenedParsedHeaders( oRequest, m_sHttpHeader );
 
    oRequest.AppendMessageBody( m_sRequestBody );
 
@@ -310,7 +392,7 @@ bool HttpRequestParserAdvance::STATIC_IsHeaderComplete( const std::string & in_k
 {
    if( in_krsHttpHeader.size() > SIZE_OF_HTTP_BODY_SEPERATOR )
    {
-      return ( in_krsHttpHeader.substr( in_krsHttpHeader.size() - SIZE_OF_HTTP_BODY_SEPERATOR ).compare( HTTP_BODY_SEPERATOR ) == 0 );
+      return ( in_krsHttpHeader.substr( in_krsHttpHeader.size() - SIZE_OF_HTTP_BODY_SEPERATOR ) == HTTP_BODY_SEPERATOR );
    }
 
    return false;
@@ -326,18 +408,16 @@ bool HttpRequestParserAdvance::STATIC_AppendData( const std::string & in_krsData
       io_krsHttpBody.append( in_krsData );
       return( io_krsHttpBody.size() == STATIC_ParseForContentLength( io_krsHttpHeader ) );
    }
+
+   size_t ullSeperatorIndex = in_krsData.find( HTTP_BODY_SEPERATOR );
+   if( ullSeperatorIndex == std::string::npos )
+   {
+      io_krsHttpHeader.append( in_krsData );
+   }
    else
    {
-      size_t ullSeperatorIndex = in_krsData.find( HTTP_BODY_SEPERATOR );
-      if( ullSeperatorIndex == std::string::npos )
-      {
-         io_krsHttpHeader.append( in_krsData );
-      }
-      else
-      {
-         io_krsHttpHeader.append( in_krsData.substr( 0, ullSeperatorIndex + SIZE_OF_HTTP_BODY_SEPERATOR ) );
-         io_krsHttpBody.append( in_krsData.substr( ullSeperatorIndex + SIZE_OF_HTTP_BODY_SEPERATOR ) );
-      }
-      return STATIC_IsHeaderComplete( io_krsHttpHeader ) && ( io_krsHttpBody.size() == STATIC_ParseForContentLength( io_krsHttpHeader ) );
+      io_krsHttpHeader.append( in_krsData.substr( 0, ullSeperatorIndex + SIZE_OF_HTTP_BODY_SEPERATOR ) );
+      io_krsHttpBody.append( in_krsData.substr( ullSeperatorIndex + SIZE_OF_HTTP_BODY_SEPERATOR ) );
    }
+   return STATIC_IsHeaderComplete( io_krsHttpHeader ) && ( io_krsHttpBody.size() == STATIC_ParseForContentLength( io_krsHttpHeader ) );
 }

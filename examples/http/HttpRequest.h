@@ -26,19 +26,26 @@ SOFTWARE.
 
 #pragma once
 
-#include <string>
 #include "Constants.h"
+#include <string>
+#include <vector>
+
+std::string trim( const std::string& str, const std::string& whitespace = " \t" );
+std::string reduce( const std::string& str, const std::string& fill = " ", const std::string& whitespace = " \t" );
 
 class HttpRequest
 {
 public:
    HttpRequest( const HttpRequestMethod & in_kreMethod, const std::string & in_krsRequestUri,
-                   const HttpVersion & in_kreVersion, const std::string & in_krsHostAndPort );
-   ~HttpRequest() { }
+                const HttpVersion & in_kreVersion, const std::string & in_krsHostAndPort );
+   HttpRequest( const HttpRequestMethod & in_kreMethod, const std::string & in_krsRequestUri,
+                const HttpVersion & in_kreVersion, const std::string & in_krsHostAndPort,
+                const HttpContentType & in_kreContentType, const std::initializer_list<std::string>& in_kroMessageHeaders );
 
    bool IsValidRequest() const;
 
    void SetContentType( const HttpContentType& in_kreContentType );
+   void AddMessageHeader( const std::string& in_krsFeildName, const std::string& in_krsFeildValue );
    void AppendMessageBody( const std::string & in_krsToAdd );
 
    const HttpRequestMethod& GetMethod() const { return m_eMethod; }
@@ -48,15 +55,9 @@ public:
    const HttpContentType&   GetContentType() const { return m_eContentType; }
    const std::string&       GetBody() const { return m_sBody; }
 
-   // Returns the basic information in request format does not include body
-   std::string GetRawRequest() const;
-
-   // Returns a formatted request header ( without the body )
-   std::string GetHeader() const;
-
-   // Returns a complete request with the basic information provided
+   std::string GetRequestLine() const;
+   std::string GetHeaders() const;
    std::string GetWireFormat() const;
-
 
    static std::string STATIC_MethodAsString( const HttpRequestMethod& in_kreMethod );
    static std::string STATIC_VersionAsString( const HttpVersion& in_kreVersion );
@@ -71,7 +72,9 @@ private:
 
    // Optional
    HttpContentType m_eContentType;
+   std::vector<std::string> m_vecsMessageHeaders;
    std::string m_sBody;
+
 };
 
 class HttpRequestParser
@@ -88,6 +91,9 @@ public:
    static HttpContentType STATIC_ParseForContentType( const std::string& in_krsRequest );
    static std::string STATIC_ParseForBody( const std::string& in_krsRequest );
 
+   static void STATIC_AppenedParsedHeaders( HttpRequest& io_roRequest, const std::string& in_krsRequest );
+
+
 private:
    std::string m_sRequestToParse;
 };
@@ -101,7 +107,7 @@ public:
    HttpRequest GetHttpRequest();
 
    static size_t STATIC_ParseForContentLength( const std::string& in_krsHttpHeader );
-   static bool STATIC_IsHeaderComplete(const std::string& in_krsHttpHeader);
+   static bool STATIC_IsHeaderComplete( const std::string& in_krsHttpHeader );
    static bool STATIC_AppendData( const std::string& in_krsData, std::string& io_krsHttpHeader, std::string& io_krsHttpBody );
 
 private:

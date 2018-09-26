@@ -27,14 +27,20 @@ SOFTWARE.
 #pragma once
 
 #include "Constants.h"
+#include <vector>
 #include <string>
 
 class HttpResponse
 {
 public:
-   HttpResponse( const HttpVersion & in_kreVersion, const HttpStatus & in_kreStatusCode, const std::string & in_krsReasonPhrase );
+   HttpResponse( const HttpVersion & in_kreVersion, const HttpStatus & in_kreStatusCode,
+                 const std::string & in_krsReasonPhrase );
+   HttpResponse( const HttpVersion & in_kreVersion, const HttpStatus & in_kreStatusCode,
+                 const std::string & in_krsReasonPhrase, const HttpContentType & in_kreContentType,
+                 const std::initializer_list<std::string>& in_kroMessageHeaders );
 
    void SetContentType( const HttpContentType& in_kreContentType );
+   void AddMessageHeader( const std::string& in_krsFeildName, const std::string& in_krsFeildValue );
    void AppendMessageBody( const std::string & in_krsToAdd );
 
    const HttpVersion&     GetVersion() const { return m_eVersion; }
@@ -43,13 +49,8 @@ public:
    const HttpContentType& GetContentType() const { return m_eContentType; }
    const std::string&     GetBody() const { return m_sBody; }
 
-   // Returns the response line ( minimal requirement )
-   std::string GetResponseLine() const;
-
-   // Returns the basic information in the response
-   std::string GetRawResponse() const;
-
-   // Returns a proper response with the basic information provided
+   std::string GetStatusLine() const;
+   std::string GetHeaders() const;
    std::string GetWireFormat() const;
 
 private:
@@ -59,6 +60,7 @@ private:
 
    // Optional
    HttpContentType m_eContentType;
+   std::vector<std::string> m_vecsMessageHeaders;
    std::string m_sBody;
 };
 
@@ -71,6 +73,8 @@ public:
 
    static HttpStatus STATIC_ParseForStatus( const std::string& in_krsRequest );
    static std::string STATIC_ParseForReasonPhrase( const std::string& in_krsRequest );
+
+   static void STATIC_AppenedParsedHeaders( HttpResponse & io_roRequest, const std::string & in_krsRequest );
 
 private:
    std::string m_sResponseToParse;

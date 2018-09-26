@@ -56,14 +56,22 @@ Content-Length: 286
 //---------------------------------------------------------------------------------------------------------------------
 HttpResponse::HttpResponse( const HttpVersion & in_kreVersion, const HttpStatus & in_kreStatusCode,
                             const std::string & in_krsReasonPhrase ) :
+   HttpResponse( in_kreVersion, in_kreStatusCode, in_krsReasonPhrase, HttpContentInvalid, { ( in_kreVersion == HttpVersion11 ) ? "Connection: keep-alive" : ( in_kreVersion == HttpVersion10 ) ? "Connection: closed" : "",
+                 "Cache-Control: no-cache", "Accept: */*", "Accept-Encoding: deflate" } )
+{
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+HttpResponse::HttpResponse( const HttpVersion & in_kreVersion, const HttpStatus & in_kreStatusCode,
+                            const std::string & in_krsReasonPhrase, const HttpContentType & in_kreContentType,
+                            const std::initializer_list<std::string>& in_kroMessageHeaders ) :
    m_eVersion( in_kreVersion ),
    m_eStatusCode( in_kreStatusCode ),
-   m_sReasonPhrase( in_krsReasonPhrase ),
-   m_eContentType( HttpContentInvalid ),
+   m_sReasonPhrase( reduce( in_krsReasonPhrase, "", CRLF ) ),
+   m_eContentType( in_kreContentType ),
+   m_vecsMessageHeaders( in_kroMessageHeaders ),
    m_sBody( "" )
 {
-   m_sReasonPhrase.erase( std::remove_if( /*std::execution::par_unseq,*/ m_sReasonPhrase.begin(), m_sReasonPhrase.end(),
-                          []( const char in_chChar )->bool { return ( in_chChar == '\r' ) || ( in_chChar == '\n' ); } ) );
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -73,44 +81,59 @@ void HttpResponse::SetContentType( const HttpContentType & in_kreContentType )
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+void HttpResponse::AddMessageHeader( const std::string & in_krsFeildName, const std::string & in_krsFeildValue )
+{
+   m_vecsMessageHeaders.emplace_back( reduce( in_krsFeildName, "-" ) + ": " + reduce( in_krsFeildValue ) );
+}
+
+//---------------------------------------------------------------------------------------------------------------------
 void HttpResponse::AppendMessageBody( const std::string & in_krsToAdd )
 {
    m_sBody.append( in_krsToAdd );
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-std::string HttpResponse::GetResponseLine() const
+std::string HttpResponse::GetStatusLine() const
 {
    return HttpRequest::STATIC_VersionAsString( m_eVersion ) + " " + std::to_string( static_cast<unsigned long long>( m_eStatusCode ) ) + " " +
       m_sReasonPhrase + CRLF;
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-std::string HttpResponse::GetRawResponse() const
+std::string HttpResponse::GetHeaders() const
 {
-   return GetResponseLine() + HttpRequest::STATIC_ContentTypeAsString( m_eContentType ) + CRLF + CRLF + m_sBody;
+   std::string sCostumHeaders( "User-Agent: clsocket_example/1.0" );
+   sCostumHeaders += CRLF;
+   sCostumHeaders += ( "Content-Length: " + std::to_string( m_sBody.size() ) + CRLF );
+
+   if( m_eContentType != HttpContentInvalid )
+      sCostumHeaders += HttpRequest::STATIC_ContentTypeAsString( m_eContentType ) + CRLF;
+
+   for( auto& sMessageHeader : m_vecsMessageHeaders )
+      sCostumHeaders += ( sMessageHeader + CRLF );
+
+   return sCostumHeaders;
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 std::string HttpResponse::GetWireFormat() const
 {
-   std::string sHeader = GetResponseLine() + "User-Agent: clsoct_example/1.0" + CRLF + "cache-control: no-cache" + CRLF +
-      "Connection: keep-alive" + CRLF + HttpRequest::STATIC_ContentLengthToString( m_sBody.size() );
-
-   if( m_eContentType != HttpContentInvalid )
-      sHeader += CRLF + HttpRequest::STATIC_ContentTypeAsString( m_eContentType );
-
-   return sHeader + CRLF + CRLF + m_sBody;
+   return GetStatusLine() + GetHeaders() + CRLF + m_sBody;
 }
 
+//---------------------------------------------------------------------------------------------------------------------
+//
+// HttpResponseParser
+//
 //---------------------------------------------------------------------------------------------------------------------
 HttpResponse HttpResponseParser::GetHttpResponse()
 {
    HttpResponse oResponse( HttpRequestParser::STATIC_ParseForVersion( m_sResponseToParse ),
                            STATIC_ParseForStatus( m_sResponseToParse ),
-                           STATIC_ParseForReasonPhrase( m_sResponseToParse ) );
-
-   oResponse.SetContentType( HttpRequestParser::STATIC_ParseForContentType( m_sResponseToParse ) );
+                           STATIC_ParseForReasonPhrase( m_sResponseToParse ),
+                           HttpRequestParser::STATIC_ParseForContentType( m_sResponseToParse ),
+                           {} );
+   STATIC_AppenedParsedHeaders( oResponse, m_sResponseToParse );
 
    oResponse.AppendMessageBody( HttpRequestParser::STATIC_ParseForBody( m_sResponseToParse ) );
 
@@ -141,6 +164,20 @@ std::string HttpResponseParser::STATIC_ParseForReasonPhrase( const std::string &
    return in_krsRequest.substr( ulOffset, ulEnd - ulOffset );
 }
 
+void HttpResponseParser::STATIC_AppenedParsedHeaders( HttpResponse & io_roRequest, const std::string & in_krsRequest )
+{
+   for( std::string sRawHeaders = in_krsRequest.substr( in_krsRequest.find( CRLF ) + sizeof( CRLF ) - 1 );
+        sRawHeaders.find( CRLF );
+        sRawHeaders = sRawHeaders.substr( sRawHeaders.find( CRLF ) + sizeof( CRLF ) - 1 ) )
+   {
+      std::string sNextHeader = sRawHeaders.substr( 0, sRawHeaders.find( CRLF ) );
+      const size_t iSeperatorIndex = sNextHeader.find( ':' );
+
+      if( iSeperatorIndex != std::string::npos )
+         io_roRequest.AddMessageHeader( sNextHeader.substr( 0, iSeperatorIndex ), sNextHeader.substr( iSeperatorIndex + 1 ) );
+   }
+}
+
 //---------------------------------------------------------------------------------------------------------------------
 //
 // HttpResponseParserAdvance
@@ -156,9 +193,11 @@ HttpResponse HttpResponseParserAdvance::GetHttpResponse()
 {
    HttpResponse oResponse( HttpRequestParser::STATIC_ParseForVersion( m_sHttpHeader ),
                            HttpResponseParser::STATIC_ParseForStatus( m_sHttpHeader ),
-                           HttpResponseParser::STATIC_ParseForReasonPhrase( m_sHttpHeader ) );
+                           HttpResponseParser::STATIC_ParseForReasonPhrase( m_sHttpHeader ),
+                           HttpRequestParser::STATIC_ParseForContentType( m_sHttpHeader ),
+                           {} );
 
-   oResponse.SetContentType( HttpRequestParser::STATIC_ParseForContentType( m_sHttpHeader ) );
+   HttpResponseParser::STATIC_AppenedParsedHeaders( oResponse, m_sHttpHeader );
 
    oResponse.AppendMessageBody( m_sResponseBody );
 
