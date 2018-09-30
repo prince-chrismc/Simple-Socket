@@ -1,18 +1,24 @@
+dist: trusty
 sudo: false
 language: cpp
 matrix:
   include:
     # works on Precise and Trusty
     - os: linux
+      sudo: true
       addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-7
+          - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-7 main'
+            key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - g++-7
+          - clang-7
+          - g++-7
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-
+      - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
+      
     - os: linux
       addons:
         apt:
@@ -28,11 +34,41 @@ matrix:
       env:
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
 
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+
+    - os: osx
+      osx_image: xcode10
+      env:
+        - MATRIX_EVAL=""
+
+    - os: osx
+      osx_image: xcode9.4
+      env:
+        - MATRIX_EVAL=""
+
     - os: osx
       osx_image: xcode8.3
       env:
-        - MATRIX_EVAL="brew install gcc && CC=gcc-8 && CXX=g++-8"
-
+        - MATRIX_EVAL=""
+        
 before_install:
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew update ;
@@ -46,9 +82,7 @@ if: branch = master
 script:
 - mkdir build-travis
 - cd build-travis
-- echo "Building Release"
 - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX
 - make -j3
-- echo "Building Debug"
 - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=Debug
 - make -j3
