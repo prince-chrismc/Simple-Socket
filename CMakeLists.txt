@@ -21,10 +21,13 @@ set(BUILD_VERSION ${BUILD_MAJOR}.${BUILD_MINOR}.${BUILD_VERSION})
 include_directories(src)
 
 set(DATA_FILE README.md )
-FILE(GLOB SIMPLE_SOCKET_HEADERS "Simple-Sockets/src/*.h")
-FILE(GLOB SIMPLE_SOCKET_SOURCES "Simple-Sockets/src/*.cpp")
+FILE(GLOB SIMPLE_SOCKET_HEADERS "src/*.h")
+FILE(GLOB SIMPLE_SOCKET_SOURCES "src/*.cpp")
 SET_SOURCE_FILES_PROPERTIES( ${SIMPLE_SOCKET_HEADERS} PROPERTIES HEADER_FILE_ONLY TRUE ) # mark headers as headers...
 LIST(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS}) # append to sources so that dependency checks work on headers
+
+FILE(GLOB DNS_LIB "examples/dns/*")
+FILE(GLOB HTTP_LIB "examples/http/*")
 
 # OS and compiler checks.
 if(UNIX)
@@ -63,30 +66,30 @@ endif()
 
 # Project Options
 OPTION(SIMPLE_SOCKET_SHARED "Build Simple-Socket lib as shared." OFF)
-OPTION(SIMPLE_SOCKET_DEP_ONLY "Build for use inside other CMake projects as dependency." OFF)
+OPTION(SIMPLE_SOCKET_DEP_ONLY "Build for use inside other CMake projects as a dependency." OFF)
 OPTION(SIMPLE_SOCKET_EXAMPLES "Build the examples" ON)
 
 # make the lib and install into configured prefix
 if(SIMPLE_SOCKET_SHARED)
     if(SIMPLE_SOCKET_DEP_ONLY)
-        ADD_LIBRARY(Simple-Socket SHARED ${SIMPLE_SOCKET_SOURCES})
+        ADD_LIBRARY(Simple-Socket SHARED ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
         install(TARGETS Simple-Socket
                         RUNTIME DESTINATION bin
                         LIBRARY DESTINATION lib
                         ARCHIVE DESTINATION lib/${BUILD_VERSION} )
         install(FILES ${SIMPLE_SOCKET_HEADERS} DESTINATION include)
     else()
-        ADD_LIBRARY(Simple-Socket SHARED ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
+        ADD_LIBRARY(Simple-Socket SHARED ${SIMPLE_SOCKET_SOURCES})
     endif()
-else()
+else(NOT SIMPLE_SOCKET_SHARED)
     if(SIMPLE_SOCKET_DEP_ONLY)
-        ADD_LIBRARY(Simple-Socket STATIC ${SIMPLE_SOCKET_SOURCES})
+        ADD_LIBRARY(Simple-Socket STATIC ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
         install(TARGETS Simple-Socket
                         LIBRARY DESTINATION lib
                         ARCHIVE DESTINATION lib/${BUILD_VERSION} )
         install(FILES ${SIMPLE_SOCKET_HEADERS} DESTINATION include)
     else()
-        ADD_LIBRARY(Simple-Socket STATIC ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
+        ADD_LIBRARY(Simple-Socket STATIC ${SIMPLE_SOCKET_SOURCES})
     endif()
 endif()
 TARGET_LINK_LIBRARIES(Simple-Socket ${PROJECT_LIBS})
@@ -110,12 +113,10 @@ if(NOT SIMPLE_SOCKET_DEP_ONLY AND SIMPLE_SOCKET_EXAMPLES)
         ADD_EXECUTABLE(multicast-example.run examples/Multicast.cpp)
         TARGET_LINK_LIBRARIES(multicast-example.run Simple-Socket pthread)
 
-        FILE(GLOB DNS "examples/dns/*")
-        ADD_EXECUTABLE(dnsclient-example.run ${DNS})
+        ADD_EXECUTABLE(dnsclient-example.run ${DNS_LIB})
         TARGET_LINK_LIBRARIES(dnsclient-example.run Simple-Socket)
 
-        FILE(GLOB HTTP "examples/http/*")
-        ADD_EXECUTABLE(httpclient-example.run examples/HttpClient.cpp ${HTTP})
+        ADD_EXECUTABLE(httpclient-example.run examples/HttpClient.cpp ${HTTP_LIB})
         target_include_directories(httpclient-example.run PRIVATE examples/http/)
         TARGET_LINK_LIBRARIES(httpclient-example.run Simple-Socket)
 
@@ -137,12 +138,10 @@ if(NOT SIMPLE_SOCKET_DEP_ONLY AND SIMPLE_SOCKET_EXAMPLES)
         ADD_EXECUTABLE(multicast-example examples/Multicast.cpp)
         TARGET_LINK_LIBRARIES(multicast-example Simple-Socket)
 
-        FILE(GLOB DNS "examples/dns/*")
-        ADD_EXECUTABLE(dnsclient-example ${DNS})
+        ADD_EXECUTABLE(dnsclient-example ${DNS_LIB})
         TARGET_LINK_LIBRARIES(dnsclient-example Simple-Socket)
 
-        FILE(GLOB HTTP "examples/http/*")
-        ADD_EXECUTABLE(httpclient-example examples/HttpClient.cpp ${HTTP})
+        ADD_EXECUTABLE(httpclient-example examples/HttpClient.cpp ${HTTP_LIB})
         target_include_directories(httpclient-example PRIVATE examples/http/)
         TARGET_LINK_LIBRARIES(httpclient-example Simple-Socket)
 
