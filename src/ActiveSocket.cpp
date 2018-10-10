@@ -43,7 +43,7 @@
 
 #include "ActiveSocket.h"
 
-CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType ), m_pHE( nullptr )
+CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType )
 {
 }
 
