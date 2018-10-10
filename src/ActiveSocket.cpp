@@ -40,10 +40,60 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *----------------------------------------------------------------------------*/
+
 #include "ActiveSocket.h"
 
-CActiveSocket::CActiveSocket(CSocketType nType) : CSimpleSocket(nType)
+CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType ), m_pHE( nullptr )
 {
+}
+
+CActiveSocket::~CActiveSocket()
+{
+   CSimpleSocket::Close();
+}
+
+bool CActiveSocket::PreConnect( const char * pAddr, uint16 nPort )
+{
+   bool bRetVal = true;
+
+   //------------------------------------------------------------------
+   // Preconnection setup that must be preformed
+   //------------------------------------------------------------------
+   memset( &m_stServerSockaddr, 0, sizeof( m_stServerSockaddr ) );
+   m_stServerSockaddr.sin_family = AF_INET;
+
+   addrinfo hints{};
+   memset( &hints, 0, sizeof( hints ) );
+   hints.ai_flags = AI_ALL;
+   hints.ai_family = AF_INET;
+   addrinfo* pResult = NULL;
+   const int iErrorCode = getaddrinfo( pAddr, NULL, &hints, &pResult ); /// https://codereview.stackexchange.com/a/17866
+
+   if( iErrorCode != 0 )
+   {
+#ifdef WIN32
+      TranslateSocketError();
+#else
+      if( h_errno == HOST_NOT_FOUND )
+      {
+         SetSocketError( SocketInvalidAddress );
+      }
+#endif
+      bRetVal = false;
+   }
+   else
+   {
+      m_stServerSockaddr.sin_addr = ( (sockaddr_in*)pResult->ai_addr )->sin_addr;
+      m_stServerSockaddr.sin_port = htons( nPort );
+
+      if( (int32)m_stServerSockaddr.sin_addr.s_addr == CSimpleSocket::SocketError )
+      {
+         TranslateSocketError();
+         bRetVal = false;
+      }
+   }
+
+   return bRetVal;
 }
 
 //------------------------------------------------------------------------------
@@ -51,82 +101,48 @@ CActiveSocket::CActiveSocket(CSocketType nType) : CSimpleSocket(nType)
 // ConnectTCP() -
 //
 //------------------------------------------------------------------------------
-bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
+bool CActiveSocket::ConnectTCP( const char *pAddr, uint16 nPort )
 {
-    bool           bRetVal = false;
+   bool bRetVal = PreConnect( pAddr, nPort );
 
-    //------------------------------------------------------------------
-    // Preconnection setup that must be preformed
-    //------------------------------------------------------------------
-    memset(&m_stServerSockaddr, 0, sizeof(m_stServerSockaddr));
-    m_stServerSockaddr.sin_family = AF_INET;
+   if( bRetVal )
+   {
+      m_timer.Initialize();
+      m_timer.SetStartTime();
 
-    addrinfo hints {};
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_flags = AI_ALL;
-    hints.ai_family = AF_INET;
-    addrinfo* pResult = NULL;
-    int errcode = getaddrinfo(pAddr, NULL, &hints, &pResult); /// https://codereview.stackexchange.com/a/17866
+       // Connect to address "xxx.xxx.xxx.xxx"    (IPv4) address only.
+      if( connect( m_socket, (sockaddr*)&m_stServerSockaddr, sizeof( m_stServerSockaddr ) ) ==
+          CSimpleSocket::SocketError )
+      {
+          //--------------------------------------------------------------
+          // Get error value this might be a non-blocking socket so we
+          // must first check.
+          //--------------------------------------------------------------
+         TranslateSocketError();
 
-    if (errcode != 0)
-    {
-#ifdef WIN32
-        TranslateSocketError();
-#else
-        if (h_errno == HOST_NOT_FOUND)
-        {
-            SetSocketError(SocketInvalidAddress);
-        }
-#endif
-        return bRetVal;
-    }
+         //--------------------------------------------------------------
+         // If the socket is non-blocking and the current socket error
+         // is SocketEinprogress or SocketEwouldblock then poll connection
+         // with select for designated timeout period.
+         // Linux returns EINPROGRESS and Windows returns WSAEWOULDBLOCK.
+         //--------------------------------------------------------------
+         if( ( IsNonblocking() ) &&
+            ( ( GetSocketError() == CSimpleSocket::SocketEwouldblock ) ||
+             ( GetSocketError() == CSimpleSocket::SocketEinprogress ) ) )
+         {
+            bRetVal = Select( GetConnectTimeoutSec(), GetConnectTimeoutUSec() );
+         }
+      }
+      else
+      {
+         TranslateSocketError();
+         bRetVal = false;
+      }
 
-    m_stServerSockaddr.sin_addr.s_addr = *((unsigned long*)&(((sockaddr_in*)pResult->ai_addr)->sin_addr));
-    m_stServerSockaddr.sin_port = htons(nPort);
+      m_timer.SetEndTime();
+   }
 
-    if ((int32)m_stServerSockaddr.sin_addr.s_addr == CSimpleSocket::SocketError)
-    {
-        TranslateSocketError();
-        return bRetVal;
-    }
-
-    //------------------------------------------------------------------
-    // Connect to address "xxx.xxx.xxx.xxx"    (IPv4) address only.
-    //------------------------------------------------------------------
-    m_timer.Initialize();
-    m_timer.SetStartTime();
-
-    if (connect(m_socket, (struct sockaddr*)&m_stServerSockaddr, sizeof(m_stServerSockaddr)) ==
-            CSimpleSocket::SocketError)
-    {
-        //--------------------------------------------------------------
-        // Get error value this might be a non-blocking socket so we
-        // must first check.
-        //--------------------------------------------------------------
-        TranslateSocketError();
-
-        //--------------------------------------------------------------
-        // If the socket is non-blocking and the current socket error
-        // is SocketEinprogress or SocketEwouldblock then poll connection
-        // with select for designated timeout period.
-        // Linux returns EINPROGRESS and Windows returns WSAEWOULDBLOCK.
-        //--------------------------------------------------------------
-        if ((IsNonblocking()) &&
-                ((GetSocketError() == CSimpleSocket::SocketEwouldblock) ||
-                 (GetSocketError() == CSimpleSocket::SocketEinprogress)))
-        {
-            bRetVal = Select(GetConnectTimeoutSec(), GetConnectTimeoutUSec());
-        }
-    }
-    else
-    {
-        TranslateSocketError();
-        bRetVal = true;
-    }
-
-    m_timer.SetEndTime();
-
-    return bRetVal;
+   return bRetVal;
 }
 
 //------------------------------------------------------------------------------
@@ -134,64 +150,24 @@ bool CActiveSocket::ConnectTCP(const char *pAddr, uint16 nPort)
 // ConnectUDP() -
 //
 //------------------------------------------------------------------------------
-bool CActiveSocket::ConnectUDP(const char *pAddr, uint16 nPort)
+bool CActiveSocket::ConnectUDP( const char *pAddr, uint16 nPort )
 {
-    bool           bRetVal = false;
+   bool bRetVal = PreConnect( pAddr, nPort );
 
-    //------------------------------------------------------------------
-    // Pre-connection setup that must be preformed
-    //------------------------------------------------------------------
-    memset(&m_stServerSockaddr, 0, sizeof(m_stServerSockaddr));
-    m_stServerSockaddr.sin_family = AF_INET;
+   if( bRetVal )
+   {
+      m_timer.Initialize();
+      m_timer.SetStartTime();
 
-    addrinfo hints {};
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_flags = AI_ALL;
-    hints.ai_family = AF_INET;
-    addrinfo* pResult = NULL;
-    int errcode = getaddrinfo(pAddr, NULL, &hints, &pResult); /// https://codereview.stackexchange.com/a/17866
+      // Connect to address "xxx.xxx.xxx.xxx"    (IPv4) address only.
+      bRetVal = ( connect( m_socket, ( struct sockaddr* )&m_stServerSockaddr, sizeof( m_stServerSockaddr ) ) != CSimpleSocket::SocketError );
 
-    if (errcode != 0)
-    {
-#ifdef WIN32
-        TranslateSocketError();
-#else
-        if (h_errno == HOST_NOT_FOUND)
-        {
-            SetSocketError(SocketInvalidAddress);
-        }
-#endif
-        return bRetVal;
-    }
+      TranslateSocketError();
 
-    m_stServerSockaddr.sin_addr.s_addr = *((unsigned long*)&(((sockaddr_in*)pResult->ai_addr)->sin_addr));
-    m_stServerSockaddr.sin_port = htons(nPort);
+      m_timer.SetEndTime();
+   }
 
-    if ((int32)m_stServerSockaddr.sin_addr.s_addr == CSimpleSocket::SocketError)
-    {
-        TranslateSocketError();
-        return bRetVal;
-    }
-
-    m_stServerSockaddr.sin_port = htons(nPort);
-
-    //------------------------------------------------------------------
-    // Connect to address "xxx.xxx.xxx.xxx"    (IPv4) address only.
-    //
-    //------------------------------------------------------------------
-    m_timer.Initialize();
-    m_timer.SetStartTime();
-
-    if (connect(m_socket, (struct sockaddr*)&m_stServerSockaddr, sizeof(m_stServerSockaddr)) != CSimpleSocket::SocketError)
-    {
-        bRetVal = true;
-    }
-
-    TranslateSocketError();
-
-    m_timer.SetEndTime();
-
-    return bRetVal;
+   return bRetVal;
 }
 
 //------------------------------------------------------------------------------
@@ -199,64 +175,24 @@ bool CActiveSocket::ConnectUDP(const char *pAddr, uint16 nPort)
 // ConnectRAW() -
 //
 //------------------------------------------------------------------------------
-bool CActiveSocket::ConnectRAW(const char *pAddr, uint16 nPort)
+bool CActiveSocket::ConnectRAW( const char *pAddr, uint16 nPort )
 {
-    bool           bRetVal = false;
+   bool bRetVal = PreConnect( pAddr, nPort );
 
-    //------------------------------------------------------------------
-    // Pre-connection setup that must be preformed
-    //------------------------------------------------------------------
-    memset(&m_stServerSockaddr, 0, sizeof(m_stServerSockaddr));
-    m_stServerSockaddr.sin_family = AF_INET;
+   if( bRetVal )
+   {
+      m_timer.Initialize();
+      m_timer.SetStartTime();
 
-    addrinfo hints {};
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_flags = AI_ALL;
-    hints.ai_family = AF_INET;
-    addrinfo* pResult = NULL;
-    int errcode = getaddrinfo(pAddr, NULL, &hints, &pResult); /// https://codereview.stackexchange.com/a/17866
+      // Connect to address "xxx.xxx.xxx.xxx"    (IPv4) address only.
+      bRetVal = ( connect( m_socket, (sockaddr*)&m_stServerSockaddr, sizeof( m_stServerSockaddr ) ) != CSimpleSocket::SocketError );
 
-    if (errcode != 0)
-    {
-#ifdef WIN32
-        TranslateSocketError();
-#else
-        if (h_errno == HOST_NOT_FOUND)
-        {
-            SetSocketError(SocketInvalidAddress);
-        }
-#endif
-        return bRetVal;
-    }
+      TranslateSocketError();
 
-    m_stServerSockaddr.sin_addr.s_addr = *((unsigned long*)&(((sockaddr_in*)pResult->ai_addr)->sin_addr));
-    m_stServerSockaddr.sin_port = htons(nPort);
+      m_timer.SetEndTime();
+   }
 
-    if ((int32)m_stServerSockaddr.sin_addr.s_addr == CSimpleSocket::SocketError)
-    {
-        TranslateSocketError();
-        return bRetVal;
-    }
-
-    m_stServerSockaddr.sin_port = htons(nPort);
-
-    //------------------------------------------------------------------
-    // Connect to address "xxx.xxx.xxx.xxx"    (IPv4) address only.
-    //
-    //------------------------------------------------------------------
-    m_timer.Initialize();
-    m_timer.SetStartTime();
-
-    if (connect(m_socket, (sockaddr*)&m_stServerSockaddr, sizeof(m_stServerSockaddr)) != CSimpleSocket::SocketError)
-    {
-        bRetVal = true;
-    }
-
-    TranslateSocketError();
-
-    m_timer.SetEndTime();
-
-    return bRetVal;
+   return bRetVal;
 }
 
 
@@ -265,62 +201,62 @@ bool CActiveSocket::ConnectRAW(const char *pAddr, uint16 nPort)
 // Open() - Create a connection to a specified address on a specified port
 //
 //------------------------------------------------------------------------------
-bool CActiveSocket::Open(const char *pAddr, uint16 nPort)
+bool CActiveSocket::Open( const char *pAddr, uint16 nPort )
 {
-    bool bRetVal = false;
+   bool bRetVal = false;
 
-    if ( ! IsSocketValid() )
-    {
-        SetSocketError(CSimpleSocket::SocketInvalidSocket);
-        return bRetVal;
-    }
+   if( !IsSocketValid() )
+   {
+      SetSocketError( CSimpleSocket::SocketInvalidSocket );
+      return bRetVal;
+   }
 
-    if (pAddr == NULL)
-    {
-        SetSocketError(CSimpleSocket::SocketInvalidAddress);
-        return bRetVal;
-    }
+   if( pAddr == NULL )
+   {
+      SetSocketError( CSimpleSocket::SocketInvalidAddress );
+      return bRetVal;
+   }
 
-    if (nPort == 0)
-    {
-        SetSocketError(CSimpleSocket::SocketInvalidPort);
-        return bRetVal;
-    }
+   if( nPort == 0 )
+   {
+      SetSocketError( CSimpleSocket::SocketInvalidPort );
+      return bRetVal;
+   }
 
-    switch (m_nSocketType)
-    {
-    case CSimpleSocket::SocketTypeTcp :
-    {
-        bRetVal = ConnectTCP(pAddr, nPort);
-        break;
-    }
-    case CSimpleSocket::SocketTypeUdp :
-    {
-        bRetVal = ConnectUDP(pAddr, nPort);
-        break;
-    }
-    case CSimpleSocket::SocketTypeRaw :
-        break;
-    default:
-        break;
-    }
+   switch( m_nSocketType )
+   {
+   case CSimpleSocket::SocketTypeTcp:
+   {
+      bRetVal = ConnectTCP( pAddr, nPort );
+      break;
+   }
+   case CSimpleSocket::SocketTypeUdp:
+   {
+      bRetVal = ConnectUDP( pAddr, nPort );
+      break;
+   }
+   case CSimpleSocket::SocketTypeRaw:
+      break;
+   default:
+      break;
+   }
 
-    //--------------------------------------------------------------------------
-    // If successful then create a local copy of the address and port
-    //--------------------------------------------------------------------------
-    if (bRetVal)
-    {
-        socklen_t nSockLen = sizeof(m_stServerSockaddr);
+   //--------------------------------------------------------------------------
+   // If successful then create a local copy of the address and port
+   //--------------------------------------------------------------------------
+   if( bRetVal )
+   {
+      socklen_t nSockLen = sizeof( m_stServerSockaddr );
 
-        memset(&m_stServerSockaddr, 0, nSockLen);
-        getpeername(m_socket, (sockaddr*)&m_stServerSockaddr, &nSockLen);
+      memset( &m_stServerSockaddr, 0, nSockLen );
+      getpeername( m_socket, (sockaddr*)&m_stServerSockaddr, &nSockLen );
 
-        nSockLen = sizeof(struct sockaddr);
-        memset(&m_stClientSockaddr, 0, nSockLen);
-        getsockname(m_socket, (sockaddr*)&m_stClientSockaddr, &nSockLen);
+      nSockLen = sizeof( struct sockaddr );
+      memset( &m_stClientSockaddr, 0, nSockLen );
+      getsockname( m_socket, (sockaddr*)&m_stClientSockaddr, &nSockLen );
 
-        SetSocketError(SocketSuccess);
-    }
+      SetSocketError( SocketSuccess );
+   }
 
-    return bRetVal;
+   return bRetVal;
 }

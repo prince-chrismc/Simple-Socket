@@ -56,9 +56,7 @@ public:
     friend class CPassiveSocket;
 
     CActiveSocket(CSocketType type = SocketTypeTcp);
-    virtual ~CActiveSocket() {
-        Close();
-    };
+   virtual ~CActiveSocket();;
 
     /// Established a connection to the address specified by pAddr.
     /// Connection-based protocol sockets (CSocket::SocketTypeTcp) may
@@ -71,6 +69,10 @@ public:
     virtual bool Open(const char *pAddr, uint16 nPort);
 
 private:
+    /// Utility function used to configure socket before connecting
+    ///  @return true if setup is made, otherwise false.
+   bool PreConnect( const char *pAddr, uint16 nPort );
+
     /// Utility function used to create a TCP connection, called from Open().
     ///  @return true if successful connection made, otherwise false.
     bool ConnectTCP(const char *pAddr, uint16 nPort);
