@@ -43,8 +43,18 @@
 
 #include "ActiveSocket.h"
 
-CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType )
+CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType ), m_ListeningForClose( false )
 {
+#ifdef WIN32
+   m_CloseEvent = WSACreateEvent();
+   TranslateSocketError();
+
+   if( GetSocketError() == SocketSuccess )
+   {
+      m_ListeningForClose = ( WSAEventSelect( m_socket, (HWND)m_CloseEvent, FD_CLOSE ) == SocketSuccess );
+      TranslateSocketError();
+   }
+#endif
 }
 
 CActiveSocket::~CActiveSocket()
@@ -264,26 +274,21 @@ bool CActiveSocket::Open( const char *pAddr, uint16 nPort )
 bool CActiveSocket::IsClosed()
 {
 #ifdef WIN32
-   int32 nNumDescriptors = SocketError;
+   bool bRetVal = false;
+   WSANETWORKEVENTS oRecordedEvents;
 
-   FD_ZERO( &m_readFds );
-   FD_SET( m_socket, &m_readFds );
-
-   // select() will return 1 descriptor per socket with the 'readable' flag set
-   if( ( nNumDescriptors = select( 0, &m_readFds, NULL, NULL, NULL ) ) == SocketError )
+   if( WSAEnumNetworkEvents( m_socket, m_CloseEvent, &oRecordedEvents ) == SocketSuccess )
    {
-      TranslateSocketError();
-   }
-
-   if( nNumDescriptors > 0 )
-   {
-      if( FD_ISSET( m_socket, &m_readFds ) ) // At this point, it should be checked whether the socket is part of a set.
+      if( oRecordedEvents.lNetworkEvents & FD_CLOSE )
       {
-         return true; // A read event has occurred on socket s
+         bRetVal = true;
+         errno = oRecordedEvents.iErrorCode[ FD_CLOSE_BIT ];
       }
    }
 
-   return false;
+   TranslateSocketError();
+
+   return bRetVal;
 #else
    char temp;
    int nBytesAvailable = SocketError;

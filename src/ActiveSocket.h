@@ -68,6 +68,9 @@ public:
     ///  @return true if successful connection made, otherwise false.
    virtual bool Open( const char *pAddr, uint16 nPort );
 
+    /// Determines whether a socket is closed or not regardless of
+    /// protocol.
+    ///  @return true if the socket is not usable, otherwise false
    bool IsClosed();
 
 private:
@@ -86,6 +89,11 @@ private:
    /// Utility function used to create a RAW connection, called from Open().
    ///  @return true if successful connection made, otherwise false.
    bool ConnectRAW( const char *pAddr, uint16 nPort );
+
+#ifdef WIN32
+   bool m_ListeningForClose;
+   WSAEVENT m_CloseEvent;
+#endif
 };
 
 #endif /*  __ACTIVESOCKET_H__  */
