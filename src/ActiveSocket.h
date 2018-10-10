@@ -68,6 +68,8 @@ public:
     ///  @return true if successful connection made, otherwise false.
    virtual bool Open( const char *pAddr, uint16 nPort );
 
+   bool IsClosed();
+
 private:
     /// Utility function used to configure socket before connecting
     ///  @return true if setup is made, otherwise false.

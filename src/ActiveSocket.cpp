@@ -260,3 +260,40 @@ bool CActiveSocket::Open( const char *pAddr, uint16 nPort )
 
    return bRetVal;
 }
+
+bool CActiveSocket::IsClosed()
+{
+#ifdef WIN32
+   int32 nNumDescriptors = SocketError;
+
+   FD_ZERO( &m_readFds );
+   FD_SET( m_socket, &m_readFds );
+
+   // select() will return 1 descriptor per socket with the 'readable' flag set
+   if( ( nNumDescriptors = select( 0, &m_readFds, NULL, NULL, NULL ) ) == SocketError )
+   {
+      TranslateSocketError();
+   }
+
+   if( nNumDescriptors > 0 )
+   {
+      if( FD_ISSET( m_socket, &m_readFds ) ) // At this point, it should be checked whether the socket is part of a set.
+      {
+         return true; // A read event has occurred on socket s
+      }
+   }
+
+   return false;
+#else
+   char temp;
+   int nBytesAvailable = SocketError;
+
+   do
+   {
+      nBytesAvailable = RECV( m_socket, &temp, sizeof( temp ), MSG_DONTWAIT | MSG_PEEK );
+      TranslateSocketError();
+   } while( ( GetSocketError() == CSimpleSocket::SocketInterrupted ) );
+
+   return ( nBytesAvailable == 0 );
+#endif
+}
