@@ -60,11 +60,8 @@ CPassiveSocket::~CPassiveSocket()
 bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionBacklog )
 {
    bool           bRetVal = false;
-#ifdef WIN32
-   ULONG          inAddr;
-#else
-   in_addr_t      inAddr;
 
+#ifdef _LINUX
    int32          nReuse;
    nReuse = IPTOS_LOWDELAY;
 
@@ -82,8 +79,8 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
    m_stServerSockaddr.sin_port = htons( nPort );
 
    //--------------------------------------------------------------------------
-   // If no IP Address (interface ethn) is supplied, or the loop back is
-   // specified then bind to any interface, else bind to specified interface.
+   // If no IP Address (interface ethn) is supplied, then bind to all interface
+   // else bind to specified interface.
    //--------------------------------------------------------------------------
    if( ( pAddr == NULL ) || ( !strlen( pAddr ) ) )
    {
@@ -91,10 +88,14 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
    }
    else
    {
-      inet_pton( m_nSocketDomain, pAddr, &inAddr );
-      if( inAddr != INADDR_NONE )
+      switch( inet_pton( m_nSocketDomain, pAddr, &m_stServerSockaddr.sin_addr ) )
       {
-         m_stServerSockaddr.sin_addr.s_addr = inAddr;
+      case -1: TranslateSocketError();                 return false;
+      case 0:  SetSocketError( SocketInvalidAddress ); return false;
+      case 1:  break; // Success
+      default:
+         SetSocketError( SocketEunknown );
+         return false;
       }
    }
 

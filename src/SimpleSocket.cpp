@@ -1125,6 +1125,7 @@ void CSimpleSocket::TranslateSocketError( void )
       SetSocketError( CSimpleSocket::SocketConnectionReset );
       break;
    case WSANO_DATA:
+   case WSAEADDRNOTAVAIL:
       SetSocketError( CSimpleSocket::SocketInvalidAddress );
       break;
    case WSAEADDRINUSE:
