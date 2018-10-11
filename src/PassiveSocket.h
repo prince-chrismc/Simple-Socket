@@ -57,9 +57,7 @@
 class CPassiveSocket : public CSimpleSocket {
 public:
     CPassiveSocket(CSocketType type = SocketTypeTcp);
-    virtual ~CPassiveSocket() {
-        Close();
-    };
+   virtual ~CPassiveSocket();
 
     /// Extracts the first connection request on the queue of pending
     /// connections and creates a newly connected socket.  Used with
@@ -72,7 +70,7 @@ public:
     ///    CPassiveSocket::SocketEwouldblock, CPassiveSocket::SocketInvalidSocket,
     ///    CPassiveSocket::SocketConnectionAborted, CPassiveSocket::SocketInterrupted
     ///    CPassiveSocket::SocketProtocolError, CPassiveSocket::SocketFirewallError
-    virtual std::unique_ptr<CActiveSocket> Accept(void);
+    virtual std::unique_ptr<CActiveSocket> Accept();
 
     /// Create a listening socket at local ip address 'x.x.x.x' or 'localhost'
     /// if pAddr is NULL on port nPort.
@@ -86,20 +84,6 @@ public:
     ///      CPassiveSocket::SocketInvalidSocket.  The following socket errors are for Linux/Unix
     ///      derived systems only: CPassiveSocket::SocketInvalidSocketBuffer
     virtual bool Listen(const char *pAddr, uint16 nPort, int32 nConnectionBacklog = 30000);
-
-    /// Attempts to send a block of data on an established connection.
-    /// @param pBuf block of data to be sent.
-    /// @param bytesToSend size of data block to be sent.
-    /// @return number of bytes actually sent, return of zero means the
-    /// connection has been shutdown on the other side, and a return of -1
-    /// means that an error has occurred.  If an error was signaled then one
-    /// of the following error codes will be set: CPassiveSocket::SocketInvalidSocket,
-    /// CPassiveSocket::SocketEwouldblock, SimpleSocket::SocketConnectionReset,
-    /// CPassiveSocket::SocketInvalidSocketBuffer, CPassiveSocket::SocketInterrupted,
-    /// CPassiveSocket::SocketProtocolError, CPassiveSocket::SocketNotconnected
-    /// <br>\b Note: This function is used only for a socket of type
-    /// CSimpleSocket::SocketTypeUdp
-    virtual int32 Send(const uint8 *pBuf, size_t bytesToSend);
 };
 
 #endif // __PASSIVESOCKET_H__
