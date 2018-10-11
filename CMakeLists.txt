@@ -27,7 +27,7 @@ SET_SOURCE_FILES_PROPERTIES( ${SIMPLE_SOCKET_HEADERS} PROPERTIES HEADER_FILE_ONL
 LIST(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS}) # append to sources so that dependency checks work on headers
 
 FILE(GLOB DNS_LIB "examples/dns/*")
-FILE(GLOB HTTP_LIB "examples/http/*")
+FILE(GLOB HTTP_LIB "examples/http/HttpRe*")
 
 # OS and compiler checks.
 if(UNIX)
