@@ -43,9 +43,10 @@
 
 #include "ActiveSocket.h"
 
-CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType ), m_ListeningForClose( false )
+CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType )
 {
 #ifdef WIN32
+   m_ListeningForClose = false;
    m_CloseEvent = WSACreateEvent();
    TranslateSocketError();
 

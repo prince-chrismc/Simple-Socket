@@ -909,7 +909,7 @@ bool CSimpleSocket::SetNonblocking( void )
 #if WIN32
    nCurFlags = 1;
 
-   if( ioctlsocket( m_socket, FIONBIO, (ULONG *)&nCurFlags ) != 0 )
+   if( ioctlsocket( m_socket, FIONBIO, (ULONG *)&nCurFlags ) != SocketSuccess )
    {
       TranslateSocketError();
       return false;
@@ -948,7 +948,7 @@ bool CSimpleSocket::SetBlocking( void )
 #if WIN32
    nCurFlags = 0;
 
-   if( ioctlsocket( m_socket, FIONBIO, (ULONG *)&nCurFlags ) != 0 )
+   if( ioctlsocket( m_socket, FIONBIO, (ULONG *)&nCurFlags ) != SocketSuccess )
    {
       return false;
    }
