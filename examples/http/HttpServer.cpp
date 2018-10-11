@@ -24,6 +24,59 @@ SOFTWARE.
 
 */
 
-#pragma once
-
 #include "HttpServer.h"
+
+using namespace std::chrono_literals;
+
+HttpServer::HttpServer( HttpVersion version /*= HttpVersion11*/ ) : m_eVersion( version )
+{
+
+}
+
+HttpServer::~HttpServer()
+{
+
+}
+
+bool HttpServer::Launch( std::string_view addr, int32 nPort )
+{
+   bool bRetVal = m_oSocket.Initialize();
+
+   if( bRetVal )
+   {
+      bRetVal = m_oSocket.Listen( addr.data(), nPort );
+   }
+
+   if( bRetVal )
+   {
+      std::thread( [ this ] {
+         auto oExitEvent = m_oExitEvent.get_future();
+         while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
+         {
+            std::unique_ptr<CActiveSocket> pClient;
+            if( ( pClient = m_oSocket.Accept() ) != nullptr ) // Wait for an incomming connection
+            {
+               m_vecClients.push_back( std::move( pClient ) );
+
+               m_vecClients.back().get(); // TODO: Create read thread...
+            }
+         }
+                   } ).detach();
+   }
+
+   return bRetVal;
+}
+
+bool HttpServer::Close()
+{
+   bool bRetVal = m_oSocket.Shutdown(CSimpleSocket::Both);
+
+   if( bRetVal )
+   {
+      bRetVal = m_oSocket.Close();
+   }
+
+   m_oExitEvent.set_value();
+
+   return bRetVal;
+}

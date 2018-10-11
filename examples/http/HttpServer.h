@@ -27,8 +27,27 @@ SOFTWARE.
 #pragma once
 
 #include "Constants.h"
+#include "PassiveSocket.h"
+#include <vector>
+#include <future>
+#include <memory>
 
+//
+// A RESTful API style HTTP server designed for simplicity with moderate performance.
 class HttpServer
 {
-   
+public:
+   HttpServer( HttpVersion version = HttpVersion11 );
+   ~HttpServer();
+
+   bool Launch( std::string_view addr, int32 nPort );
+
+   bool Close();
+
+private:
+   HttpVersion m_eVersion;
+   CPassiveSocket m_oSocket;
+   std::promise<void> m_oExitEvent;
+
+   std::vector<std::unique_ptr<CActiveSocket>> m_vecClients;
 };
