@@ -31,6 +31,7 @@ SOFTWARE.
 #include <vector>
 #include <future>
 #include <memory>
+#include <string_view>
 
 //
 // A RESTful API style HTTP server designed for simplicity with moderate performance.
