@@ -28,7 +28,6 @@ LIST(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS}) # append to sources 
 
 FILE(GLOB DNS_LIB "examples/dns/*")
 FILE(GLOB HTTP_LIB "examples/http/*")
-LIST(REMOVE_ITEM HTTP_LIB ${CMAKE_CURRENT_SOURCE_DIR}/examples/http/HttpServer.cpp ${CMAKE_CURRENT_SOURCE_DIR}/examples/http/HttpServer.h) # Not currently used by examples
 
 # OS and compiler checks.
 if(UNIX)
