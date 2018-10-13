@@ -206,6 +206,21 @@ bool CActiveSocket::ConnectRAW( const char *pAddr, uint16 nPort )
    return bRetVal;
 }
 
+void CActiveSocket::SetSocketHandle( SOCKET socket )
+{
+   m_socket = socket;
+
+#ifdef WIN32
+   TranslateSocketError();
+
+   if( GetSocketError() == SocketSuccess )
+   {
+      m_ListeningForClose = ( WSAEventSelect( m_socket, (HWND)m_CloseEvent, FD_CLOSE ) == SocketSuccess );
+      TranslateSocketError();
+   }
+#endif
+}
+
 
 //------------------------------------------------------------------------------
 //
@@ -276,18 +291,21 @@ bool CActiveSocket::IsClosed()
 {
 #ifdef WIN32
    bool bRetVal = false;
-   WSANETWORKEVENTS oRecordedEvents;
 
-   if( WSAEnumNetworkEvents( m_socket, m_CloseEvent, &oRecordedEvents ) == SocketSuccess )
+   if( GetSocketError() == SocketSuccess )
    {
-      if( oRecordedEvents.lNetworkEvents & FD_CLOSE )
-      {
-         bRetVal = true;
-         errno = oRecordedEvents.iErrorCode[ FD_CLOSE_BIT ];
-      }
-   }
+      WSANETWORKEVENTS oRecordedEvents;
 
-   TranslateSocketError();
+      if( WSAEnumNetworkEvents( m_socket, m_CloseEvent, &oRecordedEvents ) == SocketSuccess )
+      {
+         if( oRecordedEvents.lNetworkEvents & FD_CLOSE )
+         {
+            bRetVal = true;
+            errno = oRecordedEvents.iErrorCode[ FD_CLOSE_BIT ];
+         }
+      }
+      TranslateSocketError();
+   }
 
    return bRetVal;
 #else

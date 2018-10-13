@@ -528,12 +528,6 @@ protected:
         m_socketErrno = error;
     };
 
-    /// Set object socket handle to that specified as parameter
-    ///  @param socket value of socket descriptor
-    void SetSocketHandle(SOCKET socket) {
-        m_socket = socket;
-    };
-
 private:
     /// Generic function used to get the send/receive window size
     ///  @return zero on failure else the number of bytes of the TCP window size if successful.

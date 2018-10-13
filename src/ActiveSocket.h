@@ -90,6 +90,10 @@ private:
    ///  @return true if successful connection made, otherwise false.
    bool ConnectRAW( const char *pAddr, uint16 nPort );
 
+   /// Set object socket handle to that specified as parameter
+   ///  @param socket value of socket descriptor
+   void SetSocketHandle(SOCKET socket);;
+
 #ifdef WIN32
    bool m_ListeningForClose;
    WSAEVENT m_CloseEvent;
