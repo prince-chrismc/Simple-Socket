@@ -40,6 +40,7 @@ enum HttpStatus
    HttpStatusOk = 200,
    HttpStatusCreated = 201,
    HttpStatusAccepted = 202,
+   HttpStatusNoContent = 204,
    HttpStatusBadRequest = 400,
    HttpStatusNotFound = 404,
    HttpStatusMethodNotAllowed = 405,
