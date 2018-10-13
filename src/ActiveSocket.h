@@ -51,7 +51,8 @@ class CPassiveSocket;
 /// An active socket is used to create a socket which connects to a server.
 /// This type of object would be used when an application needs to send/receive
 /// data from a server.
-class CActiveSocket : public CSimpleSocket {
+class CActiveSocket : public CSimpleSocket
+{
 public:
    friend class CPassiveSocket;
 
@@ -67,11 +68,6 @@ public:
     ///  @param nPort specifies the destination port.
     ///  @return true if successful connection made, otherwise false.
    virtual bool Open( const char *pAddr, uint16 nPort );
-
-    /// Determines whether a socket is closed or not regardless of
-    /// protocol.
-    ///  @return true if the socket is not usable, otherwise false
-   bool IsClosed();
 
 private:
     /// Utility function used to configure socket before connecting
@@ -89,15 +85,6 @@ private:
    /// Utility function used to create a RAW connection, called from Open().
    ///  @return true if successful connection made, otherwise false.
    bool ConnectRAW( const char *pAddr, uint16 nPort );
-
-   /// Set object socket handle to that specified as parameter
-   ///  @param socket value of socket descriptor
-   void SetSocketHandle(SOCKET socket);;
-
-#ifdef WIN32
-   bool m_ListeningForClose;
-   WSAEVENT m_CloseEvent;
-#endif
 };
 
 #endif /*  __ACTIVESOCKET_H__  */

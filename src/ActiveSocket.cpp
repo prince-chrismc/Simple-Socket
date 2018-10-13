@@ -45,17 +45,6 @@
 
 CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType )
 {
-#ifdef WIN32
-   m_ListeningForClose = false;
-   m_CloseEvent = WSACreateEvent();
-   TranslateSocketError();
-
-   if( GetSocketError() == SocketSuccess )
-   {
-      m_ListeningForClose = ( WSAEventSelect( m_socket, (HWND)m_CloseEvent, FD_CLOSE ) == SocketSuccess );
-      TranslateSocketError();
-   }
-#endif
 }
 
 CActiveSocket::~CActiveSocket()
@@ -206,21 +195,6 @@ bool CActiveSocket::ConnectRAW( const char *pAddr, uint16 nPort )
    return bRetVal;
 }
 
-void CActiveSocket::SetSocketHandle( SOCKET socket )
-{
-   m_socket = socket;
-
-#ifdef WIN32
-   TranslateSocketError();
-
-   if( GetSocketError() == SocketSuccess )
-   {
-      m_ListeningForClose = ( WSAEventSelect( m_socket, (HWND)m_CloseEvent, FD_CLOSE ) == SocketSuccess );
-      TranslateSocketError();
-   }
-#endif
-}
-
 
 //------------------------------------------------------------------------------
 //
@@ -285,39 +259,4 @@ bool CActiveSocket::Open( const char *pAddr, uint16 nPort )
    }
 
    return bRetVal;
-}
-
-bool CActiveSocket::IsClosed()
-{
-#ifdef WIN32
-   bool bRetVal = false;
-
-   if( GetSocketError() == SocketSuccess )
-   {
-      WSANETWORKEVENTS oRecordedEvents;
-
-      if( WSAEnumNetworkEvents( m_socket, m_CloseEvent, &oRecordedEvents ) == SocketSuccess )
-      {
-         if( oRecordedEvents.lNetworkEvents & FD_CLOSE )
-         {
-            bRetVal = true;
-            errno = oRecordedEvents.iErrorCode[ FD_CLOSE_BIT ];
-         }
-      }
-      TranslateSocketError();
-   }
-
-   return bRetVal;
-#else
-   char temp;
-   int nBytesAvailable = SocketError;
-
-   do
-   {
-      nBytesAvailable = RECV( m_socket, &temp, sizeof( temp ), MSG_DONTWAIT | MSG_PEEK );
-      TranslateSocketError();
-   } while( ( GetSocketError() == CSimpleSocket::SocketInterrupted ) );
-
-   return ( nBytesAvailable == 0 );
-#endif
 }
