@@ -147,7 +147,7 @@ bool CActiveSocket::ConnectTCP( const char *pAddr, uint16 nPort )
       else
       {
          TranslateSocketError();
-         bRetVal = false;
+         bRetVal = true;
       }
 
       m_timer.SetEndTime();
