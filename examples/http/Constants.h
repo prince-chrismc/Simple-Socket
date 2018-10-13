@@ -41,6 +41,7 @@ enum HttpStatus
    HttpStatusCreated = 201,
    HttpStatusAccepted = 202,
    HttpStatusNoContent = 204,
+   HttpStatusPartialContent = 206,
    HttpStatusBadRequest = 400,
    HttpStatusNotFound = 404,
    HttpStatusMethodNotAllowed = 405,
@@ -58,6 +59,9 @@ enum HttpContentType
    HttpContentText,
    HttpContentHtml,
    HttpContentJson,
+   HttpContentGif,
+   HttpContentIco,
+   HttpContentPng,
    HttpContentInvalid
 };
 

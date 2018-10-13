@@ -213,6 +213,9 @@ std::string HttpRequest::STATIC_ContentTypeAsString( const HttpContentType & in_
    case HttpContentText: return std::string( HTTP_CONTENT_TYPE ) + "text;";
    case HttpContentHtml: return std::string( HTTP_CONTENT_TYPE ) + "application/html; text/html;";
    case HttpContentJson: return std::string( HTTP_CONTENT_TYPE ) + "application/json; text/json;";
+   case HttpContentGif: return std::string( HTTP_CONTENT_TYPE ) + "image/gif";
+   case HttpContentIco: return std::string( HTTP_CONTENT_TYPE ) + "image/x-icon";
+   case HttpContentPng: return std::string( HTTP_CONTENT_TYPE ) + "image/png";
    default: return "";
    }
 }
@@ -305,6 +308,8 @@ HttpContentType HttpRequestParser::STATIC_ParseForContentType( const std::string
    size_t ulJsonPos = sContentTypeLine.find( "text/json" );
    size_t ulHtmlAppPos = sContentTypeLine.find( "application/html" );
    size_t ulJsonAppPos = sContentTypeLine.find( "application/json" );
+
+   // TODO : Support new format types { PNG, GIF, ICO }
 
    size_t ulMinPos = std::min( { ulTextPos, ulHtmlPos, ulJsonPos, ulHtmlAppPos, ulJsonAppPos } );
 
