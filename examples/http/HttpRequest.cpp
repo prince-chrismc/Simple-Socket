@@ -360,6 +360,8 @@ bool HttpRequestParserAdvance::AppendRequestData( const std::string & in_krsData
 //---------------------------------------------------------------------------------------------------------------------
 HttpRequest HttpRequestParserAdvance::GetHttpRequest()
 {
+   if( m_sHttpHeader.empty() ) return { HttpRequestInvalid, "", HttpVersionInvalid, "" }; // No data has been obtained!
+
    HttpRequest oRequest( HttpRequestParser::STATIC_ParseForMethod( m_sHttpHeader ),
                          HttpRequestParser::STATIC_ParseForRequestUri( m_sHttpHeader ),
                          HttpRequestParser::STATIC_ParseForVersion( m_sHttpHeader ),
