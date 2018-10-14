@@ -210,7 +210,7 @@ std::string HttpRequest::STATIC_ContentTypeAsString( const HttpContentType & in_
 {
    switch( in_kreContentType )
    {
-   case HttpContentText: return std::string( HTTP_CONTENT_TYPE ) + "text;";
+   case HttpContentText: return std::string( HTTP_CONTENT_TYPE ) + "text/plain;";
    case HttpContentHtml: return std::string( HTTP_CONTENT_TYPE ) + "application/html; text/html;";
    case HttpContentJson: return std::string( HTTP_CONTENT_TYPE ) + "application/json; text/json;";
    case HttpContentGif: return std::string( HTTP_CONTENT_TYPE ) + "image/gif";
