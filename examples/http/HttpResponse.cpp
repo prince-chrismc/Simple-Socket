@@ -26,8 +26,6 @@ SOFTWARE.
 
 #include "HttpRequest.h"
 #include "HttpResponse.h"
-#include <algorithm>
-//#include <execution>
 
 /*
 

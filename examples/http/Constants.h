@@ -59,6 +59,7 @@ enum HttpContentType
    HttpContentText,
    HttpContentHtml,
    HttpContentJson,
+   HttpContentXml,
    HttpContentGif,
    HttpContentIco,
    HttpContentPng,

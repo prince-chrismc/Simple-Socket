@@ -213,6 +213,7 @@ std::string HttpRequest::STATIC_ContentTypeAsString( const HttpContentType & in_
    case HttpContentText: return std::string( HTTP_CONTENT_TYPE ) + "text/plain;";
    case HttpContentHtml: return std::string( HTTP_CONTENT_TYPE ) + "application/html; text/html;";
    case HttpContentJson: return std::string( HTTP_CONTENT_TYPE ) + "application/json; text/json;";
+   case HttpContentXml: return std::string( HTTP_CONTENT_TYPE ) + "application/xml; text/xml;";
    case HttpContentGif: return std::string( HTTP_CONTENT_TYPE ) + "image/gif";
    case HttpContentIco: return std::string( HTTP_CONTENT_TYPE ) + "image/x-icon";
    case HttpContentPng: return std::string( HTTP_CONTENT_TYPE ) + "image/png";
