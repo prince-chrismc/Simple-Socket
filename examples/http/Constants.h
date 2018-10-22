@@ -43,6 +43,7 @@ enum HttpStatus
    HttpStatusNoContent = 204,
    HttpStatusPartialContent = 206,
    HttpStatusBadRequest = 400,
+   HttpStatusForbidden = 403,
    HttpStatusNotFound = 404,
    HttpStatusMethodNotAllowed = 405,
    HttpStatusPreConditionFailed = 412,
