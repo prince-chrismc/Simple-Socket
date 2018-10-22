@@ -46,6 +46,7 @@ enum HttpStatus
    HttpStatusForbidden = 403,
    HttpStatusNotFound = 404,
    HttpStatusMethodNotAllowed = 405,
+   HttpStatusConflict = 409,
    HttpStatusPreConditionFailed = 412,
    HttpStatusRequestEntityTooLarge = 413,
    HttpStatusUnsupportedMediaType = 415,
