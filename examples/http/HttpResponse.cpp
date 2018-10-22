@@ -172,7 +172,14 @@ void HttpResponseParser::STATIC_AppenedParsedHeaders( HttpResponse & io_roReques
       const size_t iSeperatorIndex = sNextHeader.find( ':' );
 
       if( iSeperatorIndex != std::string::npos )
-         io_roRequest.AddMessageHeader( sNextHeader.substr( 0, iSeperatorIndex ), sNextHeader.substr( iSeperatorIndex + 1 ) );
+      {
+         std::string sHeaderKey = sNextHeader.substr( 0, iSeperatorIndex );
+
+         if( sHeaderKey == "Content-Length" || sHeaderKey == "Content-Type")
+             continue; // Skip always formatted hedaers !
+
+         io_roRequest.AddMessageHeader( sHeaderKey, sNextHeader.substr( iSeperatorIndex + 1 ) );
+      }
    }
 }
 
