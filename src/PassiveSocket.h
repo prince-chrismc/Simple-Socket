@@ -54,6 +54,7 @@
 /// in a similar fashion.  The big difference is that the method
 /// CPassiveSocket::Accept should not be called on the latter two socket
 /// types.
+
 class CPassiveSocket : public CSimpleSocket {
 public:
     CPassiveSocket(CSocketType type = SocketTypeTcp);
@@ -72,10 +73,10 @@ public:
     ///    CPassiveSocket::SocketProtocolError, CPassiveSocket::SocketFirewallError
    template <template<typename T> class SmartPtr, typename Type>
    auto Accept() -> SmartPtr<Type>;
-   template <>
-   auto Accept<std::shared_ptr, CActiveSocket>()->std::shared_ptr<CActiveSocket>;
-   template <>
-   auto Accept<std::unique_ptr, CActiveSocket>()->std::unique_ptr<CActiveSocket>;
+//    template <>
+//    auto Accept<std::shared_ptr, CActiveSocket>()->std::shared_ptr<CActiveSocket>;
+//    template <>
+//    auto Accept<std::unique_ptr, CActiveSocket>()->std::unique_ptr<CActiveSocket>;
 
     /// Create a listening socket at local ip address 'x.x.x.x' or 'localhost'
     /// if pAddr is NULL on port nPort.

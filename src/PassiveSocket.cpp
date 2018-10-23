@@ -232,6 +232,6 @@ auto CPassiveSocket::Accept() -> SmartPtr<Type>
 void TemporaryFunction()
 {
    CPassiveSocket oSocket;
-   auto shared = oSocket.Accept<std::shared_ptr>();
-   auto unique = oSocket.Accept<std::unique_ptr>();
+   auto shared = oSocket.Accept<std::shared_ptr, CActiveSocket>();
+   auto unique = oSocket.Accept<std::unique_ptr, CActiveSocket>();
 }
