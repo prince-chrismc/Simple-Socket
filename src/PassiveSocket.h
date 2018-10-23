@@ -43,8 +43,8 @@
 #ifndef __PASSIVESOCKET_H__
 #define __PASSIVESOCKET_H__
 
-#include <memory>
 #include "ActiveSocket.h"
+#include <memory>
 
 /// Provides a platform independent class to create a passive socket.
 /// A passive socket is used to create a "listening" socket.  This type
@@ -55,7 +55,8 @@
 /// CPassiveSocket::Accept should not be called on the latter two socket
 /// types.
 
-class CPassiveSocket : public CSimpleSocket {
+class CPassiveSocket : public CSimpleSocket
+{
 public:
     CPassiveSocket(CSocketType type = SocketTypeTcp);
    virtual ~CPassiveSocket();
@@ -71,12 +72,9 @@ public:
     ///    CPassiveSocket::SocketEwouldblock, CPassiveSocket::SocketInvalidSocket,
     ///    CPassiveSocket::SocketConnectionAborted, CPassiveSocket::SocketInterrupted
     ///    CPassiveSocket::SocketProtocolError, CPassiveSocket::SocketFirewallError
-   template <template<typename T> class SmartPtr, typename Type>
-   auto Accept() -> SmartPtr<Type>;
-//    template <>
-//    auto Accept<std::shared_ptr, CActiveSocket>()->std::shared_ptr<CActiveSocket>;
-//    template <>
-//    auto Accept<std::unique_ptr, CActiveSocket>()->std::unique_ptr<CActiveSocket>;
+   CActiveSocket* Accept();
+   std::shared_ptr<CActiveSocket> AcceptSharedOwnership();
+   std::unique_ptr<CActiveSocket> AcceptUniqueOwnership();
 
     /// Create a listening socket at local ip address 'x.x.x.x' or 'localhost'
     /// if pAddr is NULL on port nPort.

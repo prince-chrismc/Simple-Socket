@@ -150,20 +150,10 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 // Accept() -
 //
 //------------------------------------------------------------------------------
-template <template <typename T> class SmartPtr, typename Type>
-auto CPassiveSocket::Accept() -> SmartPtr<Type>
+std::unique_ptr<CActiveSocket> CPassiveSocket::AcceptUniqueOwnership()
 {
-   static_assert( std::is_member_object_pointer<CActiveSocket*( SmartPtr<CActiveSocket>::* )>::value, "template operator* must return a CActiveSocket*" );
-   static_assert( std::is_default_constructible<SmartPtr<CActiveSocket>>::value, "template must be default constructable!" );
-   //static_assert( std::is_constructible<SmartPtr<CActiveSocket>, std::nullptr_t, CActiveSocket*>::value, "template must be constructable by nullptr and CActiveSocket*" );
-   static_assert( std::is_assignable<SmartPtr<CActiveSocket>&, std::nullptr_t>::value, "template must be assignable by nullptr" );
-   //static_assert( std::is_assignable<SmartPtr<CActiveSocket>&, CActiveSocket*>::value, "template must be assignable by CActiveSocket*" );
-   //static_assert( std::is_member_function_pointer<decltype(&SmartPtr<CActiveSocket>::operator->)>::value, "A::member is not a member function." );
-   //static_assert( std::is_invocable<decltype( &SmartPtr<CActiveSocket>::operator-> )>::value, "A::member is not a member function." );
-   //static_assert( std::is_member_function_pointer<&SmartPtr<CActiveSocket>::reset>::value, "A::member is not a member function." );
-
    uint32         nSockLen;
-   SmartPtr<CActiveSocket> pClientSocket( nullptr );
+   std::unique_ptr<CActiveSocket> pClientSocket( nullptr );
    SOCKET         socket = CSimpleSocket::SocketError;
 
    if( m_nSocketType != CSimpleSocket::SocketTypeTcp )
@@ -172,7 +162,7 @@ auto CPassiveSocket::Accept() -> SmartPtr<Type>
       return pClientSocket;
    }
 
-   pClientSocket.reset( new CActiveSocket() );
+   pClientSocket = std::make_unique<CActiveSocket>();
 
    //--------------------------------------------------------------------------
    // Wait for incoming connection.
@@ -227,11 +217,11 @@ auto CPassiveSocket::Accept() -> SmartPtr<Type>
    return pClientSocket;
 }
 
-// No need to call this TemporaryFunction() function,
-// it's just to avoid link error.
-void TemporaryFunction()
+std::shared_ptr<CActiveSocket> CPassiveSocket::AcceptSharedOwnership()
 {
-   CPassiveSocket oSocket;
-   auto shared = oSocket.Accept<std::shared_ptr, CActiveSocket>();
-   auto unique = oSocket.Accept<std::unique_ptr, CActiveSocket>();
+   return std::shared_ptr<CActiveSocket>( AcceptUniqueOwnership().release() );
+}
+CActiveSocket* CPassiveSocket::Accept()
+{
+   return AcceptUniqueOwnership().release();
 }
