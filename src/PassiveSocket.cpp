@@ -153,11 +153,14 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 template <template<typename T> class SmartPtr>
 SmartPtr<CActiveSocket> CPassiveSocket::Accept()
 {
-   //static_assert( std::is_pointer<SmartPtr<CActiveSocket>>::value, "template must be a pointer type!" );
+   static_assert( std::is_member_object_pointer<CActiveSocket*( SmartPtr<CActiveSocket>::* )>::value, "template operator* must return a CActiveSocket*" );
    static_assert( std::is_default_constructible<SmartPtr<CActiveSocket>>::value, "template must be default constructable!" );
    //static_assert( std::is_constructible<SmartPtr<CActiveSocket>, std::nullptr_t, CActiveSocket*>::value, "template must be constructable by nullptr and CActiveSocket*" );
    static_assert( std::is_assignable<SmartPtr<CActiveSocket>&, std::nullptr_t>::value, "template must be assignable by nullptr" );
    //static_assert( std::is_assignable<SmartPtr<CActiveSocket>&, CActiveSocket*>::value, "template must be assignable by CActiveSocket*" );
+   //static_assert( std::is_member_function_pointer<decltype(&SmartPtr<CActiveSocket>::operator->)>::value, "A::member is not a member function." );
+   //static_assert( std::is_invocable<decltype( &SmartPtr<CActiveSocket>::operator-> )>::value, "A::member is not a member function." );
+   //static_assert( std::is_member_function_pointer<&SmartPtr<CActiveSocket>::reset>::value, "A::member is not a member function." );
 
    uint32         nSockLen;
    SmartPtr<CActiveSocket> pClientSocket( nullptr );
@@ -169,7 +172,7 @@ SmartPtr<CActiveSocket> CPassiveSocket::Accept()
       return pClientSocket;
    }
 
-   pClientSocket = std::make_unique<CActiveSocket>();
+   pClientSocket.reset( new CActiveSocket() );
 
    //--------------------------------------------------------------------------
    // Wait for incoming connection.
