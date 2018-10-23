@@ -150,10 +150,17 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 // Accept() -
 //
 //------------------------------------------------------------------------------
-std::unique_ptr<CActiveSocket> CPassiveSocket::Accept()
+template <template<typename T> class SmartPtr>
+SmartPtr<CActiveSocket> CPassiveSocket::Accept()
 {
+   //static_assert( std::is_pointer<SmartPtr<CActiveSocket>>::value, "template must be a pointer type!" );
+   static_assert( std::is_default_constructible<SmartPtr<CActiveSocket>>::value, "template must be default constructable!" );
+   //static_assert( std::is_constructible<SmartPtr<CActiveSocket>, std::nullptr_t, CActiveSocket*>::value, "template must be constructable by nullptr and CActiveSocket*" );
+   static_assert( std::is_assignable<SmartPtr<CActiveSocket>&, std::nullptr_t>::value, "template must be assignable by nullptr" );
+   //static_assert( std::is_assignable<SmartPtr<CActiveSocket>&, CActiveSocket*>::value, "template must be assignable by CActiveSocket*" );
+
    uint32         nSockLen;
-   std::unique_ptr<CActiveSocket> pClientSocket = nullptr;
+   SmartPtr<CActiveSocket> pClientSocket( nullptr );
    SOCKET         socket = CSimpleSocket::SocketError;
 
    if( m_nSocketType != CSimpleSocket::SocketTypeTcp )
@@ -210,9 +217,18 @@ std::unique_ptr<CActiveSocket> CPassiveSocket::Accept()
 
       if( socketErrno != CSimpleSocket::SocketSuccess )
       {
-         pClientSocket.reset( nullptr );
+         pClientSocket = nullptr;
       }
    }
 
    return pClientSocket;
+}
+
+// No need to call this TemporaryFunction() function,
+// it's just to avoid link error.
+void TemporaryFunction()
+{
+   CPassiveSocket oSocket;
+   auto shared = oSocket.Accept<std::shared_ptr>();
+   auto unique = oSocket.Accept<std::unique_ptr>();
 }
