@@ -150,8 +150,8 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 // Accept() -
 //
 //------------------------------------------------------------------------------
-template <template<typename T> class SmartPtr>
-SmartPtr<CActiveSocket> CPassiveSocket::Accept()
+template <template <typename T> class SmartPtr>
+auto CPassiveSocket::Accept() -> SmartPtr<CActiveSocket>
 {
    static_assert( std::is_member_object_pointer<CActiveSocket*( SmartPtr<CActiveSocket>::* )>::value, "template operator* must return a CActiveSocket*" );
    static_assert( std::is_default_constructible<SmartPtr<CActiveSocket>>::value, "template must be default constructable!" );
