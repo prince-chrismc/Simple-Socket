@@ -70,8 +70,12 @@ public:
     ///    CPassiveSocket::SocketEwouldblock, CPassiveSocket::SocketInvalidSocket,
     ///    CPassiveSocket::SocketConnectionAborted, CPassiveSocket::SocketInterrupted
     ///    CPassiveSocket::SocketProtocolError, CPassiveSocket::SocketFirewallError
-   template <template<typename T> class SmartPtr>
-   auto Accept() -> SmartPtr<CActiveSocket>;
+   template <template<typename T> class SmartPtr, typename Type>
+   auto Accept() -> SmartPtr<Type>;
+   template <>
+   auto Accept<std::shared_ptr, CActiveSocket>()->std::shared_ptr<CActiveSocket>;
+   template <>
+   auto Accept<std::unique_ptr, CActiveSocket>()->std::unique_ptr<CActiveSocket>;
 
     /// Create a listening socket at local ip address 'x.x.x.x' or 'localhost'
     /// if pAddr is NULL on port nPort.
