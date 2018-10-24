@@ -147,7 +147,7 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 // Accept() -
 //
 //------------------------------------------------------------------------------
-template <template <typename T> class SmartPtr, class SocketBase>
+template <template<typename> class SmartPtr, class SocketBase>
 auto CPassiveSocket::Accept() -> SmartPtr<SocketBase>
 {
    static_assert( std::is_base_of<CSimpleSocket, SocketBase>::value, "SocketBase is not derived from CSimpleSocket" );
