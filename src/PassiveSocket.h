@@ -64,10 +64,12 @@ public:
     /// connections and creates a newly connected socket.  Used with
     /// CSocketType CSimpleSocket::SocketTypeTcp.  It is the responsibility of
     /// the caller to delete the returned object when finished.
+    ///  @template SmartPtr can be either std::shared_ptr or std::unique_ptr
+    ///  @template SocketBase can be either CSimpleSocket or CActiveSocket
     ///  @return if successful a pointer to a newly created CActiveSocket object
     ///          will be returned and the internal error condition of the CPassiveSocket
     ///          object will be CPassiveSocket::SocketSuccess.  If an error condition was encountered
-    ///          the NULL will be returned and one of the following error conditions will be set:
+    ///          the nullptr will be returned and one of the following error conditions will be set:
     ///    CPassiveSocket::SocketEwouldblock, CPassiveSocket::SocketInvalidSocket,
     ///    CPassiveSocket::SocketConnectionAborted, CPassiveSocket::SocketInterrupted
     ///    CPassiveSocket::SocketProtocolError, CPassiveSocket::SocketFirewallError
@@ -85,7 +87,7 @@ public:
     ///      conditions will be set: CPassiveSocket::SocketAddressInUse, CPassiveSocket::SocketProtocolError,
     ///      CPassiveSocket::SocketInvalidSocket.  The following socket errors are for Linux/Unix
     ///      derived systems only: CPassiveSocket::SocketInvalidSocketBuffer
-    virtual bool Listen(const char *pAddr, uint16 nPort, int32 nConnectionBacklog = 30000);
+    bool Listen(const char *pAddr, uint16 nPort, int32 nConnectionBacklog = 30000);
 };
 
 #endif // __PASSIVESOCKET_H__
