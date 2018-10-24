@@ -132,7 +132,7 @@ int main( int argc, char** argv )
       while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
       {
          std::unique_ptr<CActiveSocket> pClient = nullptr;
-         if( ( pClient = oSocket.AcceptUniqueOwnership() ) != nullptr ) // Wait for an incomming connection
+         if( ( pClient = oSocket.Accept<std::unique_ptr, CActiveSocket>() ) != nullptr ) // Wait for an incomming connection
          {
             pClient->SetNonblocking(); // Configure new client connection to be non-blocking
 
