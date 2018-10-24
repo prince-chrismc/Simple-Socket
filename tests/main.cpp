@@ -114,7 +114,7 @@ int EchoServerThread(std::future<void> exitEvent)
 
     while (exitEvent.wait_for(std::chrono::milliseconds(10)) == std::future_status::timeout)
     {
-        if ((pClient = oSocket.Accept<std::unique_ptr, CActiveSocket>()) != nullptr)
+        if ((pClient = socket.Accept<std::unique_ptr, CActiveSocket>()) != nullptr)
         {
 #ifdef _LINUX
             const char* clientAddr = pClient->GetClientAddr();
