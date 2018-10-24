@@ -222,6 +222,6 @@ auto CPassiveSocket::Accept() -> SmartPtr<SocketBase>
 
 // it's just to avoid link error.
 template std::unique_ptr<CSimpleSocket> CPassiveSocket::Accept<std::unique_ptr, CSimpleSocket>();
-template std::unique_ptr<CSimpleSocket> CPassiveSocket::Accept<std::unique_ptr, CSimpleSocket>();
+template std::shared_ptr<CSimpleSocket> CPassiveSocket::Accept<std::shared_ptr, CSimpleSocket>();
 template std::unique_ptr<CActiveSocket> CPassiveSocket::Accept<std::unique_ptr, CActiveSocket>();
 template std::shared_ptr<CActiveSocket> CPassiveSocket::Accept<std::shared_ptr, CActiveSocket>();
