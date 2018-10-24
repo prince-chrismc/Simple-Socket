@@ -41,6 +41,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *----------------------------------------------------------------------------*/
 
+#include <memory>
 #include "PassiveSocket.h"
 
 CPassiveSocket::CPassiveSocket( CSocketType nType ) : CSimpleSocket( nType )
@@ -150,19 +151,29 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 // Accept() -
 //
 //------------------------------------------------------------------------------
-std::unique_ptr<CActiveSocket> CPassiveSocket::AcceptUniqueOwnership()
+template <template <typename T> class SmartPtr, class SocketBase>
+ auto CPassiveSocket::Accept() -> SmartPtr<SocketBase>
 {
+   static_assert( std::is_base_of<CSimpleSocket, SocketBase>::value, "SocketBase is not derived from CSimpleSocket" );
+   static_assert( std::is_default_constructible<SmartPtr<SocketBase>>::value, "template must be default constructable!" );
+
+   static_assert( std::is_member_object_pointer<SocketBase*( SmartPtr<SocketBase>::* )>::value, "template operator* must return a SocketBase*" );
+
+   static_assert( std::is_constructible<SmartPtr<SocketBase>, std::nullptr_t>::value, "template must be constructable by nullptr" );
+   static_assert( std::is_constructible<SmartPtr<SocketBase>, CActiveSocket*>::value, "template must be constructable by CActiveSocket*" );
+
+   static_assert( std::is_assignable<SmartPtr<SocketBase>&, std::nullptr_t>::value, "template must be assignable by nullptr" );
+
    uint32         nSockLen;
-   std::unique_ptr<CActiveSocket> pClientSocket( nullptr );
    SOCKET         socket = CSimpleSocket::SocketError;
 
    if( m_nSocketType != CSimpleSocket::SocketTypeTcp )
    {
       SetSocketError( CSimpleSocket::SocketProtocolError );
-      return pClientSocket;
+      return nullptr;
    }
 
-   pClientSocket = std::make_unique<CActiveSocket>();
+   auto pClientSocket = new CActiveSocket();
 
    //--------------------------------------------------------------------------
    // Wait for incoming connection.
@@ -210,18 +221,16 @@ std::unique_ptr<CActiveSocket> CPassiveSocket::AcceptUniqueOwnership()
 
       if( socketErrno != CSimpleSocket::SocketSuccess )
       {
+         delete pClientSocket;
          pClientSocket = nullptr;
       }
    }
 
-   return pClientSocket;
+   return SmartPtr<SocketBase>( pClientSocket );
 }
 
-std::shared_ptr<CActiveSocket> CPassiveSocket::AcceptSharedOwnership()
-{
-   return std::shared_ptr<CActiveSocket>( AcceptUniqueOwnership().release() );
-}
-CActiveSocket* CPassiveSocket::Accept()
-{
-   return AcceptUniqueOwnership().release();
-}
+// it's just to avoid link error.
+template std::unique_ptr<CSimpleSocket> CPassiveSocket::Accept<std::unique_ptr, CSimpleSocket>();
+template std::unique_ptr<CSimpleSocket> CPassiveSocket::Accept<std::unique_ptr, CSimpleSocket>();
+template std::unique_ptr<CActiveSocket> CPassiveSocket::Accept<std::unique_ptr, CActiveSocket>();
+template std::shared_ptr<CActiveSocket> CPassiveSocket::Accept<std::shared_ptr, CActiveSocket>();
