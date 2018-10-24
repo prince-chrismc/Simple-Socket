@@ -75,7 +75,7 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
    SETSOCKOPT( m_socket, IPPROTO_TCP, IP_TOS, &nReuse, sizeof( int32 ) );
 #endif
 
-   memset( &m_stServerSockaddr, 0, sizeof( m_stServerSockaddr ) );
+   memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
    m_stServerSockaddr.sin_family = AF_INET;
    m_stServerSockaddr.sin_port = htons( nPort );
 
@@ -106,14 +106,11 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
    //--------------------------------------------------------------------------
    // Bind to the specified port
    //--------------------------------------------------------------------------
-   if( bind( m_socket, ( struct sockaddr * )&m_stServerSockaddr, sizeof( m_stServerSockaddr ) ) != CSimpleSocket::SocketError )
+   if( bind( m_socket, ( struct sockaddr * )&m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) != CSimpleSocket::SocketError )
    {
       if( m_nSocketType == CSimpleSocket::SocketTypeTcp )
       {
-         if( listen( m_socket, nConnectionBacklog ) != CSimpleSocket::SocketError )
-         {
-            bRetVal = true;
-         }
+         bRetVal = ( listen( m_socket, nConnectionBacklog ) != CSimpleSocket::SocketError );
       }
       else
       {
@@ -131,16 +128,15 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 
    if( !bRetVal )
    {
-      CSocketError err = GetSocketError();
+      const CSocketError err = GetSocketError();
       Close();
       SetSocketError( err );
    }
    else
    {
-      socklen_t nSockLen = sizeof( struct sockaddr );
-
-      memset( &m_stServerSockaddr, 0, nSockLen );
-      getsockname( m_socket, ( struct sockaddr * )&m_stServerSockaddr, &nSockLen );
+      socklen_t nSockAddrLen( SOCKET_ADDR_IN_SIZE );
+      memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
+      getsockname( m_socket, ( struct sockaddr * )&m_stServerSockaddr, &nSockAddrLen );
    }
 
    return bRetVal;
@@ -152,7 +148,7 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 //
 //------------------------------------------------------------------------------
 template <template <typename T> class SmartPtr, class SocketBase>
- auto CPassiveSocket::Accept() -> SmartPtr<SocketBase>
+auto CPassiveSocket::Accept() -> SmartPtr<SocketBase>
 {
    static_assert( std::is_base_of<CSimpleSocket, SocketBase>::value, "SocketBase is not derived from CSimpleSocket" );
    static_assert( std::is_default_constructible<SmartPtr<SocketBase>>::value, "template must be default constructable!" );
@@ -163,9 +159,6 @@ template <template <typename T> class SmartPtr, class SocketBase>
    static_assert( std::is_constructible<SmartPtr<SocketBase>, CActiveSocket*>::value, "template must be constructable by CActiveSocket*" );
 
    static_assert( std::is_assignable<SmartPtr<SocketBase>&, std::nullptr_t>::value, "template must be assignable by nullptr" );
-
-   uint32         nSockLen;
-   SOCKET         socket = CSimpleSocket::SocketError;
 
    if( m_nSocketType != CSimpleSocket::SocketTypeTcp )
    {
@@ -185,29 +178,27 @@ template <template <typename T> class SmartPtr, class SocketBase>
       m_timer.Initialize();
       m_timer.SetStartTime();
 
-      nSockLen = sizeof( m_stClientSockaddr );
-
       do
       {
          errno = 0;
-         socket = accept( m_socket, ( struct sockaddr * )&m_stClientSockaddr, (socklen_t *)&nSockLen );
+         socklen_t nSockAddrLen( SOCKET_ADDR_IN_SIZE );
+         const SOCKET socket = accept( m_socket, ( struct sockaddr * )&m_stClientSockaddr, &nSockAddrLen );
 
          if( socket != INVALID_SOCKET )
          {
             pClientSocket->SetSocketHandle( socket );
             pClientSocket->TranslateSocketError();
             socketErrno = pClientSocket->GetSocketError();
-            socklen_t nSockLen = sizeof( struct sockaddr );
 
             //-------------------------------------------------------------
             // Store client and server IP and port information for this
             // connection.
             //-------------------------------------------------------------
-            getpeername( m_socket, ( struct sockaddr * )&pClientSocket->m_stClientSockaddr, &nSockLen );
-            memcpy( (void *)&pClientSocket->m_stClientSockaddr, (void *)&m_stClientSockaddr, nSockLen );
+            getpeername( m_socket, ( struct sockaddr * )&pClientSocket->m_stClientSockaddr, &nSockAddrLen );
+            memcpy( &pClientSocket->m_stClientSockaddr, &m_stClientSockaddr, SOCKET_ADDR_IN_SIZE );
 
-            memset( &pClientSocket->m_stServerSockaddr, 0, nSockLen );
-            getsockname( m_socket, ( struct sockaddr * )&pClientSocket->m_stServerSockaddr, &nSockLen );
+            memset( &pClientSocket->m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
+            getsockname( m_socket, ( struct sockaddr * )&pClientSocket->m_stServerSockaddr, &nSockAddrLen );
          }
          else
          {

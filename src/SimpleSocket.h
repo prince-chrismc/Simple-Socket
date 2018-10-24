@@ -534,6 +534,8 @@ protected:
         m_socket = socket;
     };
 
+    static constexpr int SOCKET_ADDR_IN_SIZE = sizeof( sockaddr_in );
+
 private:
     /// Generic function used to get the send/receive window size
     ///  @return zero on failure else the number of bytes of the TCP window size if successful.
