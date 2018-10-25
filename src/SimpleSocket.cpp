@@ -46,7 +46,7 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    m_socket( INVALID_SOCKET ),
    m_socketErrno( CSimpleSocket::SocketInvalidSocket ),
    m_pBuffer( NULL ), m_nBufferSize( 0 ), m_nSocketDomain( AF_INET ),
-   m_nSocketType( SocketTypeInvalid ), m_nBytesReceived( -1 ),
+   m_nSocketType( nType ), m_nBytesReceived( -1 ),
    m_nBytesSent( -1 ), m_nFlags( 0 ),
    m_bIsBlocking( true )
 {
@@ -57,50 +57,20 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
 
    switch( nType )
    {
-       //----------------------------------------------------------------------
-       // Declare socket type stream - TCP
-       //----------------------------------------------------------------------
    case CSimpleSocket::SocketTypeTcp:
-   {
-      m_nSocketDomain = AF_INET;
-      m_nSocketType = CSimpleSocket::SocketTypeTcp;
-      break;
-   }
-   case CSimpleSocket::SocketTypeTcp6:
-   {
-      m_nSocketDomain = AF_INET6;
-      m_nSocketType = CSimpleSocket::SocketTypeTcp6;
-      break;
-   }
-   //----------------------------------------------------------------------
-   // Declare socket type datagram - UDP
-   //----------------------------------------------------------------------
    case CSimpleSocket::SocketTypeUdp:
-   {
       m_nSocketDomain = AF_INET;
-      m_nSocketType = CSimpleSocket::SocketTypeUdp;
       break;
-   }
+   case CSimpleSocket::SocketTypeTcp6:
    case CSimpleSocket::SocketTypeUdp6:
-   {
       m_nSocketDomain = AF_INET6;
-      m_nSocketType = CSimpleSocket::SocketTypeUdp6;
       break;
-   }
-   //----------------------------------------------------------------------
-   // Declare socket type raw Ethernet - Ethernet
-   //----------------------------------------------------------------------
-   case CSimpleSocket::SocketTypeRaw:
-   {
 #if defined(_LINUX) && !defined(_DARWIN)
+   // Declare socket type raw Ethernet - Ethernet
+   case CSimpleSocket::SocketTypeRaw:
       m_nSocketDomain = AF_PACKET;
-      m_nSocketType = CSimpleSocket::SocketTypeRaw;
-#endif
-#ifdef _WIN32
-      m_nSocketType = CSimpleSocket::SocketTypeInvalid;
-#endif
       break;
-   }
+#endif
    default:
       m_nSocketType = CSimpleSocket::SocketTypeInvalid;
       break;
@@ -143,26 +113,22 @@ bool CSimpleSocket::Initialize()
    errno = CSimpleSocket::SocketSuccess;
 
 #ifdef WIN32
-    //-------------------------------------------------------------------------
-    // Data structure containing general Windows Sockets Info
-    //-------------------------------------------------------------------------
+   //-------------------------------------------------------------------------
+   // Data structure containing general Windows Sockets Info
+   //-------------------------------------------------------------------------
    memset( &m_hWSAData, 0, sizeof( m_hWSAData ) );
    WSAStartup( MAKEWORD( 2, 0 ), &m_hWSAData );
 #endif
 
-    //-------------------------------------------------------------------------
-    // Create the basic Socket Handle
-    //-------------------------------------------------------------------------
    m_timer.Initialize();
    m_timer.SetStartTime();
-   m_socket = socket( m_nSocketDomain, m_nSocketType, 0 );
+   m_socket = socket( m_nSocketDomain, m_nSocketType, 0 ); // Create the basic Socket Handle
    m_timer.SetEndTime();
 
    TranslateSocketError();
 
-   return ( IsSocketValid() );
+   return IsSocketValid();
 }
-
 
 //------------------------------------------------------------------------------
 //
