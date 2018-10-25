@@ -5,4 +5,4 @@ collections:
         output: true
         permalink: /:path/
     values:
-      layout: jekyll-theme-minimal
+        layout: jekyll-theme-minimal
