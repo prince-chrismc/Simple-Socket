@@ -1,5 +1,6 @@
 ---
 title: CSimpleSocket
+layout: minimal
 description: Documentation for CSimpleSocket
 ---
 
