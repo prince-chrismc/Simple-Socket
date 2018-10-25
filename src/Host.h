@@ -56,46 +56,28 @@
    constexpr size_t __WORDSIZE = ( sizeof( void* ) == 8 ) ? 64 : ( sizeof( void* ) == 4 ) ? 32 : 0;
 #endif
 
-#if defined(_LINUX) || defined(_DARWIN)
-   typedef unsigned char  uint8;
-   typedef char           int8;
-   typedef unsigned short uint16;
-   typedef short          int16;
-   typedef unsigned int   uint32;
-   typedef int            int32;
-   typedef int            SOCKET;
-#endif
+using uint8  = unsigned char;
+using int8   = char;
+using uint16 = unsigned short;
+using int16  = short;
+using uint32 = unsigned int;
+using int32  = int;
+using uint64 = unsigned long long int;
+using int64  = long long int;
 
-#ifdef WIN32
+#if defined(_LINUX) || defined(_DARWIN)
+   typedef int            SOCKET;
+#elif defined( _WIN32 )
    struct iovec {
       void  *iov_base;
       size_t iov_len;
    };
 
-   typedef unsigned char  uint8;
-   typedef char           int8;
-   typedef unsigned short uint16;
-   typedef short          int16;
-   typedef unsigned int   uint32;
-   typedef int            int32;
-
    typedef int socklen_t;
 #endif
 
-#if defined(WIN32)
-   typedef unsigned long long int uint64;
-   typedef long long int          int64;
-#elif (__WORDSIZE == 32)
-   __extension__
-      typedef long long int          int64;
-   __extension__
-      typedef unsigned long long int uint64;
-#elif (__WORDSIZE == 64)
-   typedef unsigned long int uint64;
-   typedef long int          int64;
-#endif
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #ifndef UINT8_MAX
    #define UINT8_MAX  (UCHAR_MAX)
@@ -109,14 +91,6 @@
 
 #ifndef SIZE_MAX
    constexpr size_t SIZE_MAX = ( __WORDSIZE == 64 ) ? 18446744073709551615UL : 4294967295U;
-#endif
-
-#ifndef TRUE
-   #define TRUE 1
-#endif
-
-#ifndef FALSE
-   #define FALSE 0
 #endif
 
 #ifndef htonll
@@ -136,94 +110,57 @@
 /* Socket Macros                                                             */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
-#ifdef WIN32
-#define SHUT_RD                0
-#define SHUT_WR                1
-#define SHUT_RDWR              2
-#define ACCEPT(a,b,c)          accept(a,b,c)
-#define CONNECT(a,b,c)         connect(a,b,c)
-#define CLOSE(a)               closesocket(a)
-#define READ(a,b,c)            _read(a,b,c)
-#define SEEK(a,b,c)            _lseek(a,b,c)
-#define RECV(a,b,c,d)          recv(a, (char *)b, c, d)
-#define RECVFROM(a,b,c,d,e,f)  recvfrom(a, (char *)b, c, d, (sockaddr *)e, (int *)f)
-#define RECV_FLAGS             MSG_WAITALL
-#define SELECT(a,b,c,d,e)      select((int32)a,b,c,d,e)
-#define SEND(a,b,c,d)          send(a, (const char *)b, (int)c, d)
-#define SENDTO(a,b,c,d,e,f)    sendto(a, (const char *)b, (int)c, d, e, f)
-#define SEND_FLAGS             0
-#define SENDFILE(a,b,c,d)      sendfile(a, b, c, d)
-#define SET_SOCKET_ERROR(x,y)  errno=y
-#define SOCKET_ERROR_INTERUPT  EINTR
-#define SOCKET_ERROR_TIMEDOUT  EAGAIN
-#define WRITE(a,b,c)           write(a,b,c)
-#define WRITEV(a,b,c)          Writev(b, c)
-#define GETSOCKOPT(a,b,c,d,e)  getsockopt(a,b,c,(char *)d, (int *)e)
-#define SETSOCKOPT(a,b,c,d,e)  setsockopt(a,b,c,(char *)d, (int)e)
-#define GETHOSTBYNAME(a)       gethostbyname(a)
-#endif
+#ifdef _WIN32
 
-#if defined(_LINUX) || defined(_DARWIN)
-#define ACCEPT(a,b,c)          accept(a,b,c)
-#define CONNECT(a,b,c)         connect(a,b,c)
-#define CLOSE(a)               close(a)
-#define READ(a,b,c)            pread(a,b,c,0)
-#define SEEK(a,b,c)            lseek(a,b,c)
-#define RECV(a,b,c,d)          recv(a, (void *)b, c, d)
-#define RECVFROM(a,b,c,d,e,f)  recvfrom(a, (char *)b, c, d, (sockaddr *)e, f)
-#define RECV_FLAGS             MSG_WAITALL
-#define SELECT(a,b,c,d,e)      select(a,b,c,d,e)
-#define SEND(a,b,c,d)          send(a, (const int8 *)b, c, d)
-#define SENDTO(a,b,c,d,e,f)    sendto(a, (const int8 *)b, c, d, e, f)
-#define SEND_FLAGS             0
-#define SENDFILE(a,b,c,d)      sendfile(a, b, c, d)
-#define SET_SOCKET_ERROR(x,y)  errno=y
-#define SOCKET_ERROR_INTERUPT  EINTR
-#define SOCKET_ERROR_TIMEDOUT  EAGAIN
-#define WRITE(a,b,c)           write(a,b,c)
-#define WRITEV(a,b,c)          writev(a, b, c)
-#define GETSOCKOPT(a,b,c,d,e)  getsockopt((int)a,(int)b,(int)c,(void *)d,(socklen_t *)e)
-#define SETSOCKOPT(a,b,c,d,e)  setsockopt((int)a,(int)b,(int)c,(const void *)d,(int)e)
-#define GETHOSTBYNAME(a)       gethostbyname(a)
-#endif
+   #define SHUT_RD                0
+   #define SHUT_WR                1
+   #define SHUT_RDWR              2
+   #define ACCEPT(a,b,c)          accept(a,b,c)
+   #define CONNECT(a,b,c)         connect(a,b,c)
+   #define CLOSE(a)               closesocket(a)
+   #define READ(a,b,c)            _read(a,b,c)
+   #define SEEK(a,b,c)            _lseek(a,b,c)
+   #define RECV(a,b,c,d)          recv(a, (char *)b, c, d)
+   #define RECVFROM(a,b,c,d,e,f)  recvfrom(a, (char *)b, c, d, (sockaddr *)e, (int *)f)
+   #define RECV_FLAGS             MSG_WAITALL
+   #define SELECT(a,b,c,d,e)      select((int32)a,b,c,d,e)
+   #define SEND(a,b,c,d)          send(a, (const char *)b, (int)c, d)
+   #define SENDTO(a,b,c,d,e,f)    sendto(a, (const char *)b, (int)c, d, e, f)
+   #define SEND_FLAGS             0
+   #define SENDFILE(a,b,c,d)      sendfile(a, b, c, d)
+   #define SET_SOCKET_ERROR(x,y)  errno=y
+   #define SOCKET_ERROR_INTERUPT  EINTR
+   #define SOCKET_ERROR_TIMEDOUT  EAGAIN
+   #define WRITE(a,b,c)           write(a,b,c)
+   #define WRITEV(a,b,c)          Writev(b, c)
+   #define GETSOCKOPT(a,b,c,d,e)  getsockopt(a,b,c,(char *)d, (int *)e)
+   #define SETSOCKOPT(a,b,c,d,e)  setsockopt(a,b,c,(char *)d, (int)e)
+   #define GETHOSTBYNAME(a)       gethostbyname(a)
 
+#elif defined(_LINUX) || defined(_DARWIN)
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/* File Macros                                                               */
-/*                                                                           */
-/*---------------------------------------------------------------------------*/
-#define STRUCT_STAT         struct stat
-#define LSTAT(x,y)          lstat(x,y)
-#define FILE_HANDLE         FILE *
-#define CLEARERR(x)         clearerr(x)
-#define FCLOSE(x)           fclose(x)
-#define FEOF(x)             feof(x)
-#define FERROR(x)           ferror(x)
-#define FFLUSH(x)           fflush(x)
-#define FILENO(s)           fileno(s)
-#define FOPEN(x,y)          fopen(x, y)
-  //#define FREAD(a,b,c,d)      fread(a, b, c, d)
-#define FSTAT(s, st)        fstat(FILENO(s), st)
-    //#define FWRITE(a,b,c,d)     fwrite(a, b, c, d)
-#define STAT_BLK_SIZE(x)    ((x).st_blksize)
+   #define ACCEPT(a,b,c)          accept(a,b,c)
+   #define CONNECT(a,b,c)         connect(a,b,c)
+   #define CLOSE(a)               close(a)
+   #define READ(a,b,c)            pread(a,b,c,0)
+   #define SEEK(a,b,c)            lseek(a,b,c)
+   #define RECV(a,b,c,d)          recv(a, (void *)b, c, d)
+   #define RECVFROM(a,b,c,d,e,f)  recvfrom(a, (char *)b, c, d, (sockaddr *)e, f)
+   #define RECV_FLAGS             MSG_WAITALL
+   #define SELECT(a,b,c,d,e)      select(a,b,c,d,e)
+   #define SEND(a,b,c,d)          send(a, (const int8 *)b, c, d)
+   #define SENDTO(a,b,c,d,e,f)    sendto(a, (const int8 *)b, c, d, e, f)
+   #define SEND_FLAGS             0
+   #define SENDFILE(a,b,c,d)      sendfile(a, b, c, d)
+   #define SET_SOCKET_ERROR(x,y)  errno=y
+   #define SOCKET_ERROR_INTERUPT  EINTR
+   #define SOCKET_ERROR_TIMEDOUT  EAGAIN
+   #define WRITE(a,b,c)           write(a,b,c)
+   #define WRITEV(a,b,c)          writev(a, b, c)
+   #define GETSOCKOPT(a,b,c,d,e)  getsockopt((int)a,(int)b,(int)c,(void *)d,(socklen_t *)e)
+   #define SETSOCKOPT(a,b,c,d,e)  setsockopt((int)a,(int)b,(int)c,(const void *)d,(int)e)
+   #define GETHOSTBYNAME(a)       gethostbyname(a)
 
-
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/* Misc Macros                                                               */
-/*                                                                           */
-/*---------------------------------------------------------------------------*/
-#if defined(WIN32)
-#define SNPRINTF _snprintf
-#define PRINTF   printf
-#define VPRINTF  vprintf
-#define FPRINTF  fprintf
-#else
-#define SNPRINTF snprintf
-#define PRINTF   printf
-#define VPRINTF  vprintf
-#define FPRINTF  fprintf
 #endif
 
 #endif /* __HOST_H__ */
