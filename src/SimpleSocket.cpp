@@ -117,7 +117,7 @@ bool CSimpleSocket::Initialize()
    // Data structure containing general Windows Sockets Info
    //-------------------------------------------------------------------------
    memset( &m_hWSAData, 0, sizeof( m_hWSAData ) );
-   WSAStartup( MAKEWORD( 2, 0 ), &m_hWSAData );
+   WSAStartup( MAKEWORD( 2, 2 ), &m_hWSAData );
 #endif
 
    m_timer.Initialize();
