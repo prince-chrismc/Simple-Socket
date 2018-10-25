@@ -81,7 +81,6 @@
 #define IPTOS_LOWDELAY  0x10
 
 #endif
-#include "Host.h"
 #include "StatTimer.h"
 
 //-----------------------------------------------------------------------------
@@ -423,13 +422,13 @@ public:
 
     /// Get the total time the of the last operation in milliseconds.
     ///  @return number of milliseconds of last operation.
-    uint32 GetTotalTimeMs() {
+    auto GetTotalTimeMs() const {
         return m_timer.GetMilliSeconds();
     };
 
     /// Get the total time the of the last operation in microseconds.
     ///  @return number of microseconds or last operation.
-    uint32 GetTotalTimeUsec() {
+    auto GetTotalTimeUsec() const {
         return m_timer.GetMicroSeconds();
     };
 
