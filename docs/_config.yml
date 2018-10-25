@@ -1,5 +1,5 @@
 theme: jekyll-theme-minimal
 
 collections:
-  doc:
+   - doc
   
