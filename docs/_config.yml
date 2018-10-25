@@ -4,5 +4,3 @@ collections:
     doc:
         output: true
         permalink: /:path/
-    values:
-        layout: jekyll-theme-minimal
