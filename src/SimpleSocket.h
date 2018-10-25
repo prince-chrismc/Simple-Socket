@@ -73,8 +73,6 @@
 #define INVALID_SOCKET    ~(0)
 #endif
 
-#define SOCKET_SENDFILE_BLOCKSIZE 8192
-
 /// Provides a platform independent class to for socket development.
 /// This class is designed to abstract socket communication development in a
 /// platform independent manner.

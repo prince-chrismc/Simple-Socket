@@ -49,6 +49,8 @@
 #include <fcntl.h>
 #endif
 
+static constexpr auto SOCKET_SENDFILE_BLOCKSIZE = 8192;
+
 CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    m_socket( INVALID_SOCKET ),
    m_socketErrno( CSimpleSocket::SocketInvalidSocket ),
