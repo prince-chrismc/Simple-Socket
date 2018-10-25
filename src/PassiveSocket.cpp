@@ -147,7 +147,7 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 // Accept() -
 //
 //------------------------------------------------------------------------------
-template <template<typename> class SmartPtr, class SocketBase>
+template <template<typename> class SmartPtr, class SocketBase, typename, typename>
 auto CPassiveSocket::Accept() -> SmartPtr<SocketBase>
 {
    static_assert( std::is_base_of<CSimpleSocket, SocketBase>::value, "SocketBase is not derived from CSimpleSocket" );
@@ -168,9 +168,6 @@ auto CPassiveSocket::Accept() -> SmartPtr<SocketBase>
 
    auto pClientSocket = new CActiveSocket();
 
-   //--------------------------------------------------------------------------
-   // Wait for incoming connection.
-   //--------------------------------------------------------------------------
    if( pClientSocket != nullptr )
    {
       CSocketError socketErrno = SocketSuccess;
@@ -182,7 +179,7 @@ auto CPassiveSocket::Accept() -> SmartPtr<SocketBase>
       {
          errno = 0;
          socklen_t nSockAddrLen( SOCKET_ADDR_IN_SIZE );
-         const SOCKET socket = accept( m_socket, ( struct sockaddr * )&m_stClientSockaddr, &nSockAddrLen );
+         const SOCKET socket = accept( m_socket, ( struct sockaddr * )&m_stClientSockaddr, &nSockAddrLen ); // Wait for incoming connection.
 
          if( socket != INVALID_SOCKET )
          {
@@ -190,10 +187,7 @@ auto CPassiveSocket::Accept() -> SmartPtr<SocketBase>
             pClientSocket->TranslateSocketError();
             socketErrno = pClientSocket->GetSocketError();
 
-            //-------------------------------------------------------------
-            // Store client and server IP and port information for this
-            // connection.
-            //-------------------------------------------------------------
+            // Store client and server IP and port information for this connection.
             getpeername( m_socket, ( struct sockaddr * )&pClientSocket->m_stClientSockaddr, &nSockAddrLen );
             memcpy( &pClientSocket->m_stClientSockaddr, &m_stClientSockaddr, SOCKET_ADDR_IN_SIZE );
 

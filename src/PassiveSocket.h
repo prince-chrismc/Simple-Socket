@@ -57,7 +57,7 @@
 class CPassiveSocket : public CSimpleSocket
 {
 public:
-    CPassiveSocket(CSocketType type = SocketTypeTcp);
+   CPassiveSocket( CSocketType type = SocketTypeTcp );
    virtual ~CPassiveSocket();
 
     /// Extracts the first connection request on the queue of pending
@@ -73,21 +73,23 @@ public:
     ///    CPassiveSocket::SocketEwouldblock, CPassiveSocket::SocketInvalidSocket,
     ///    CPassiveSocket::SocketConnectionAborted, CPassiveSocket::SocketInterrupted
     ///    CPassiveSocket::SocketProtocolError, CPassiveSocket::SocketFirewallError
-   template<template<typename> class SmartPtr, class SocketBase>
-   auto Accept() -> SmartPtr<SocketBase>;
+   template <template<typename> class SmartPtr, class SocketBase,
+      typename = std::enable_if<std::is_member_object_pointer<SocketBase*( SmartPtr<SocketBase>::* )>::value>,
+      typename = std::enable_if<std::is_base_of<CSimpleSocket, SocketBase>::value>>
+   auto Accept()->SmartPtr<SocketBase>;
 
-    /// Create a listening socket at local ip address 'x.x.x.x' or 'localhost'
-    /// if pAddr is NULL on port nPort.
-    ///
-    ///  @param pAddr specifies the IP address on which to listen.
-    ///  @param nPort specifies the port on which to listen.
-    ///  @param nConnectionBacklog specifies connection queue backlog (default 30,000)
-    ///  @return true if a listening socket was created.
-    ///      If not successful, the false is returned and one of the following error
-    ///      conditions will be set: CPassiveSocket::SocketAddressInUse, CPassiveSocket::SocketProtocolError,
-    ///      CPassiveSocket::SocketInvalidSocket.  The following socket errors are for Linux/Unix
-    ///      derived systems only: CPassiveSocket::SocketInvalidSocketBuffer
-    bool Listen(const char *pAddr, uint16 nPort, int32 nConnectionBacklog = 30000);
+   /// Create a listening socket at local ip address 'x.x.x.x' or 'localhost'
+   /// if pAddr is NULL on port nPort.
+   ///
+   ///  @param pAddr specifies the IP address on which to listen.
+   ///  @param nPort specifies the port on which to listen.
+   ///  @param nConnectionBacklog specifies connection queue backlog (default 30,000)
+   ///  @return true if a listening socket was created.
+   ///      If not successful, the false is returned and one of the following error
+   ///      conditions will be set: CPassiveSocket::SocketAddressInUse, CPassiveSocket::SocketProtocolError,
+   ///      CPassiveSocket::SocketInvalidSocket.  The following socket errors are for Linux/Unix
+   ///      derived systems only: CPassiveSocket::SocketInvalidSocketBuffer
+   bool Listen( const char *pAddr, uint16 nPort, int32 nConnectionBacklog = 30000 );
 };
 
 #endif // __PASSIVESOCKET_H__
