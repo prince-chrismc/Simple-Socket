@@ -42,6 +42,13 @@
  *----------------------------------------------------------------------------*/
 #include "SimpleSocket.h"
 
+#include <cstdlib>
+
+#if defined(_LINUX) || defined (_DARWIN)
+#include <netinet/ip.h>
+#include <fcntl.h>
+#endif
+
 CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    m_socket( INVALID_SOCKET ),
    m_socketErrno( CSimpleSocket::SocketInvalidSocket ),

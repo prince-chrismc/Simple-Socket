@@ -43,6 +43,10 @@
 
 #include "ActiveSocket.h"
 
+#if defined(_LINUX) || defined (_DARWIN)
+#include <netdb.h>
+#endif
+
 CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType )
 {
 }

@@ -43,30 +43,14 @@
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
-#include <sys/stat.h>
-#include <cstdlib>
-#include <cstdio>
-#include <cstdarg>
 #include <cerrno>
 #include <cstring>
 
 #if defined(_LINUX) || defined (_DARWIN)
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
-#include <netinet/ip.h>
-#include <netdb.h>
-#include <sys/time.h>
 #include <sys/uio.h>
 #include <unistd.h>
-#include <fcntl.h>
-#endif
-#ifdef _LINUX
-#include <linux/if_packet.h>
-#include <linux/if_ether.h>
-#include <linux/if.h>
-#include <sys/sendfile.h>
 #endif
 #ifdef _DARWIN
 #include <net/if.h>

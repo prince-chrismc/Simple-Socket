@@ -41,8 +41,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *----------------------------------------------------------------------------*/
 
-#include <memory>
 #include "PassiveSocket.h"
+#include <memory>
+
+#if defined(_LINUX) || defined (_DARWIN)
+#include <netinet/ip.h>
+#endif
 
 CPassiveSocket::CPassiveSocket( CSocketType nType ) : CSimpleSocket( nType )
 {
