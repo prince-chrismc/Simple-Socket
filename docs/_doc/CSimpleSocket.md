@@ -2,7 +2,6 @@
 layout: default
 title: CSimpleSocket
 description: Documentation for CSimpleSocket
-logo: /assets/images/ethernet-network-cables-clip-art-rj45.png
 ---
 # CSimpleSocket
 Provides a platform independent class to for socket development. This class is designed to abstract socket communication development in a
