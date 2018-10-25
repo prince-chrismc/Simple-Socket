@@ -53,7 +53,7 @@
 /*---------------------------------------------------------------------------*/
 #ifndef __WORDSIZE
    static_assert( sizeof( void* ) == 8 || sizeof( void* ) == 4 );
-   constexpr size_t __WORDSIZE = ( sizeof( void* ) == 8 ) ? 64 : ( sizeof( void* ) == 4 ) ? 32 : 0;
+   constexpr auto __WORDSIZE = ( sizeof( void* ) == 8 ) ? 64 : ( sizeof( void* ) == 4 ) ? 32 : 0;
 #endif
 
 using uint8  = unsigned char;

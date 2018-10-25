@@ -52,6 +52,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 #endif
+
 #ifdef _DARWIN
 #include <net/if.h>
 #endif
@@ -60,10 +61,8 @@
 #include <io.h>
 #include <winsock2.h>
 #include <Ws2tcpip.h>
-
-#define IPTOS_LOWDELAY  0x10
-
 #endif
+
 #include "StatTimer.h"
 
 //-----------------------------------------------------------------------------
@@ -79,7 +78,8 @@
 /// - Socket types
 ///  -# CActiveSocket Class
 ///  -# CPassiveSocket Class
-class CSimpleSocket {
+class CSimpleSocket
+{
 public:
     /// Defines the three possible states for shuting down a socket.
     typedef enum

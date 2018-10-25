@@ -51,6 +51,10 @@
 
 static constexpr auto SOCKET_SENDFILE_BLOCKSIZE = 8192;
 
+#ifdef _WIN32
+   static constexpr auto IPTOS_LOWDELAY = 0x10;
+#endif
+
 CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    m_socket( INVALID_SOCKET ),
    m_socketErrno( CSimpleSocket::SocketInvalidSocket ),
