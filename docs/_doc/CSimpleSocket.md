@@ -1,7 +1,6 @@
 ---
 title: CSimpleSocket
 ---
-
 /// Provides a platform independent class to for socket development.
 /// This class is designed to abstract socket communication development in a
 /// platform independent manner.
