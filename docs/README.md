@@ -3,10 +3,10 @@ This ~fork~ repository aims to have the original library compile and work reliab
 the async and multicast functionality.
 
 ### Table of Contents
-1. [History](#History)
-2. [Building and Installing](Building-and-Installing)
-3. [Class Overview](#Class-Overview)
-4. [Examples](#Examples)
+1. [History](#history)
+2. [Building and Installing](building-and-installing)
+3. [Class Overview](#class-overview)
+4. [Examples](#examples)
 
 ## History
 Written by Mark Carrier to provide a mechanism for writing cross platform socket code. This library was originally written to only support blocking
