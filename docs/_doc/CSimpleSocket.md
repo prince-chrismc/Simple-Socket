@@ -1,5 +1,5 @@
 ---
-theme: jekyll-theme-minimal
+layout: default
 title: CSimpleSocket
 description: Documentation for CSimpleSocket
 ---
