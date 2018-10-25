@@ -3,4 +3,6 @@ theme: jekyll-theme-minimal
 collections:
     doc:
         output: true
-        permalink: /:path/  
+        permalink: /:path/
+    values:
+      layout: jekyll-theme-minimal
