@@ -44,12 +44,7 @@
 #ifndef __HOST_H__
 #define __HOST_H__
 
-#include <limits.h>
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+#include <climits>
 
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
@@ -57,92 +52,83 @@ extern "C"
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef __WORDSIZE
-  /* Assume 32 */
-  #define __WORDSIZE 32
+   static_assert( sizeof( void* ) == 8 || sizeof( void* ) == 4 );
+   constexpr size_t __WORDSIZE = ( sizeof( void* ) == 8 ) ? 64 : ( sizeof( void* ) == 4 ) ? 32 : 0;
 #endif
 
 #if defined(_LINUX) || defined(_DARWIN)
-    typedef unsigned char  uint8;
-    typedef char           int8;
-    typedef unsigned short uint16;
-    typedef short          int16;
-    typedef unsigned int   uint32;
-    typedef int            int32;
-    typedef int            SOCKET;
+   typedef unsigned char  uint8;
+   typedef char           int8;
+   typedef unsigned short uint16;
+   typedef short          int16;
+   typedef unsigned int   uint32;
+   typedef int            int32;
+   typedef int            SOCKET;
 #endif
 
 #ifdef WIN32
-    struct iovec {
-        void  *iov_base;
-        size_t iov_len;
-    };
+   struct iovec {
+      void  *iov_base;
+      size_t iov_len;
+   };
 
-    typedef unsigned char  uint8;
-    typedef char           int8;
-    typedef unsigned short uint16;
-    typedef short          int16;
-    typedef unsigned int   uint32;
-    typedef int            int32;
-#endif
+   typedef unsigned char  uint8;
+   typedef char           int8;
+   typedef unsigned short uint16;
+   typedef short          int16;
+   typedef unsigned int   uint32;
+   typedef int            int32;
 
-#ifdef WIN32
-    typedef int socklen_t;
+   typedef int socklen_t;
 #endif
 
 #if defined(WIN32)
-    typedef unsigned long long int uint64;
-    typedef long long int          int64;
+   typedef unsigned long long int uint64;
+   typedef long long int          int64;
 #elif (__WORDSIZE == 32)
-    __extension__
-    typedef long long int          int64;
-    __extension__
-    typedef unsigned long long int uint64;
+   __extension__
+      typedef long long int          int64;
+   __extension__
+      typedef unsigned long long int uint64;
 #elif (__WORDSIZE == 64)
-    typedef unsigned long int uint64;
-    typedef long int          int64;
+   typedef unsigned long int uint64;
+   typedef long int          int64;
 #endif
 
 #ifdef WIN32
 
-  #ifndef UINT8_MAX
-    #define UINT8_MAX  (UCHAR_MAX)
-  #endif
-  #ifndef UINT16_MAX
-    #define UINT16_MAX (USHRT_MAX)
-  #endif
-  #ifndef UINT32_MAX
-    #define UINT32_MAX (ULONG_MAX)
-  #endif
-
-  #if __WORDSIZE == 64
-    #define SIZE_MAX (18446744073709551615UL)
-  #else
-    #ifndef SIZE_MAX
-    #define SIZE_MAX (4294967295U)
-  #endif
-  #endif
+#ifndef UINT8_MAX
+   #define UINT8_MAX  (UCHAR_MAX)
+#endif
+#ifndef UINT16_MAX
+   #define UINT16_MAX (USHRT_MAX)
+#endif
+#ifndef UINT32_MAX
+   #define UINT32_MAX (ULONG_MAX)
 #endif
 
-#if defined(WIN32)
-  #define ssize_t size_t
+#ifndef SIZE_MAX
+   constexpr size_t SIZE_MAX = ( __WORDSIZE == 64 ) ? 18446744073709551615UL : 4294967295U;
 #endif
 
 #ifndef TRUE
-  #define TRUE 1
+   #define TRUE 1
 #endif
 
 #ifndef FALSE
-  #define FALSE 0
+   #define FALSE 0
 #endif
 
 #ifndef htonll
-#ifdef _BIG_ENDIAN
-#define htonll(x)   (x)
-#define ntohll(x)   (x)
-#else
-#define htonll(x)   ((((uint64)htonl(x)) << 32) + htonl(x >> 32))
-#define ntohll(x)   ((((uint64)ntohl(x)) << 32) + ntohl(x >> 32))
+   #ifdef _BIG_ENDIAN
+      #define htonll(x)   (x)
+      #define ntohll(x)   (x)
+   #else
+      #define htonll(x)   ((((uint64)htonl(x)) << 32) + htonl(x >> 32))
+      #define ntohll(x)   ((((uint64)ntohl(x)) << 32) + ntohl(x >> 32))
+   #endif
 #endif
+
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -229,31 +215,15 @@ extern "C"
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #if defined(WIN32)
-  #define GET_CLOCK_COUNT(x) QueryPerformanceCounter((LARGE_INTEGER *)x)
+#define SNPRINTF _snprintf
+#define PRINTF   printf
+#define VPRINTF  vprintf
+#define FPRINTF  fprintf
 #else
-  #define GET_CLOCK_COUNT(x) gettimeofday(x, NULL)
-#endif
-
-#if defined(WIN32)
-  #define STRTOULL(x) _atoi64(x)
-#else
-  #define STRTOULL(x) strtoull(x, NULL, 10)
-#endif
-
-#if defined(WIN32)
-  #define SNPRINTF _snprintf
-  #define PRINTF   printf
-  #define VPRINTF  vprintf
-  #define FPRINTF  fprintf
-#else
-  #define SNPRINTF snprintf
-  #define PRINTF   printf
-  #define VPRINTF  vprintf
-  #define FPRINTF  fprintf
-#endif
-
-#ifdef __cplusplus
-}
+#define SNPRINTF snprintf
+#define PRINTF   printf
+#define VPRINTF  vprintf
+#define FPRINTF  fprintf
 #endif
 
 #endif /* __HOST_H__ */
