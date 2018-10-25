@@ -1,4 +1,5 @@
 theme: jekyll-theme-minimal
+logo: /assets/images/ethernet-network-cables-clip-art-rj45.png
 
 collections:
     doc:
