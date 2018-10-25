@@ -25,9 +25,10 @@ SOFTWARE.
 */
 
 #include "ActiveSocket.h"       // Include header for active socket object definition
+#include <cstdio>
 
-#define MAX_PACKET 4096
-#define TEST_PACKET "Test Packet"
+static constexpr autp MAX_PACKET  = 4096;
+static constexpr autp TEST_PACKET = "Test Packet";
 
 int main(int argc, char **argv)
 {
