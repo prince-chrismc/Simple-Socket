@@ -33,6 +33,7 @@ using namespace std::chrono_literals;
 
 static constexpr const char* GROUP_ADDR = "239.1.2.3";
 static constexpr const char* TEST_PACKET = "Test Packet";
+static constexpr auto PORT_NUMBER = 60000;
 
 int constexpr length( const char* str ) { return *str ? 1 + length( str + 1 ) : 0; }
 static constexpr unsigned int SIZEOF_TEST_PACKET = length( TEST_PACKET );
@@ -60,7 +61,7 @@ int main( int argc, char** argv )
 
          //bRetval = oSender.BindInterface( "192.168.0.195" );
 
-         bRetval = oSender.JoinMulticast( GROUP_ADDR, 60000 );
+         bRetval = oSender.JoinMulticast( GROUP_ADDR, PORT_NUMBER );
 
          {
             const auto sResult = ( bRetval ) ? "Successfully" : "Failed to";
@@ -96,7 +97,7 @@ int main( int argc, char** argv )
 
    //bRetval = oReceiver.BindInterface( "192.168.0.195" );
 
-   bRetval = oReceiver.JoinMulticast( GROUP_ADDR, 60000 );
+   bRetval = oReceiver.JoinMulticast( GROUP_ADDR, PORT_NUMBER );
 
    {
       const auto sResult = ( bRetval ) ? "Successfully" : "Failed to";
