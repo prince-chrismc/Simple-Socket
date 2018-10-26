@@ -324,6 +324,24 @@ std::string CSimpleSocket::GetClientAddr()
    return buff;
 }
 
+//------------------------------------------------------------------------------
+//
+// GetJoinedGroup()
+//
+//------------------------------------------------------------------------------
+std::string CSimpleSocket::GetJoinedGroup()
+{
+   char buff[ 16 ];
+
+   if( inet_ntop( m_nSocketDomain, &m_stMulticastGroup.sin_addr, buff, 16 ) == nullptr )
+   {
+      TranslateSocketError();
+      return DescribeError();
+   }
+
+   return buff;
+}
+
 
 //------------------------------------------------------------------------------
 //

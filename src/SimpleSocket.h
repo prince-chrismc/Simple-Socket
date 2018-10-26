@@ -438,7 +438,7 @@ public:
     };
 
     /// Returns clients Internet host address as a string in standard numbers-and-dots notation.
-    ///  @return IP address in dot notation or error message if invalid
+    ///  @return IP address or error message if invalid
    std::string GetClientAddr();
 
     /// Returns the port number on which the client is connected.
@@ -460,6 +460,10 @@ public:
     uint16 GetServerPort() {
         return ntohs(m_stServerSockaddr.sin_port);
     };
+
+    /// Returns the multi-cast group's address as a string in standard numbers-and-dots notation.
+    ///  @return IP address or error message if invalid
+    std::string GetJoinedGroup();
 
     /// Get the TCP receive buffer window size for the current socket object.
     /// <br><br>\b NOTE: Linux will set the receive buffer to twice the value passed.

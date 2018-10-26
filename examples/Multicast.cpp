@@ -24,9 +24,10 @@ SOFTWARE.
 
 */
 
-#include <future>
 #include "SimpleSocket.h"       // Include header for simple socket object definition
 #include <iostream>
+#include <future>
+#include <mutex>
 
 using namespace std::chrono_literals;
 
@@ -39,12 +40,15 @@ static_assert( SIZEOF_TEST_PACKET == 11, "Failed to compute SIZEOF_TEST_PACKET" 
 
 int main( int argc, char** argv )
 {
+   std::cout << "Simple-Socket: Multi-cast Example" << std::endl << std::endl;
+
    std::promise<void> oExitSignal;
+   std::mutex muConsoleOut;
 
    // ---------------------------------------------------------------------------------------------
    // Broadcaster Code
    // ---------------------------------------------------------------------------------------------
-   auto oRetval = std::async( std::launch::async, [ oExitEvent = oExitSignal.get_future() ]() {
+   auto oRetval = std::async( std::launch::async, [ oExitEvent = oExitSignal.get_future(), &muConsoleOut ]() {
       CSimpleSocket oSender( CSimpleSocket::SocketTypeUdp );
 
       bool bRetval = oSender.Initialize();
@@ -55,8 +59,19 @@ int main( int argc, char** argv )
 
       bRetval = oSender.JoinMulticast( GROUP_ADDR, 60000 );
 
-      while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
       {
+         const auto sResult = ( bRetval ) ? "Successfully" : "Failed to";
+         std::lock_guard<std::mutex> oPrintLock( muConsoleOut );
+         std::cout << "Tx // " << sResult << " join group '" << oSender.GetJoinedGroup().c_str() << "'." << std::endl;
+      }
+
+      while( oExitEvent.wait_for( 250ms ) == std::future_status::timeout )
+      {
+         {
+            std::lock_guard<std::mutex> oPrintLock( muConsoleOut );
+            std::cout << "Tx // Sending..." << std::endl;
+         }
+
          oSender.Send( reinterpret_cast<const uint8*>(TEST_PACKET), SIZEOF_TEST_PACKET );
       }
 
@@ -77,11 +92,20 @@ int main( int argc, char** argv )
 
    bRetval = oReceiver.JoinMulticast( GROUP_ADDR, 60000 );
 
+   {
+      const auto sResult = ( bRetval ) ? "Successfully" : "Failed to";
+      std::lock_guard<std::mutex> oPrintLock( muConsoleOut );
+      std::cout << "Rx // " << sResult << " join group '" << oReceiver.GetJoinedGroup().c_str() << "'." << std::endl;
+   }
+
    uint8 buffer[ SIZEOF_TEST_PACKET + 1 ];
    oReceiver.Receive( SIZEOF_TEST_PACKET, buffer );
    buffer[ SIZEOF_TEST_PACKET ] = '\0';
 
-   std::cout << "Obtained: '" << reinterpret_cast<char*>( buffer ) << "' from " << oReceiver.GetClientAddr() << std::endl;
+   {
+      std::lock_guard<std::mutex> oPrintLock( muConsoleOut );
+      std::cout << "Rx // Obtained: '" << reinterpret_cast<char*>( buffer ) << "' from " << oReceiver.GetClientAddr() << std::endl;
+   }
 
    std::this_thread::sleep_for( 5min );
 
