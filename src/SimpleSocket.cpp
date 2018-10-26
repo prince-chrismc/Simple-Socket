@@ -864,28 +864,14 @@ int32 CSimpleSocket::Receive( int32 nMaxBytes, uint8 * pBuffer )
    }
    case CSimpleSocket::SocketTypeUdp:
    {
-      uint32 srcSize;
+      uint32 srcSize = SOCKET_ADDR_IN_SIZE;
 
-      srcSize = sizeof( struct sockaddr_in );
-
-      if( GetMulticast() == true )
+      do
       {
-         do
-         {
-            m_nBytesReceived = RECVFROM( m_socket, pWorkBuffer, nMaxBytes, 0,
-                                         &m_stClientSockaddr, &srcSize );
-            TranslateSocketError();
-         } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
-      }
-      else
-      {
-         do
-         {
-            m_nBytesReceived = RECVFROM( m_socket, pWorkBuffer, nMaxBytes, 0,
-                                         &m_stClientSockaddr, &srcSize );
-            TranslateSocketError();
-         } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
-      }
+         m_nBytesReceived = RECVFROM( m_socket, pWorkBuffer, nMaxBytes, 0,
+                                      &m_stClientSockaddr, &srcSize );
+         TranslateSocketError();
+      } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
 
       break;
    }
