@@ -42,41 +42,47 @@ int main( int argc, char** argv )
 {
    std::cout << "Simple-Socket: Multi-cast Example" << std::endl << std::endl;
 
-   std::promise<void> oExitSignal;
    std::mutex muConsoleOut;
+   std::promise<void> oExitSignal;
+   auto oExitEvent = std::make_shared<std::shared_future<void>>( oExitSignal.get_future() );
 
    // ---------------------------------------------------------------------------------------------
    // Broadcaster Code
    // ---------------------------------------------------------------------------------------------
-   auto oRetval = std::async( std::launch::async, [ oExitEvent = oExitSignal.get_future(), &muConsoleOut ]() {
-      CSimpleSocket oSender( CSimpleSocket::SocketTypeUdp );
-
-      bool bRetval = oSender.Initialize();
-
-      bRetval = oSender.SetMulticast( true );
-
-      //bRetval = oSender.BindInterface( "192.168.0.195" );
-
-      bRetval = oSender.JoinMulticast( GROUP_ADDR, 60000 );
-
+   auto oTxComplete = std::async(
+      std::launch::async, [ oExitEvent, &muConsoleOut ]()
       {
-         const auto sResult = ( bRetval ) ? "Successfully" : "Failed to";
-         std::lock_guard<std::mutex> oPrintLock( muConsoleOut );
-         std::cout << "Tx // " << sResult << " join group '" << oSender.GetJoinedGroup().c_str() << "'." << std::endl;
-      }
+         CSimpleSocket oSender( CSimpleSocket::SocketTypeUdp );
 
-      while( oExitEvent.wait_for( 250ms ) == std::future_status::timeout )
-      {
+         bool bRetval = oSender.Initialize();
+
+         bRetval = oSender.SetMulticast( true );
+
+         //bRetval = oSender.BindInterface( "192.168.0.195" );
+
+         bRetval = oSender.JoinMulticast( GROUP_ADDR, 60000 );
+
          {
+            const auto sResult = ( bRetval ) ? "Successfully" : "Failed to";
             std::lock_guard<std::mutex> oPrintLock( muConsoleOut );
-            std::cout << "Tx // Sending..." << std::endl;
+            std::cout << "Tx // " << sResult << " join group '" << oSender.GetJoinedGroup().c_str() << "'." << std::endl;
          }
 
-         oSender.Send( reinterpret_cast<const uint8*>(TEST_PACKET), SIZEOF_TEST_PACKET );
-      }
+         while( oExitEvent->wait_for( 250ms ) == std::future_status::timeout )
+         {
+            {
+               std::lock_guard<std::mutex> oPrintLock( muConsoleOut );
+               std::cout << "Tx // Sending..." << std::endl;
+            }
 
-      return bRetval;
-   }
+            oSender.Send( reinterpret_cast<const uint8*>( TEST_PACKET ), SIZEOF_TEST_PACKET );
+         }
+
+         //oSender.Shutdown( CSimpleSocket::Sends );
+         //oSender.Close();
+
+         return bRetval;
+      }
    );
 
    // ---------------------------------------------------------------------------------------------
@@ -98,18 +104,29 @@ int main( int argc, char** argv )
       std::cout << "Rx // " << sResult << " join group '" << oReceiver.GetJoinedGroup().c_str() << "'." << std::endl;
    }
 
-   uint8 buffer[ SIZEOF_TEST_PACKET + 1 ];
-   oReceiver.Receive( SIZEOF_TEST_PACKET, buffer );
-   buffer[ SIZEOF_TEST_PACKET ] = '\0';
+   auto oRxComplete = std::async(
+      std::launch::async, [ oExitEvent, &muConsoleOut, &oReceiver ]()
+      {
+         while( oExitEvent->wait_for( 100ms ) == std::future_status::timeout )
+         {
+            uint8 buffer[ SIZEOF_TEST_PACKET + 1 ] = { '\0' };
+            oReceiver.Receive( SIZEOF_TEST_PACKET, buffer );
 
-   {
-      std::lock_guard<std::mutex> oPrintLock( muConsoleOut );
-      std::cout << "Rx // Obtained: '" << reinterpret_cast<char*>( buffer ) << "' from " << oReceiver.GetClientAddr() << std::endl;
-   }
+            std::lock_guard<std::mutex> oPrintLock( muConsoleOut );
+            std::cout << "Rx // Obtained: '" << reinterpret_cast<char*>( buffer ) << "' from " << oReceiver.GetClientAddr() << std::endl;
+         }
+      }
+   );
 
-   std::this_thread::sleep_for( 5min );
+   std::this_thread::sleep_for( 10s );
 
    oExitSignal.set_value();
-   oRetval.get();
+
+   //bRetval = oReceiver.Shutdown( CSimpleSocket::Both );
+   oReceiver.Close();
+
+   oTxComplete.get();
+   oRxComplete.get();
+
    return 0;
 }
