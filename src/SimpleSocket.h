@@ -64,6 +64,7 @@
 #endif
 
 #include "StatTimer.h"
+#include <string>
 
 //-----------------------------------------------------------------------------
 // General class macro definitions and typedefs
@@ -437,12 +438,8 @@ public:
     };
 
     /// Returns clients Internet host address as a string in standard numbers-and-dots notation.
-    ///  @return NULL if invalid
-    const char *GetClientAddr() {
-        //return inet_ntoa(m_stClientSockaddr.sin_addr);
-        char buff[16];
-        return inet_ntop(m_nSocketDomain, &m_stServerSockaddr.sin_addr, buff, 16);
-    };
+    ///  @return IP address in dot notation or error message if invalid
+   std::string GetClientAddr();
 
     /// Returns the port number on which the client is connected.
     ///  @return client port number.

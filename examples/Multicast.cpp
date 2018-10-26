@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include <future>
 #include "SimpleSocket.h"       // Include header for simple socket object definition
+#include <iostream>
 
 using namespace std::chrono_literals;
 
@@ -76,8 +77,11 @@ int main( int argc, char** argv )
 
    bRetval = oReceiver.JoinMulticast( GROUP_ADDR, 60000 );
 
-   uint8 buffer[ SIZEOF_TEST_PACKET ];
+   uint8 buffer[ SIZEOF_TEST_PACKET + 1 ];
    oReceiver.Receive( SIZEOF_TEST_PACKET, buffer );
+   buffer[ SIZEOF_TEST_PACKET ] = '\0';
+
+   std::cout << "Obtained: '" << reinterpret_cast<char*>( buffer ) << "' from " << oReceiver.GetClientAddr() << std::endl;
 
    std::this_thread::sleep_for( 5min );
 

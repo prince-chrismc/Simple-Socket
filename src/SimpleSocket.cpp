@@ -52,7 +52,7 @@
 static constexpr auto SOCKET_SENDFILE_BLOCKSIZE = 8192;
 
 #ifdef _WIN32
-   static constexpr auto IPTOS_LOWDELAY = 0x10;
+static constexpr auto IPTOS_LOWDELAY = 0x10;
 #endif
 
 CSimpleSocket::CSimpleSocket( CSocketType nType ) :
@@ -67,6 +67,8 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    memset( &m_stRecvTimeout, 0, sizeof( struct timeval ) );
    memset( &m_stSendTimeout, 0, sizeof( struct timeval ) );
    memset( &m_stLinger, 0, sizeof( struct linger ) );
+   memset( &m_stClientSockaddr, 0, SOCKET_ADDR_IN_SIZE );
+   memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
 
    switch( nType )
    {
@@ -301,6 +303,25 @@ bool CSimpleSocket::SetSocketDscp( int32 nDscp )
    }
 
    return bRetVal;
+}
+
+//------------------------------------------------------------------------------
+//
+// GetClientAddr()
+//
+//------------------------------------------------------------------------------
+std::string CSimpleSocket::GetClientAddr()
+{
+   //return inet_ntoa(m_stClientSockaddr.sin_addr);
+   char buff[ 16 ];
+
+   if( inet_ntop( m_nSocketDomain, &m_stClientSockaddr.sin_addr, buff, 16 ) == nullptr )
+   {
+      TranslateSocketError();
+      return DescribeError();
+   }
+
+   return buff;
 }
 
 
