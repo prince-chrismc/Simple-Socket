@@ -35,7 +35,6 @@ static constexpr const char* GROUP_ADDR = "239.1.2.3";
 static constexpr const char* TEST_PACKET = "Test Packet";
 static constexpr auto PORT_NUMBER = 60000;
 
-int constexpr length( const char* str ) { return *str ? 1 + length( str + 1 ) : 0; }
 static constexpr unsigned int SIZEOF_TEST_PACKET = length( TEST_PACKET );
 static_assert( SIZEOF_TEST_PACKET == 11, "Failed to compute SIZEOF_TEST_PACKET" );
 

@@ -51,15 +51,11 @@ int main(int argc, char** argv)
 
     if (retval)
     {
-        int32 bytes_rcvd = -1;
         do
         {
-            bytes_rcvd = oClient.Receive(1024);
+            if( oClient.Receive(1024) <= 0 ) break; // Transmission succesful
 
-            if( bytes_rcvd <= 0 ) break; // Transmission completed
-
-        } while( ! oParser.AppendResponseData( 
-                        std::string( (const char*)oClient.GetData(), bytes_rcvd ) ) );
+        } while( !oParser.AppendResponseData( oClient.GetData() ) );
     }
 
     HttpResponse oRes = oParser.GetHttpResponse();

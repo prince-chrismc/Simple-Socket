@@ -83,7 +83,7 @@ int main(int argc, char **argv)
         if (numBytes > 0)
         {
             memset(result, 0, 1024);
-            memcpy(result, client.GetData(), numBytes);
+            //memcpy(result, client.GetData(), numBytes);
             printf("received %d bytes: '%s'\n", numBytes, result);
         }
         else
@@ -116,21 +116,11 @@ int EchoServerThread(std::future<void> exitEvent)
     {
         if ((pClient = socket.Accept<std::unique_ptr, CActiveSocket>()) != nullptr)
         {
-#ifdef _LINUX
-            const char* clientAddr = pClient->GetClientAddr();
-            printf("New Client from %s on %d\n",
-                   clientAddr,
-                   pClient->GetClientPort() );
-#elif _WIN32
-            printf("New Client from %s on %d\n",
-                pClient->GetClientAddr(),
-                pClient->GetClientPort());
-#endif
             // Receive request from the client.
             if (pClient->Receive(MAX_PACKET))
             {
                 // Send response to client and close connection to the client.
-                pClient->Send(pClient->GetData(), pClient->GetBytesReceived());
+                //pClient->Send(pClient->GetData(), pClient->GetBytesReceived());
                 pClient->Close();
             }
         }

@@ -45,11 +45,11 @@ class AsyncMessage final
 public:
    AsyncMessage( const std::string& sMessage ) : m_sMessage( std::to_string( sMessage.size() ) + "\n" + sMessage ) {}
    AsyncMessage( const AsyncMessage& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; }
-   AsyncMessage( const AsyncMessage&& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; }
+   AsyncMessage( const AsyncMessage&& oNewMessage ) noexcept { m_sMessage = oNewMessage.m_sMessage; }
    ~AsyncMessage() = default;
 
-   void operator=( const AsyncMessage& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; }
-   void operator=( const AsyncMessage&& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; }
+   AsyncMessage& operator=( const AsyncMessage& oNewMessage ) = default;
+   AsyncMessage& operator=( const AsyncMessage&& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; return *this; }
 
    constexpr const std::string& ToString() const { return m_sMessage; }
 
@@ -74,16 +74,15 @@ public:
 
    static constexpr size_t incomplete = -1;
 
-   constexpr bool IsComplete() const
+   bool IsComplete() const
    {
-      return m_iExpectedSize != incomplete
-         && m_iExpectedSize == m_oMessage.m_sMessage.size();
+      return m_iExpectedSize == m_oMessage.m_sMessage.length();
    }
 
-   size_t Append( const uint8* pData, const size_t iSize )
+   size_t Append( const std::string& sData )
    {
-      m_oMessage.m_sMessage.append( WireToText( pData ), iSize );
-      if( ! IsComplete() ) _ParseMessage();
+      m_oMessage.m_sMessage += sData;
+      if( !IsComplete() ) _ParseMessage();
       return m_iExpectedSize;
    }
 
@@ -140,9 +139,9 @@ int main( int argc, char** argv )
 
             do
             {
-               pClient->Receive( NEXT_BYTE * 3 ); // Receive next byte of request from the client.
-               oBuilder.Append( pClient->GetData(), pClient->GetBytesReceived() ); // Gather Message in a buffer
-            } while( ! oBuilder.IsComplete() );
+               pClient->Receive( NEXT_BYTE * 3 ); // Receive next bytes of request from the client.
+               oBuilder.Append( pClient->GetData() ); // Gather Message in a buffer
+            } while( !oBuilder.IsComplete() );
 
             AsyncMessage oEchoMessage( oBuilder.ExtractMessage() );
             pClient->Send( oEchoMessage.GetWireFormat(), oEchoMessage.GetWireFormatSize() ); // Send response to client and close connection to the client.
@@ -179,9 +178,8 @@ int main( int argc, char** argv )
 
             if( iBytesReceived > 0 )
             {
-               std::string sResult;
                iTotalBytes += iBytesReceived;
-               sResult.assign( WireToText( oClient.GetData() ), iBytesReceived );
+               std::string sResult = oClient.GetData();
                printf( "received %d bytes: '%s'\n", iBytesReceived, sResult.c_str() );
             }
          }

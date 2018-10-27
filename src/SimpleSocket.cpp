@@ -58,10 +58,15 @@ static constexpr auto IPTOS_LOWDELAY = 0x10;
 CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    m_socket( INVALID_SOCKET ),
    m_socketErrno( CSimpleSocket::SocketInvalidSocket ),
-   m_pBuffer( NULL ), m_nBufferSize( 0 ), m_nSocketDomain( AF_INET ),
-   m_nSocketType( nType ), m_nBytesReceived( -1 ),
-   m_nBytesSent( -1 ), m_nFlags( 0 ),
-   m_bIsBlocking( true )
+   m_sBuffer( 48, '\0' ),
+   m_nBufferSize( 0 ),
+   m_nSocketDomain( AF_INET ),
+   m_nSocketType( nType ),
+   m_nBytesReceived( -1 ),
+   m_nBytesSent( -1 ),
+   m_nFlags( 0 ),
+   m_bIsBlocking( true ),
+   m_bIsMulticast( false )
 {
    SetConnectTimeout( 1, 0 );
    memset( &m_stRecvTimeout, 0, sizeof( struct timeval ) );
@@ -94,25 +99,14 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
 
 CSimpleSocket::CSimpleSocket( CSimpleSocket &socket ) : CSimpleSocket( socket.m_nSocketType )
 {
-   if( m_nBufferSize != socket.m_nBufferSize )
-   {
-      delete[] m_pBuffer;
-      m_pBuffer = new uint8[ socket.m_nBufferSize ];
-      m_nBufferSize = socket.m_nBufferSize;
-   }
-   memcpy( m_pBuffer, socket.m_pBuffer, socket.m_nBufferSize );
+   m_sBuffer = socket.m_sBuffer;
+   m_nBufferSize = socket.m_nBufferSize;
 }
 
 CSimpleSocket* CSimpleSocket::operator=( CSimpleSocket &socket )
 {
-   if( m_nBufferSize != socket.m_nBufferSize )
-   {
-      delete[] m_pBuffer;
-      m_pBuffer = new uint8[ socket.m_nBufferSize ];
-      m_nBufferSize = socket.m_nBufferSize;
-   }
-
-   memcpy( m_pBuffer, socket.m_pBuffer, socket.m_nBufferSize );
+   m_sBuffer = socket.m_sBuffer;
+   m_nBufferSize = socket.m_nBufferSize;
 
    return this;
 }
@@ -559,10 +553,9 @@ bool CSimpleSocket::Close( void )
    //--------------------------------------------------------------------------
    // delete internal buffer
    //--------------------------------------------------------------------------
-   if( m_pBuffer != NULL )
+   if( m_sBuffer.length() )
    {
-      delete[] m_pBuffer;
-      m_pBuffer = NULL;
+      m_sBuffer.clear();
    }
 
    //--------------------------------------------------------------------------
@@ -793,108 +786,75 @@ bool CSimpleSocket::SetOptionLinger( bool bEnable, uint16 nTime )
    return bRetVal;
 }
 
-
 //------------------------------------------------------------------------------
-//
-// Receive() - Attempts to receive a block of data on an established
-//             connection.    Data is received in an internal buffer managed
-//             by the class.  This buffer is only valid until the next call
-//             to Receive(), a call to Close(), or until the object goes out
-//             of scope.
-//
-//------------------------------------------------------------------------------
-int32 CSimpleSocket::Receive( int32 nMaxBytes, uint8 * pBuffer )
+int32 CSimpleSocket::Receive( uint32 nMaxBytes, uint8* pBuffer )
 {
    m_nBytesReceived = 0;
 
-   //--------------------------------------------------------------------------
-   // If the socket is invalid then return false.
-   //--------------------------------------------------------------------------
-   if( !IsSocketValid() )
+   if( !IsSocketValid() ) // If the socket is invalid then return false.
    {
+      SetSocketError( CSimpleSocket::SocketInvalidSocket );
       return m_nBytesReceived;
    }
 
-   uint8 * pWorkBuffer = pBuffer;
-   if( pBuffer == NULL )
+   uint8* pWorkBuffer = pBuffer;
+   if( pBuffer == nullptr )
    {
-       //--------------------------------------------------------------------------
-       // Free existing buffer and allocate a new buffer the size of
-       // nMaxBytes.
-       //--------------------------------------------------------------------------
-      if( ( m_pBuffer != NULL ) && ( nMaxBytes != m_nBufferSize ) )
+      if( m_sBuffer.length() )
       {
-         delete[] m_pBuffer;
-         m_pBuffer = NULL;
+         m_sBuffer.clear(); // This will not change the allaction internally for most compilers
+         m_sBuffer.assign( nMaxBytes, '\0' );
       }
 
-      //--------------------------------------------------------------------------
-      // Allocate a new internal buffer to receive data.
-      //--------------------------------------------------------------------------
-      if( m_pBuffer == NULL )
+      if( m_sBuffer.capacity() < static_cast<size_t>( nMaxBytes ) )
       {
          m_nBufferSize = nMaxBytes;
-         m_pBuffer = new uint8[ nMaxBytes ];
+         m_sBuffer.resize( nMaxBytes, '\0' ); // Allocate a bigger internal buffer to receive data.
       }
 
-      pWorkBuffer = m_pBuffer;
+      pWorkBuffer = reinterpret_cast<uint8*>( &m_sBuffer[0] ); // Use string's internal memory as the buffer
    }
 
-   SetSocketError( SocketSuccess );
+   SetSocketError( CSimpleSocket::SocketSuccess );
 
    m_timer.Initialize();
    m_timer.SetStartTime();
 
    switch( m_nSocketType )
    {
-       //----------------------------------------------------------------------
-       // If zero bytes are received, then return.  If SocketERROR is
-       // received, free buffer and return CSocket::SocketError (-1) to caller.
-       //----------------------------------------------------------------------
    case CSimpleSocket::SocketTypeTcp:
-   {
       do
       {
          m_nBytesReceived = RECV( m_socket, ( pWorkBuffer + m_nBytesReceived ),
                                   nMaxBytes, m_nFlags );
          TranslateSocketError();
-      } while( ( GetSocketError() == CSimpleSocket::SocketInterrupted ) );
-
+      } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
       break;
-   }
    case CSimpleSocket::SocketTypeUdp:
-   {
-      uint32 srcSize = SOCKET_ADDR_IN_SIZE;
-
       do
       {
-         m_nBytesReceived = RECVFROM( m_socket, pWorkBuffer, nMaxBytes, 0,
-                                      &m_stClientSockaddr, &srcSize );
+         uint32 srcSize = SOCKET_ADDR_IN_SIZE;
+         m_nBytesReceived = RECVFROM( m_socket, ( pWorkBuffer + m_nBytesReceived ),
+                                      nMaxBytes, 0, &m_stClientSockaddr, &srcSize );
          TranslateSocketError();
       } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
-
       break;
-   }
    default:
+      //SetSocketError( CSimpleSocket::SocketProtocolError );
       break;
    }
 
    m_timer.SetEndTime();
    TranslateSocketError();
 
-   //--------------------------------------------------------------------------
-   // If we encounter an error translate the error code and return.  One
-   // possible error code could be EAGAIN (EWOULDBLOCK) if the socket is
-   // non-blocking.  This does not mean there is an error, but no data is
-   // yet available on the socket.
-   //--------------------------------------------------------------------------
    if( m_nBytesReceived == CSimpleSocket::SocketError )
    {
-      if( m_pBuffer != NULL )
-      {
-         delete[] m_pBuffer;
-         m_pBuffer = NULL;
-      }
+      ( pBuffer == nullptr ) ? m_sBuffer.clear() : pBuffer[0] = '\0'; // Clear the output buffer
+   }
+   else if( pBuffer == nullptr && static_cast<size_t>(m_nBytesReceived) <  nMaxBytes )
+   {
+      m_sBuffer.reserve( m_sBuffer.capacity() );
+      m_sBuffer.erase( m_nBytesReceived, nMaxBytes );
    }
 
    return m_nBytesReceived;
@@ -937,6 +897,12 @@ bool CSimpleSocket::SetNonblocking( void )
    m_bIsBlocking = false;
 
    return true;
+}
+
+//------------------------------------------------------------------------------
+std::string CSimpleSocket::GetData() const
+{
+   return m_sBuffer;
 }
 
 

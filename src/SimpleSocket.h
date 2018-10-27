@@ -66,32 +66,27 @@
 #include "StatTimer.h"
 #include <string>
 
-//-----------------------------------------------------------------------------
-// General class macro definitions and typedefs
-//-----------------------------------------------------------------------------
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET    ~(0)
 #endif
 
-/// Provides a platform independent class to for socket development.
-/// This class is designed to abstract socket communication development in a
-/// platform independent manner.
-/// - Socket types
-///  -# CActiveSocket Class
-///  -# CPassiveSocket Class
+constexpr auto operator"" _bytes( const char* text, std::size_t ) { return (const uint8 *)text; }
+auto constexpr length( const char* str )->long { return *str ? 1 + length( str + 1 ) : 0; }
+
 class CSimpleSocket
 {
 public:
-    /// Defines the three possible states for shuting down a socket.
-    typedef enum
-    {
-        Receives = SHUT_RD, ///< Shutdown passive socket.
-        Sends = SHUT_WR,    ///< Shutdown active socket.
-        Both = SHUT_RDWR    ///< Shutdown both active and passive sockets.
-    } CShutdownMode;
+
+   /// Defines the three possible states for shuting down a socket.
+   enum CShutdownMode
+   {
+      Receives = SHUT_RD, ///< Shutdown passive socket.
+      Sends = SHUT_WR,    ///< Shutdown active socket.
+      Both = SHUT_RDWR    ///< Shutdown both active and passive sockets.
+   };
 
     /// Defines the socket types defined by CSimpleSocket class.
-    typedef enum
+    enum CSocketType
     {
         SocketTypeInvalid,   ///< Invalid socket type.
         SocketTypeTcp,       ///< Defines socket as TCP socket.
@@ -99,10 +94,10 @@ public:
         SocketTypeTcp6,      ///< Defines socket as IPv6 TCP socket.
         SocketTypeUdp6,      ///< Defines socket as IPv6 UDP socket.
         SocketTypeRaw        ///< Provides raw network protocol access.
-    } CSocketType;
+    } ;
 
     /// Defines all error codes handled by the CSimpleSocket class.
-    typedef enum
+    enum CSocketError
     {
         SocketError = -1,          ///< Generic socket error translates to error below.
         SocketSuccess = 0,         ///< No socket error.
@@ -123,20 +118,15 @@ public:
         SocketAddressInUse,        ///< Address already in use.
         SocketInvalidPointer,      ///< Pointer type supplied as argument is invalid.
         SocketEunknown             ///< Unknown error please report to mark@carrierlabs.com
-    } CSocketError;
+    };
 
 public:
     CSimpleSocket(CSocketType type = SocketTypeTcp);
-    CSimpleSocket(CSimpleSocket &socket);
+    CSimpleSocket(CSimpleSocket& socket);
+    virtual ~CSimpleSocket() = default;
 
-    virtual ~CSimpleSocket()
-    {
-        if (m_pBuffer != NULL)
-        {
-            delete [] m_pBuffer;
-            m_pBuffer = NULL;
-        }
-    };
+    CSimpleSocket *operator=( CSimpleSocket &socket );
+
 
     /// Initialize instance of CSocket.  This method MUST be called before an
     /// object can be used. Errors : CSocket::SocketProtocolError,
@@ -202,7 +192,7 @@ public:
     /// @return number of bytes actually received.
     /// @return of zero means the connection has been shutdown on the other side.
     /// @return of -1 means that an error has occurred.
-    virtual int32 Receive(int32 nMaxBytes = 1, uint8 * pBuffer = 0);
+    virtual int32 Receive(uint32 nMaxBytes = 1, uint8 * pBuffer = nullptr);
 
     /// Attempts to send a block of data on an established connection.
     /// @param pBuf block of data to be sent.
@@ -250,13 +240,7 @@ public:
     /// @return true if successful set to non-blocking, else return false;
     bool SetNonblocking(void);
 
-    /// Get a pointer to internal receive buffer.  The user MUST not free this
-    /// pointer when finished.  This memory is managed internally by the CSocket
-    /// class.
-    /// @return pointer to data if valid, else returns NULL.
-    uint8 *GetData(void)  {
-        return m_pBuffer;
-    };
+    std::string GetData() const;
 
     /// Returns the number of bytes received on the last call to
     /// CSocket::Receive().
@@ -542,12 +526,10 @@ private:
     /// @return true data was successfully sent, else return false;
     bool Flush();
 
-    CSimpleSocket *operator=(CSimpleSocket &socket);
-
 protected:
     SOCKET               m_socket;            /// socket handle
     CSocketError         m_socketErrno;       /// number of last error
-    uint8               *m_pBuffer;           /// internal send/receive buffer
+    std::string          m_sBuffer;           /// internal send/receive buffer
     int32                m_nBufferSize;       /// size of internal send/receive buffer
     int32                m_nSocketDomain;     /// socket type PF_INET, PF_INET6
     CSocketType          m_nSocketType;       /// socket type - UDP, TCP or RAW

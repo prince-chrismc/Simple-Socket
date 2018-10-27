@@ -41,20 +41,22 @@ int main( int argc, char** argv )
    oSocket.Listen( "127.0.0.1", 6789 ); // Bind to local host on port 6789 for ability to wait for incomming connections
 
    auto oRetval = std::async( std::launch::deferred, [ &oSocket, oExitEvent = oExitSignal.get_future() ]() {
-         while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
+      while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
+      {
+         std::unique_ptr<CActiveSocket> pClient;
+         if( ( pClient = oSocket.Accept<std::unique_ptr, CActiveSocket>() ) != nullptr ) // Wait for an incomming connection
          {
-            std::unique_ptr<CActiveSocket> pClient;
-            if( ( pClient = oSocket.Accept<std::unique_ptr, CActiveSocket>() ) != nullptr ) // Wait for an incomming connection
+            if( pClient->Receive( MAX_PACKET ) ) // Receive request from the client.
             {
-               if( pClient->Receive( MAX_PACKET ) ) // Receive request from the client.
-               {
-                  pClient->Send( pClient->GetData(), pClient->GetBytesReceived() ); // Send response to client and close connection to the client.
-                  pClient->Close(); // Close socket since we have completed transmission
-               }
+               // Send response to client and close connection to the client.
+               pClient->Send( reinterpret_cast<const uint8*>( pClient->GetData().c_str() ),
+                              pClient->GetBytesReceived() );
+
+               pClient->Close(); // Close socket since we have completed transmission
             }
          }
       }
-   );
+   } );
 
    std::this_thread::sleep_for( 1h );
    oSocket.Close(); // Release the bound socket. Must be done to exit blocking accept call
