@@ -62,9 +62,18 @@ SocketEunknown             | Unknown error please report to prince.chrismc@gmail
 /// Get a pointer to internal receive buffer.  The user MUST not free this
 /// pointer when finished.  This memory is managed internally by the CSocket
 /// class.
-/// @return pointer to data if valid, else returns NULL.
-uint8* GetData();
 /// @return copy of data if valid, else returns empty.
 str::string GetData();
 ```
-
+- Receive
+```cpp
+/// Attempts to receive a block of data on an established connection.
+/// @param nMaxBytes maximum number of bytes to receive.
+/// @param pBuffer, memory where to receive the data,
+///        NULL receives to internal buffer returned with GetData()
+///        Non-NULL receives directly there, but GetData() will return empty!
+/// @return number of bytes actually received.
+/// @return of zero means the connection has been shutdown on the other side.
+/// @return of -1 means that an error has occurred.
+virtual int32 Receive(uint32 nMaxBytes = 1, uint8 * pBuffer = nullptr);
+```
