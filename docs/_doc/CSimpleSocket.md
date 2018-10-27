@@ -55,3 +55,16 @@ SocketConnectionReset     | Connection was forcibly closed by the remote host.
 SocketAddressInUse        | Address already in use.
 SocketInvalidPointer      | Pointer type supplied as argument is invalid.
 SocketEunknown             | Unknown error please report to prince.chrismc@gmail.com
+
+### Functions
+- GetData
+```cpp
+/// Get a pointer to internal receive buffer.  The user MUST not free this
+/// pointer when finished.  This memory is managed internally by the CSocket
+/// class.
+/// @return pointer to data if valid, else returns NULL.
+uint8* GetData();
+/// @return copy of data if valid, else returns empty.
+str::string GetData();
+```
+
