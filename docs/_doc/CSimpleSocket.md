@@ -66,6 +66,8 @@ SocketEunknown             | Unknown error please report to prince.chrismc@gmail
 str::string GetData();
 ```
 - Receive
+
+The internal buffer is only valid until the next call to Receive(), a call to Close(), or until the object goes out of scope.
 ```cpp
 /// Attempts to receive a block of data on an established connection.
 /// @param nMaxBytes maximum number of bytes to receive.
