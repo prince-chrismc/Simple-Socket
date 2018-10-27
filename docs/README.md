@@ -94,9 +94,10 @@ int main( int argc, char** argv )
    {
       if( oSocket.Send( "\n"_byte, 1 ) ) // Send a request the server for the current time.
       {
-         const int iBytes = oSocket.Receive( 49 ); // Receive response from the server.
-         sTime.assign( WireToText( oSocket.GetData() ), iBytes );
-         printf( "%s\n", sTime.c_str() );
+         if( oSocket.Receive( 48 ) ) // Receive response from the server.
+            std::cout << oSocket.GetData() << std::endl;
+         else
+            std::cout << "Unable to obtain time!" << std::endl;
       }
    }
 
@@ -145,7 +146,8 @@ int main( int argc, char** argv )
                if( pClient->Receive( MAX_PACKET ) ) // Receive request from the client.
                {
                   // Send response to client and close connection to the client.
-                  pClient->Send( pClient->GetData(), pClient->GetBytesReceived() );
+                  pClient->Send( reinterpret_cast<const uint8*>( pClient->GetData().c_str() ),
+                                 pClient->GetBytesReceived() );
                   pClient->Close(); // Close socket since we have completed transmission
                }
             }
