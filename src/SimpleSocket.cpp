@@ -800,19 +800,9 @@ int32 CSimpleSocket::Receive( uint32 nMaxBytes, uint8* pBuffer )
    uint8* pWorkBuffer = pBuffer;
    if( pBuffer == nullptr )
    {
-      if( m_sBuffer.length() )
-      {
-         m_sBuffer.clear(); // This will not change the allaction internally for most compilers
-         m_sBuffer.assign( nMaxBytes, '\0' );
-      }
-
-      if( m_sBuffer.capacity() < static_cast<size_t>( nMaxBytes ) )
-      {
-         m_nBufferSize = nMaxBytes;
-         m_sBuffer.resize( nMaxBytes, '\0' ); // Allocate a bigger internal buffer to receive data.
-      }
-
-      pWorkBuffer = reinterpret_cast<uint8*>( &m_sBuffer[0] ); // Use string's internal memory as the buffer
+      m_nBufferSize = nMaxBytes;
+      m_sBuffer.assign( nMaxBytes, '\0' );
+      pWorkBuffer = reinterpret_cast<uint8*>( &m_sBuffer[ 0 ] ); // Use string's internal memory as the buffer
    }
 
    SetSocketError( CSimpleSocket::SocketSuccess );
@@ -849,12 +839,11 @@ int32 CSimpleSocket::Receive( uint32 nMaxBytes, uint8* pBuffer )
 
    if( m_nBytesReceived == CSimpleSocket::SocketError )
    {
-      ( pBuffer == nullptr ) ? m_sBuffer.clear() : pBuffer[0] = '\0'; // Clear the output buffer
+      ( pBuffer == nullptr ) ? m_sBuffer.clear() : pBuffer[ 0 ] = '\0'; // Clear the output buffer
    }
-   else if( pBuffer == nullptr && static_cast<size_t>(m_nBytesReceived) <  nMaxBytes )
+   else if( pBuffer == nullptr )
    {
-      m_sBuffer.reserve( m_sBuffer.capacity() );
-      m_sBuffer.erase( m_nBytesReceived, nMaxBytes );
+      m_sBuffer.erase( m_nBytesReceived );
    }
 
    return m_nBytesReceived;
