@@ -58,6 +58,7 @@ SocketEunknown             | Unknown error please report to prince.chrismc@gmail
 
 ### Functions
 - GetData
+
 ```cpp
 /// Get a pointer to internal receive buffer.  The user MUST not free this
 /// pointer when finished.  This memory is managed internally by the CSocket
