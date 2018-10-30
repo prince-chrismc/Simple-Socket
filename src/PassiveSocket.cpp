@@ -151,30 +151,15 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 // Accept() -
 //
 //------------------------------------------------------------------------------
-template <template<typename> class SmartPtr, class SocketBase, typename, typename>
-#ifndef _CLANG
-   auto CPassiveSocket::Accept()->SmartPtr<SocketBase>
-#else
-   CActiveSocket* CPassiveSocket::Accept()
-#endif
+auto CPassiveSocket::Accept() -> std::unique_ptr<CActiveSocket>
 {
-   static_assert( std::is_base_of<CSimpleSocket, SocketBase>::value, "SocketBase is not derived from CSimpleSocket" );
-   static_assert( std::is_default_constructible<SmartPtr<SocketBase>>::value, "template must be default constructable!" );
-
-   static_assert( std::is_member_object_pointer<SocketBase*( SmartPtr<SocketBase>::* )>::value, "template operator* must return a SocketBase*" );
-
-   static_assert( std::is_constructible<SmartPtr<SocketBase>, std::nullptr_t>::value, "template must be constructable by nullptr" );
-   static_assert( std::is_constructible<SmartPtr<SocketBase>, CActiveSocket*>::value, "template must be constructable by CActiveSocket*" );
-
-   static_assert( std::is_assignable<SmartPtr<SocketBase>&, std::nullptr_t>::value, "template must be assignable by nullptr" );
-
    if( m_nSocketType != CSimpleSocket::SocketTypeTcp )
    {
       SetSocketError( CSimpleSocket::SocketProtocolError );
       return nullptr;
    }
 
-   auto pClientSocket = new CActiveSocket();
+   auto pClientSocket = std::make_unique<CActiveSocket>();
 
    if( pClientSocket != nullptr )
    {
@@ -214,21 +199,8 @@ template <template<typename> class SmartPtr, class SocketBase, typename, typenam
 
       if( socketErrno != CSimpleSocket::SocketSuccess )
       {
-         delete pClientSocket;
          pClientSocket = nullptr;
       }
    }
-#ifndef _CLANG
-   return SmartPtr<SocketBase>( pClientSocket );
-#else
    return pClientSocket;
-#endif
 }
-
-#ifndef _CLANG
-// it's just to avoid link error.
-template std::unique_ptr<CSimpleSocket> CPassiveSocket::Accept<std::unique_ptr, CSimpleSocket>();
-template std::shared_ptr<CSimpleSocket> CPassiveSocket::Accept<std::shared_ptr, CSimpleSocket>();
-template std::unique_ptr<CActiveSocket> CPassiveSocket::Accept<std::unique_ptr, CActiveSocket>();
-template std::shared_ptr<CActiveSocket> CPassiveSocket::Accept<std::shared_ptr, CActiveSocket>();
-#endif

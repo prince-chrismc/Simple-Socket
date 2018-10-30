@@ -114,7 +114,7 @@ int EchoServerThread(std::future<void> exitEvent)
 
     while (exitEvent.wait_for(std::chrono::milliseconds(10)) == std::future_status::timeout)
     {
-        if ((pClient = socket.Accept<std::unique_ptr, CActiveSocket>()) != nullptr)
+        if ((pClient = socket.Accept()) != nullptr)
         {
             // Receive request from the client.
             if (pClient->Receive(MAX_PACKET))

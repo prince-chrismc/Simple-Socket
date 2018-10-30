@@ -44,6 +44,7 @@
 #define __PASSIVESOCKET_H__
 
 #include "ActiveSocket.h"
+#include <memory>
 
 /// Provides a platform independent class to create a passive socket.
 /// A passive socket is used to create a "listening" socket.  This type
@@ -73,14 +74,7 @@ public:
     ///    CPassiveSocket::SocketEwouldblock, CPassiveSocket::SocketInvalidSocket,
     ///    CPassiveSocket::SocketConnectionAborted, CPassiveSocket::SocketInterrupted
     ///    CPassiveSocket::SocketProtocolError, CPassiveSocket::SocketFirewallError
-   template <template<typename> class SmartPtr, class SocketBase,
-      typename = std::enable_if<std::is_member_object_pointer<SocketBase*( SmartPtr<SocketBase>::* )>::value>,
-      typename = std::enable_if<std::is_base_of<CSimpleSocket, SocketBase>::value>>
-#ifndef _CLANG
-   auto Accept()->SmartPtr<SocketBase>;
-#else
-   CActiveSocket* Accept();
-#endif
+   auto Accept()-> std::unique_ptr<CActiveSocket>;
 
    /// Create a listening socket at local ip address 'x.x.x.x' or 'localhost'
    /// if pAddr is NULL on port nPort.
