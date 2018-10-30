@@ -25,6 +25,7 @@ SOFTWARE.
 */
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS // Not supported by Clang 6.0
 #include "catch2/catch.hpp"
 
 #include <future>
@@ -72,3 +73,39 @@ TEST_CASE( "Sockets can receive", "[Socket.Receive]" )
     REQUIRE( httpResponse.length() > 0 );
     REQUIRE( httpResponse.compare("HTTP/1.0 200 OK\r\n") == 0 );
 }
+
+#if defined(_LINUX) || defined (_DARWIN)
+#include <netdb.h>
+#endif
+
+TEST_CASE( "Sockets have server information", "[Socket.GetSvrAddr]" )
+ {
+     CActiveSocket socket;
+
+    REQUIRE( socket.Initialize() );
+    REQUIRE( socket.Open("www.google.ca", 80 ) );
+
+    sockaddr_in   serverAddr;
+    memset( &serverAddr, 0, sizeof( serverAddr ) );
+    serverAddr.sin_family = AF_INET;
+
+    addrinfo hints{};
+    memset( &hints, 0, sizeof( hints ) );
+    hints.ai_flags = AI_ALL;
+    hints.ai_family = AF_INET;
+    addrinfo* pResult = NULL;
+    const int iErrorCode = getaddrinfo( "www.google.ca", NULL, &hints, &pResult ); /// https://codereview.stackexchange.com/a/17866
+
+    REQUIRE( iErrorCode == 0 );
+
+
+
+        char buff[16];
+        std::string googlesAddr =  inet_ntop(AF_INET,
+         &( (sockaddr_in*)pResult->ai_addr )->sin_addr, buff, 16);    
+
+CAPTURE(buff );
+CAPTURE(socket.GetServerAddr());
+
+         REQUIRE( googlesAddr.compare( socket.GetServerAddr()) == 0);
+ }

@@ -421,8 +421,6 @@ public:
         return m_nSocketType;
     };
 
-    /// Returns clients Internet host address as a string in standard numbers-and-dots notation.
-    ///  @return IP address or error message if invalid
    std::string GetClientAddr();
 
     /// Returns the port number on which the client is connected.
@@ -431,13 +429,7 @@ public:
         return m_stClientSockaddr.sin_port;
     };
 
-    /// Returns server Internet host address as a string in standard numbers-and-dots notation.
-    ///  @return NULL if invalid
-    const char *GetServerAddr() {
-        //return inet_ntoa(m_stServerSockaddr.sin_addr);
-        char buff[16];
-        return inet_ntop(m_nSocketDomain, &m_stServerSockaddr.sin_addr, buff, 16);
-    };
+    std::string GetServerAddr();
 
     /// Returns the port number on which the server is connected.
     ///  @return server port number.
@@ -445,8 +437,6 @@ public:
         return ntohs(m_stServerSockaddr.sin_port);
     };
 
-    /// Returns the multi-cast group's address as a string in standard numbers-and-dots notation.
-    ///  @return IP address or error message if invalid
     std::string GetJoinedGroup();
 
     /// Get the TCP receive buffer window size for the current socket object.

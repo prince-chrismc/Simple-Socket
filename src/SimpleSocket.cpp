@@ -320,12 +320,31 @@ std::string CSimpleSocket::GetClientAddr()
 
 //------------------------------------------------------------------------------
 //
+// GetServerAddr()
+//
+//------------------------------------------------------------------------------
+std::string CSimpleSocket::GetServerAddr()
+{
+   //return inet_ntoa(m_stServerSockaddr.sin_addr);
+   char buff[ 16 ] = { '\0' };
+
+   if( inet_ntop( m_nSocketDomain, &m_stServerSockaddr.sin_addr, buff, 16 ) == nullptr )
+   {
+      TranslateSocketError();
+      return DescribeError();
+   }
+
+   return buff;
+}
+
+//------------------------------------------------------------------------------
+//
 // GetJoinedGroup()
 //
 //------------------------------------------------------------------------------
 std::string CSimpleSocket::GetJoinedGroup()
 {
-   char buff[ 16 ];
+   char buff[ 16 ] = { '\0' };;
 
    if( inet_ntop( m_nSocketDomain, &m_stMulticastGroup.sin_addr, buff, 16 ) == nullptr )
    {

@@ -78,3 +78,24 @@ The internal buffer is only valid until the next call to Receive(), a call to Cl
 /// @return of -1 means that an error has occurred.
 virtual int32 Receive(uint32 nMaxBytes = 1, uint8 * pBuffer = nullptr);
 ```
+
+- Get Client Address
+```cpp
+    /// Returns clients Internet host address as a string in standard numbers-and-dots notation.
+    ///  @return IP address or empty if invalid
+   std::string GetClientAddr();
+```
+
+- Get Server Address
+```cpp
+    /// Returns server Internet host address as a string in standard numbers-and-dots notation.
+    ///  @return IP address or empty if invalid
+    std::string GetServerAddr();
+```
+
+- Get Joined Group
+```cpp
+    /// Returns the multi-cast group's address as a string in standard numbers-and-dots notation.
+    ///  @return IP address or empty if invalid
+    std::string GetJoinedGroup();
+    ```
