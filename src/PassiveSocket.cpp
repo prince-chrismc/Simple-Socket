@@ -152,7 +152,11 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 //
 //------------------------------------------------------------------------------
 template <template<typename> class SmartPtr, class SocketBase, typename, typename>
-auto CPassiveSocket::Accept() -> SmartPtr<SocketBase>
+#ifndef _CLANG
+   auto CPassiveSocket::Accept()->SmartPtr<SocketBase>
+#else
+   CActiveSocket* CPassiveSocket::Accept()
+#endif
 {
    static_assert( std::is_base_of<CSimpleSocket, SocketBase>::value, "SocketBase is not derived from CSimpleSocket" );
    static_assert( std::is_default_constructible<SmartPtr<SocketBase>>::value, "template must be default constructable!" );
@@ -214,12 +218,17 @@ auto CPassiveSocket::Accept() -> SmartPtr<SocketBase>
          pClientSocket = nullptr;
       }
    }
-
+#ifndef _CLANG
    return SmartPtr<SocketBase>( pClientSocket );
+#else
+   return pClientSocket;
+#endif
 }
 
+#ifndef _CLANG
 // it's just to avoid link error.
 template std::unique_ptr<CSimpleSocket> CPassiveSocket::Accept<std::unique_ptr, CSimpleSocket>();
 template std::shared_ptr<CSimpleSocket> CPassiveSocket::Accept<std::shared_ptr, CSimpleSocket>();
 template std::unique_ptr<CActiveSocket> CPassiveSocket::Accept<std::unique_ptr, CActiveSocket>();
 template std::shared_ptr<CActiveSocket> CPassiveSocket::Accept<std::shared_ptr, CActiveSocket>();
+#endif

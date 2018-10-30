@@ -43,6 +43,11 @@ if(UNIX)
       set(CMAKE_BUILD_TYPE Release)
       message("Defaulting to 'Release' configuration.")
     ENDIF()
+
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        add_definitions(-D_CLANG)
+    endif()
+
     if(CYGWIN)
         # Special Cygwin stuff here
     elseif(APPLE)

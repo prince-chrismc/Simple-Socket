@@ -76,7 +76,11 @@ public:
    template <template<typename> class SmartPtr, class SocketBase,
       typename = std::enable_if<std::is_member_object_pointer<SocketBase*( SmartPtr<SocketBase>::* )>::value>,
       typename = std::enable_if<std::is_base_of<CSimpleSocket, SocketBase>::value>>
+#ifndef _CLANG
    auto Accept()->SmartPtr<SocketBase>;
+#else
+   CActiveSocket* Accept();
+#endif
 
    /// Create a listening socket at local ip address 'x.x.x.x' or 'localhost'
    /// if pAddr is NULL on port nPort.
