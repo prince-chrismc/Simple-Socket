@@ -839,7 +839,15 @@ int32 CSimpleSocket::Receive( uint32 nMaxBytes, uint8* pBuffer )
 
    if( m_nBytesReceived == CSimpleSocket::SocketError )
    {
-      ( pBuffer == nullptr ) ? m_sBuffer.clear() : pBuffer[ 0 ] = '\0'; // Clear the output buffer
+       // Clear the output buffer
+      if( pBuffer == nullptr )
+      {
+          m_sBuffer.clear();
+      }
+      else
+      {
+          pBuffer[ 0 ] = '\0';
+      }
    }
    else if( pBuffer == nullptr )
    {
