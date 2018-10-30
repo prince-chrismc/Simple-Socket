@@ -1,0 +1,7 @@
+{
+  "docs": {
+    "Overview": ["Intro", "Build", "Getting-Started"],
+    "Examples": ["Examples"],
+    "API": ["CSimpleSocket"]
+  }
+}
