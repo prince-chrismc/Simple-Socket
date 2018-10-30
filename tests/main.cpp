@@ -28,8 +28,11 @@ SOFTWARE.
 #define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS // Not supported by Clang 6.0
 #include "catch2/catch.hpp"
 
-#include <future>
 #include "PassiveSocket.h"       // Include header for active socket object definition
+
+#if defined(_LINUX) || defined (_DARWIN)
+    #include <netdb.h>
+#endif
 
 #define MAX_PACKET 4096
 #define TEST_PACKET "Test Packet"
@@ -74,38 +77,40 @@ TEST_CASE( "Sockets can receive", "[Socket.Receive]" )
     REQUIRE( httpResponse.compare("HTTP/1.0 200 OK\r\n") == 0 );
 }
 
-#if defined(_LINUX) || defined (_DARWIN)
-#include <netdb.h>
-#endif
-
-TEST_CASE( "Sockets have server information", "[Socket.GetSvrAddr]" )
- {
-     CActiveSocket socket;
+TEST_CASE( "Sockets have server information" )
+{
+    CActiveSocket socket;
 
     REQUIRE( socket.Initialize() );
     REQUIRE( socket.Open("www.google.ca", 80 ) );
 
-    sockaddr_in   serverAddr;
+    sockaddr_in serverAddr;
     memset( &serverAddr, 0, sizeof( serverAddr ) );
     serverAddr.sin_family = AF_INET;
 
-    addrinfo hints{};
-    memset( &hints, 0, sizeof( hints ) );
-    hints.ai_flags = AI_ALL;
-    hints.ai_family = AF_INET;
-    addrinfo* pResult = NULL;
-    const int iErrorCode = getaddrinfo( "www.google.ca", NULL, &hints, &pResult ); /// https://codereview.stackexchange.com/a/17866
+    SECTION("Socket.GetServerAddr")
+    {
+        addrinfo hints{};
+        memset( &hints, 0, sizeof( hints ) );
+        hints.ai_flags = AI_ALL;
+        hints.ai_family = AF_INET;
+        addrinfo* pResult = NULL;
+        const int iErrorCode = getaddrinfo( "www.google.ca", NULL, &hints, &pResult );
 
-    REQUIRE( iErrorCode == 0 );
-
-
+        REQUIRE( iErrorCode == 0 );
 
         char buff[16];
         std::string googlesAddr =  inet_ntop(AF_INET,
-         &( (sockaddr_in*)pResult->ai_addr )->sin_addr, buff, 16);    
+            &( (sockaddr_in*)pResult->ai_addr )->sin_addr, buff, 16);    
 
-CAPTURE(buff );
-CAPTURE(socket.GetServerAddr());
+        CAPTURE( buff );
+        CAPTURE(socket.GetServerAddr());
 
-         REQUIRE( googlesAddr.compare( socket.GetServerAddr()) == 0);
- }
+        REQUIRE( googlesAddr.compare( socket.GetServerAddr()) == 0);
+    }
+
+    SECTION("Socket.GetServerPort")
+    {
+        REQUIRE( socket.GetServerPort() == 80 );
+    }
+}
