@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Getting Started · Simple Socket</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="### Table of Contents"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Getting Started · Simple Socket"/><meta property="og:type" content="website"/><meta property="og:url" content="https://prince-chrismc.github.com/Simple-Socket/index.html"/><meta property="og:description" content="### Table of Contents"/><meta name="twitter:card" content="summary"/><link rel="shortcut icon" href="/Simple-Socket/img/favicon/favicon.ico"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><link rel="stylesheet" href="/Simple-Socket/css/main.css"/></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/Simple-Socket/"><img class="logo" src="/Simple-Socket/img/rj45-512.gif" alt="Simple Socket"/><h2 class="headerTitleWithLogo">Simple Socket</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive"><a href="/Simple-Socket/docs/Intro" target="_self">Intro</a></li><li class="siteNavGroupActive siteNavItemActive"><a href="/Simple-Socket/docs/Getting-Started" target="_self">Getting Started</a></li><li class="siteNavGroupActive"><a href="/Simple-Socket/docs/CSimpleSocket" target="_self">API</a></li><li class=""><a href="https://github.com/prince-chrismc/Simple-Socket" target="_self">GitHub</a></li><li class=""><a href="/Simple-Socket/help" target="_self">Help</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="container docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><i></i></div><h2><i>›</i><span>Overview</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">Overview</h3><ul><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Intro">Introduction</a></li><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Build">Building and Installation</a></li><li class="navListItem navListItemActive"><a class="navItem" href="/Simple-Socket/docs/Getting-Started">Getting Started</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Examples</h3><ul><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Examples">Application Specific Examples</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">API</h3><ul><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/CSimpleSocket">CSimpleSocket</a></li></ul></div></div></section></div><script>
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              const headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                if (event.target.tagName === 'A') {
+                  document.body.classList.remove('tocActive');
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer docMainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 class="postHeaderTitle">Getting Started</h1></header><article><div><span><h3><a class="anchor" aria-hidden="true" id="table-of-contents"></a><a href="#table-of-contents" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Table of Contents</h3>
+<ul>
+<li><a href="#client-app">Client App</a></li>
+<li><a href="#server-app">Server App</a></li>
+</ul>
+<p>When operating on a socket object most methods will return true or false make validation very clean, see <a href="#client-app">below</a>.</p>
+<h2><a class="anchor" aria-hidden="true" id="client-app"></a><a href="#client-app" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Client App</h2>
+<p>As mentioned previously the active socket ( <code>class CActiveSocket</code> ) is used to initiate a connections with a server on some known address and port.</p>
+<blockquote>
+<p>So you want to connect to an existing server...</p>
+<p>How do you do it?</p>
+</blockquote>
+<p>There are many ways using the existing Berkley Socket API, but the goal of this class is to remove the many calls and man page lookups and replace
+them with clear, concise set of methods which allow a developer to focus on the logic of network programming.</p>
+<p>The following code will connect to a DAYTIME server on port 13, query for the current time, and close the socket.</p>
+<pre><code class="hljs css language-cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;string&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">"ActiveSocket.h"</span> <span class="hljs-comment">// Include header for active socket object definition</span></span>
+
+<span class="hljs-keyword">constexpr</span> <span class="hljs-keyword">const</span> uint8* <span class="hljs-keyword">operator</span><span class="hljs-string">""</span> _byte( <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span>* text, <span class="hljs-built_in">std</span>::<span class="hljs-keyword">size_t</span> ) { <span class="hljs-keyword">return</span> (<span class="hljs-keyword">const</span> uint8 *)text; }
+<span class="hljs-keyword">auto</span> WireToText = []( <span class="hljs-keyword">const</span> uint8* text ) <span class="hljs-keyword">constexpr</span> { <span class="hljs-keyword">return</span> (<span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span>*)text; };
+
+<span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">main</span><span class="hljs-params">( <span class="hljs-keyword">int</span> argc, <span class="hljs-keyword">char</span>** argv )</span>
+</span>{
+   CActiveSocket oSocket; <span class="hljs-comment">// Instantiate active socket object (defaults to TCP).</span>
+   <span class="hljs-built_in">std</span>::<span class="hljs-built_in">string</span>   sTime;
+
+   oSocket.Initialize(); <span class="hljs-comment">// Initialize our socket object</span>
+
+   <span class="hljs-keyword">if</span>( oSocket.Open( <span class="hljs-string">"time-C.timefreq.bldrdoc.gov"</span>, <span class="hljs-number">13</span> ) ) <span class="hljs-comment">// Attempt connection to known remote server</span>
+   {
+      <span class="hljs-keyword">if</span>( oSocket.Send( <span class="hljs-string">"\n"</span>_byte, <span class="hljs-number">1</span> ) ) <span class="hljs-comment">// Send a request the server for the current time.</span>
+      {
+         <span class="hljs-keyword">if</span>( oSocket.Receive( <span class="hljs-number">48</span> ) ) <span class="hljs-comment">// Receive response from the server.</span>
+            <span class="hljs-built_in">std</span>::<span class="hljs-built_in">cout</span> &lt;&lt; oSocket.GetData() &lt;&lt; <span class="hljs-built_in">std</span>::<span class="hljs-built_in">endl</span>;
+         <span class="hljs-keyword">else</span>
+            <span class="hljs-built_in">std</span>::<span class="hljs-built_in">cout</span> &lt;&lt; <span class="hljs-string">"Unable to obtain time!"</span> &lt;&lt; <span class="hljs-built_in">std</span>::<span class="hljs-built_in">endl</span>;
+      }
+   }
+
+   oSocket.Close(); <span class="hljs-comment">// Close the connection.</span>
+
+   <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+}
+
+</code></pre>
+<p><em>Note:</em> This example requires C++1z to compile for an example which is C++03 compilant see <a href="https://github.com/prince-chrismc/Simple-Socket/blob/d7b1c5d3a8436cdbc60793701ffed4f1f504c754/examples/QueryDayTime.cpp">here</a></p>
+<p>You can see that the amount of code required to have an object perform network communciation is very small and simple.</p>
+<h2><a class="anchor" aria-hidden="true" id="server-app"></a><a href="#server-app" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Server App</h2>
+<p>As mentioned previously the passive socket ( <code>class CPassiveSocket</code> ) is used to listen for incomming connections on some defines port.</p>
+<blockquote>
+<p>Now you want to build a server...</p>
+<p>How do you do it?</p>
+</blockquote>
+<p>For a practical test lets build an echo server. The server will listen on port 6789 an repsond back with what ever has been sent to the server.</p>
+<pre><code class="hljs css language-cpp">
+<span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;future&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;chrono&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">"PassiveSocket.h"</span> <span class="hljs-comment">// Include header for passive socket object definition</span></span>
+
+<span class="hljs-keyword">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-keyword">const</span> int32 MAX_PACKET = <span class="hljs-number">4096</span>;
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> <span class="hljs-built_in">std</span>::chrono_literals;
+
+<span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">main</span><span class="hljs-params">( <span class="hljs-keyword">int</span> argc, <span class="hljs-keyword">char</span>** argv )</span>
+</span>{
+   CPassiveSocket oSocket;
+   <span class="hljs-built_in">std</span>::promise&lt;<span class="hljs-keyword">void</span>&gt; oExitSignal;
+
+   oSocket.Initialize(); <span class="hljs-comment">// Initialize our socket object</span>
+   oSocket.Listen( <span class="hljs-string">"127.0.0.1"</span>, <span class="hljs-number">6789</span> ); <span class="hljs-comment">// Bind to local host on port 6789 to wait for incomming connections</span>
+
+   <span class="hljs-keyword">auto</span> oRetval = <span class="hljs-built_in">std</span>::async( <span class="hljs-built_in">std</span>::launch::deferred, [ &amp;oSocket, oExitEvent = oExitSignal.get_future() ]() {
+         <span class="hljs-keyword">while</span>( oExitEvent.wait_for( <span class="hljs-number">10</span>ms ) == <span class="hljs-built_in">std</span>::future_status::timeout )
+         {
+            <span class="hljs-built_in">std</span>::<span class="hljs-built_in">unique_ptr</span>&lt;CActiveSocket&gt; pClient;
+            <span class="hljs-keyword">if</span>( ( pClient = oSocket.Accept&lt;<span class="hljs-built_in">std</span>::<span class="hljs-built_in">unique_ptr</span>, CActiveSocket&gt;() ) != <span class="hljs-literal">nullptr</span> ) <span class="hljs-comment">// Wait for an incomming connection</span>
+            {
+               <span class="hljs-keyword">if</span>( pClient-&gt;Receive( MAX_PACKET ) ) <span class="hljs-comment">// Receive request from the client.</span>
+               {
+                  <span class="hljs-comment">// Send response to client and close connection to the client.</span>
+                  pClient-&gt;Send( <span class="hljs-keyword">reinterpret_cast</span>&lt;<span class="hljs-keyword">const</span> uint8*&gt;( pClient-&gt;GetData().c_str() ),
+                                 pClient-&gt;GetBytesReceived() );
+                  pClient-&gt;Close(); <span class="hljs-comment">// Close socket since we have completed transmission</span>
+               }
+            }
+         }
+      }
+   );
+
+   <span class="hljs-built_in">std</span>::this_thread::sleep_for( <span class="hljs-number">1</span>h );
+   oSocket.Close(); <span class="hljs-comment">// Release the bound socket. Must be done to exit blocking accept call</span>
+   oExitSignal.set_value();
+   oRetval.get();
+
+   <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+}
+</code></pre>
+<p><em>Note:</em> This example requires C++1z to compile for an example which is C++03 compilant see <a href="https://github.com/prince-chrismc/Simple-Socket/blob/d7b1c5d3a8436cdbc60793701ffed4f1f504c754/examples/EchoServer.cpp">here</a></p>
+<p>In this example the code is more involved because the <code>Accept()</code> on a blocking socket only returns with a new connection, in order to correctly close
+the socket <code>Close()</code> must be called from a seperate thread. This examples makes use of a deffered launch to obtain this effect.</p>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/Simple-Socket/docs/Build"><span class="arrow-prev">← </span><span>Previous</span></a><a class="docs-next button" href="/Simple-Socket/docs/Examples"><span>Next</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav docOnPageNav"><ul class="toc-headings"><li><a href="#client-app">Client App</a></li><li><a href="#server-app">Server App</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/Simple-Socket/" class="nav-home"><img src="/Simple-Socket/img/rj45-512.gif" alt="Simple Socket" width="66" height="58"/></a><div><h5>Docs</h5><a href="/Simple-Socket/docs/en/Intro">Overview</a><a href="/Simple-Socket/docs/en/Getting-Started">Getting Started</a><a href="/Simple-Socket/docs/en/CSimpleSocket">API Reference</a></div><div><h5>Community</h5><a href="http://stackoverflow.com/questions/tagged/" target="_blank" rel="noreferrer noopener">Stack Overflow</a></div><div><h5>More</h5><a href="/Simple-Socket/blog">Blog</a><a href="https://github.com/">GitHub</a><a class="github-button" data-icon="octicon-star" data-count-href="/facebook/docusaurus/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://code.facebook.com/projects/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/Simple-Socket/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2018 Christopher McArthur</section></footer></div></body></html>
