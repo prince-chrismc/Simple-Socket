@@ -31,8 +31,24 @@ platform independent manner. Socket types:</p>
 <li>CActiveSocket Class</li>
 <li>CPassiveSocket Class</li>
 </ul>
-<h3><a class="anchor" aria-hidden="true" id="enums"></a><a href="#enums" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Enums</h3>
-<h5><a class="anchor" aria-hidden="true" id="cshutdownmode"></a><a href="#cshutdownmode" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>CShutdownMode</h5>
+<h3><a class="anchor" aria-hidden="true" id="table-of-contents"></a><a href="#table-of-contents" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Table of Contents</h3>
+<ul>
+<li>Enums
+<ul>
+<li>CShutdownMode</li>
+<li>CSocketType</li>
+<li>CSocketError</li>
+</ul></li>
+<li>Functions
+<ul>
+<li>Get Data</li>
+<li>Get Client Address</li>
+<li>Get Server Address</li>
+<li>Get Joined Group</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="enums"></a><a href="#enums" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Enums</h2>
+<h3><a class="anchor" aria-hidden="true" id="cshutdownmode"></a><a href="#cshutdownmode" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>CShutdownMode</h3>
 <p>Defines the three possible states for shuting down a socket.</p>
 <table>
 <thead>
@@ -44,22 +60,22 @@ platform independent manner. Socket types:</p>
 <tr><td>Both</td><td>Shutdown both active and passive sockets.</td></tr>
 </tbody>
 </table>
-<h5><a class="anchor" aria-hidden="true" id="csockettype"></a><a href="#csockettype" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>CSocketType</h5>
+<h3><a class="anchor" aria-hidden="true" id="csockettype"></a><a href="#csockettype" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>CSocketType</h3>
 <p>Defines the socket types recognized by CSimpleSocket class.</p>
 <table>
 <thead>
 <tr><th>Type</th><th>Description</th><th>Notes</th></tr>
 </thead>
 <tbody>
-<tr><td>SocketTypeInvalid</td><td>Invalid socket type.</td></tr>
-<tr><td>SocketTypeTcp</td><td>Defines socket as TCP socket.</td></tr>
-<tr><td>SocketTypeUdp</td><td>Defines socket as UDP socket.</td></tr>
+<tr><td>SocketTypeInvalid</td><td>Invalid socket type.</td><td>-</td></tr>
+<tr><td>SocketTypeTcp</td><td>Defines socket as TCP socket.</td><td>-</td></tr>
+<tr><td>SocketTypeUdp</td><td>Defines socket as UDP socket.</td><td>-</td></tr>
 <tr><td>SocketTypeTcp6</td><td>Defines socket as IPv6 TCP socket.</td><td>Not Supported</td></tr>
 <tr><td>SocketTypeUdp6</td><td>Defines socket as IPv6 UDP socket.</td><td>Not Supported</td></tr>
 <tr><td>SocketTypeRaw</td><td>Provides raw network protocol access.</td><td>Linux Only</td></tr>
 </tbody>
 </table>
-<h5><a class="anchor" aria-hidden="true" id="csocketerror"></a><a href="#csocketerror" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>CSocketError</h5>
+<h3><a class="anchor" aria-hidden="true" id="csocketerror"></a><a href="#csocketerror" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>CSocketError</h3>
 <p>Defines all error codes handled by the CSimpleSocket class.</p>
 <table>
 <thead>
@@ -87,28 +103,39 @@ platform independent manner. Socket types:</p>
 <tr><td>SocketEunknown</td><td>Unknown error please report to <a href="mailto:prince.chrismc@gmail.com">prince.chrismc@gmail.com</a></td></tr>
 </tbody>
 </table>
-<h3><a class="anchor" aria-hidden="true" id="functions"></a><a href="#functions" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Functions</h3>
-<ul>
-<li>GetData</li>
-</ul>
+<h2><a class="anchor" aria-hidden="true" id="functions"></a><a href="#functions" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Functions</h2>
+<h3><a class="anchor" aria-hidden="true" id="get-data"></a><a href="#get-data" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Data</h3>
 <pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Get a pointer to internal receive buffer.  The user MUST not free this</span>
 <span class="hljs-comment">/// pointer when finished.  This memory is managed internally by the CSocket</span>
 <span class="hljs-comment">/// class.</span>
 <span class="hljs-comment">/// @return copy of data if valid, else returns empty.</span>
 str::<span class="hljs-function"><span class="hljs-built_in">string</span> <span class="hljs-title">GetData</span><span class="hljs-params">()</span></span>;
 </code></pre>
-<ul>
-<li>Receive</li>
-</ul>
+<h3><a class="anchor" aria-hidden="true" id="receive"></a><a href="#receive" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Receive</h3>
 <p>The internal buffer is only valid until the next call to Receive(), a call to Close(), or until the object goes out of scope.</p>
 <pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Attempts to receive a block of data on an established connection.</span>
 <span class="hljs-comment">/// @param nMaxBytes maximum number of bytes to receive.</span>
 <span class="hljs-comment">/// @param pBuffer, memory where to receive the data,</span>
-<span class="hljs-comment">///        NULL receives to internal buffer returned with GetData()</span>
-<span class="hljs-comment">///        Non-NULL receives directly there, but GetData() will return empty!</span>
+<span class="hljs-comment">///        - NULL receives to internal buffer returned with GetData()</span>
+<span class="hljs-comment">///        - Non-NULL receives directly there, but GetData() will return empty!</span>
 <span class="hljs-comment">/// @return number of bytes actually received.</span>
 <span class="hljs-comment">/// @return of zero means the connection has been shutdown on the other side.</span>
 <span class="hljs-comment">/// @return of -1 means that an error has occurred.</span>
 <span class="hljs-function"><span class="hljs-keyword">virtual</span> int32 <span class="hljs-title">Receive</span><span class="hljs-params">(uint32 nMaxBytes = <span class="hljs-number">1</span>, uint8 * pBuffer = <span class="hljs-literal">nullptr</span>)</span></span>;
 </code></pre>
-</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/Simple-Socket/docs/Examples"><span class="arrow-prev">← </span><span>Previous</span></a></div></div></div><nav class="onPageNav docOnPageNav"></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/Simple-Socket/" class="nav-home"><img src="/Simple-Socket/img/rj45-512.gif" alt="Simple Socket" width="66" height="58"/></a><div><h5>Docs</h5><a href="/Simple-Socket/docs/en/Intro">Overview</a><a href="/Simple-Socket/docs/en/Getting-Started">Getting Started</a><a href="/Simple-Socket/docs/en/CSimpleSocket">API Reference</a></div><div><h5>Community</h5><a href="http://stackoverflow.com/questions/tagged/" target="_blank" rel="noreferrer noopener">Stack Overflow</a></div><div><h5>More</h5><a href="/Simple-Socket/blog">Blog</a><a href="https://github.com/">GitHub</a><a class="github-button" data-icon="octicon-star" data-count-href="/facebook/docusaurus/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://code.facebook.com/projects/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/Simple-Socket/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2018 Christopher McArthur</section></footer></div></body></html>
+<h3><a class="anchor" aria-hidden="true" id="get-client-address"></a><a href="#get-client-address" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Client Address</h3>
+<pre><code class="hljs css language-cpp"> <span class="hljs-comment">/// Returns clients Internet host address as a string in standard numbers-and-dots notation.</span>
+ <span class="hljs-comment">///  @return IP address or empty if invalid</span>
+<span class="hljs-built_in">std</span>::<span class="hljs-function"><span class="hljs-built_in">string</span> <span class="hljs-title">GetClientAddr</span><span class="hljs-params">()</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="get-server-address"></a><a href="#get-server-address" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Server Address</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Returns server Internet host address as a string in standard numbers-and-dots notation.</span>
+<span class="hljs-comment">///  @return IP address or empty if invalid</span>
+<span class="hljs-built_in">std</span>::<span class="hljs-function"><span class="hljs-built_in">string</span> <span class="hljs-title">GetServerAddr</span><span class="hljs-params">()</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="get-joined-group"></a><a href="#get-joined-group" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Joined Group</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Returns the multi-cast group's address as a string in standard numbers-and-dots notation.</span>
+<span class="hljs-comment">///  @return IP address or empty if invalid</span>
+<span class="hljs-built_in">std</span>::<span class="hljs-function"><span class="hljs-built_in">string</span> <span class="hljs-title">GetJoinedGroup</span><span class="hljs-params">()</span></span>;
+</code></pre>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/Simple-Socket/docs/Examples"><span class="arrow-prev">← </span><span>Previous</span></a></div></div></div><nav class="onPageNav docOnPageNav"><ul class="toc-headings"><li><a href="#enums">Enums</a><ul class="toc-headings"><li><a href="#cshutdownmode">CShutdownMode</a></li><li><a href="#csockettype">CSocketType</a></li><li><a href="#csocketerror">CSocketError</a></li></ul></li><li><a href="#functions">Functions</a><ul class="toc-headings"><li><a href="#get-data">Get Data</a></li><li><a href="#receive">Receive</a></li><li><a href="#get-client-address">Get Client Address</a></li><li><a href="#get-server-address">Get Server Address</a></li><li><a href="#get-joined-group">Get Joined Group</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/Simple-Socket/" class="nav-home"><img src="/Simple-Socket/img/rj45-512.gif" alt="Simple Socket" width="66" height="58"/></a><div><h5>Docs</h5><a href="/Simple-Socket/docs/en/Intro">Overview</a><a href="/Simple-Socket/docs/en/Getting-Started">Getting Started</a><a href="/Simple-Socket/docs/en/CSimpleSocket">API Reference</a></div><div><h5>Community</h5><a href="http://stackoverflow.com/questions/tagged/" target="_blank" rel="noreferrer noopener">Stack Overflow</a></div><div><h5>More</h5><a href="/Simple-Socket/blog">Blog</a><a href="https://github.com/">GitHub</a><a class="github-button" data-icon="octicon-star" data-count-href="/facebook/docusaurus/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://code.facebook.com/projects/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/Simple-Socket/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2018 Christopher McArthur</section></footer></div></body></html>

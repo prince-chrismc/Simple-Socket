@@ -99,7 +99,7 @@ them with clear, concise set of methods which allow a developer to focus on the 
          <span class="hljs-keyword">while</span>( oExitEvent.wait_for( <span class="hljs-number">10</span>ms ) == <span class="hljs-built_in">std</span>::future_status::timeout )
          {
             <span class="hljs-built_in">std</span>::<span class="hljs-built_in">unique_ptr</span>&lt;CActiveSocket&gt; pClient;
-            <span class="hljs-keyword">if</span>( ( pClient = oSocket.Accept&lt;<span class="hljs-built_in">std</span>::<span class="hljs-built_in">unique_ptr</span>, CActiveSocket&gt;() ) != <span class="hljs-literal">nullptr</span> ) <span class="hljs-comment">// Wait for an incomming connection</span>
+            <span class="hljs-keyword">if</span>( ( pClient = oSocket.Accept() ) != <span class="hljs-literal">nullptr</span> ) <span class="hljs-comment">// Wait for an incomming connection</span>
             {
                <span class="hljs-keyword">if</span>( pClient-&gt;Receive( MAX_PACKET ) ) <span class="hljs-comment">// Receive request from the client.</span>
                {
