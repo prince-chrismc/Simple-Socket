@@ -46,13 +46,32 @@ TEST_CASE( "Sockets are created", "[Socket.Initialize]" )
     REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
-TEST_CASE( "Sockets can send", "[Socket.Send]" )
- {
-     CActiveSocket socket(CSimpleSocket::SocketTypeUdp);
+TEST_CASE( "Sockets can open", "[Socket.Open.UDP]" )
+{
+    CActiveSocket socket(CSimpleSocket::SocketTypeUdp);
+
+    REQUIRE( socket.Initialize() );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+    REQUIRE( socket.Open("8.8.8.8", 53 ) );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+}
+
+TEST_CASE( "Sockets can connect", "[Socket.Open.TCP]" )
+{
+    CActiveSocket socket;
+
+    REQUIRE( socket.Initialize() );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+    REQUIRE( socket.Open("www.google.ca", 80 ) );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+}
+
+TEST_CASE( "Sockets can send", "[Socket.Send.UDP]" )
+{
+    CActiveSocket socket(CSimpleSocket::SocketTypeUdp);
 
     REQUIRE( socket.Initialize() );
     REQUIRE( socket.Open("8.8.8.8", 53 ) );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
     std::string dnsQuery = "\xAA\xAA\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\
         \x07\x65\x78\x61\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01";
@@ -61,21 +80,36 @@ TEST_CASE( "Sockets can send", "[Socket.Send]" )
     REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
-TEST_CASE( "Sockets can receive", "[Socket.Receive]" )
- {
-     CActiveSocket socket;
+TEST_CASE( "Sockets can transfer", "[Socket.Send.TCP]" )
+{
+    CActiveSocket socket;
 
     REQUIRE( socket.Initialize() );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
     REQUIRE( socket.Open("www.google.ca", 80 ) );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
     std::string httpRequest = "GET / HTTP/1.0\r\n\r\n";
 
     REQUIRE( socket.Send( reinterpret_cast<const uint8*>( httpRequest.c_str() ), httpRequest.length() ) );
     REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+}
 
-    REQUIRE ( socket.Receive( 17 ) );
+TEST_CASE( "Sockets can read", "[Socket.Receive.UDP]" )
+{
+    // Travis CI didn't like this case =?
+}
+
+TEST_CASE( "Sockets can receive", "[Socket.Receive.TCP]" )
+{
+    CActiveSocket socket;
+
+    REQUIRE( socket.Initialize() );
+    REQUIRE( socket.Open("www.google.ca", 80 ) );
+
+    std::string httpRequest = "GET / HTTP/1.0\r\n\r\n";
+
+    REQUIRE( socket.Send( reinterpret_cast<const uint8*>( httpRequest.c_str() ), httpRequest.length() ) );
+
+    REQUIRE( socket.Receive( 17 ) );
     REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
     std::string httpResponse = socket.GetData();
@@ -108,7 +142,7 @@ TEST_CASE( "Sockets have server information" )
 
         char buff[16];
         std::string googlesAddr =  inet_ntop(AF_INET,
-            &( (sockaddr_in*)pResult->ai_addr )->sin_addr, buff, 16);    
+            &( (sockaddr_in*)pResult->ai_addr )->sin_addr, buff, 16);
 
         CAPTURE( buff );
         CAPTURE(socket.GetServerAddr());
@@ -120,4 +154,27 @@ TEST_CASE( "Sockets have server information" )
     {
         REQUIRE( socket.GetServerPort() == 80 );
     }
+}
+
+TEST_CASE( "Sockets can disconnect", "[Socket.Close.TCP]" )
+{
+    CActiveSocket socket;
+
+    REQUIRE( socket.Initialize() );
+    REQUIRE( socket.Open("www.google.ca", 80 ) );
+
+    std::string httpRequest = "GET / HTTP/1.0\r\n\r\n";
+
+    REQUIRE( socket.Send( reinterpret_cast<const uint8*>( httpRequest.c_str() ), httpRequest.length() ) );
+
+    REQUIRE( socket.Receive( 17 ) );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+    std::string httpResponse = socket.GetData();
+
+    REQUIRE( httpResponse.length() > 0 );
+    REQUIRE( httpResponse.compare("HTTP/1.0 200 OK\r\n") == 0 );
+
+    REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
+    REQUIRE( socket.Close() );
 }
