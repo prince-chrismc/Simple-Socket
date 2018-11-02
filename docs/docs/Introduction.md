@@ -40,5 +40,5 @@ This library avoids abstractions like HTTP socket, or SMTP socket, soley because
 These types of abstractions can be created using this library as a base class.
 
 The simple socket library is comprised of two class which can be used to represent all socket communications.
-* Active Socket Class
-* Passive Socket Class
+* [Active Socket Class](Getting-Started#client-app)
+* [Passive Socket Class](Getting-Started#server-app)

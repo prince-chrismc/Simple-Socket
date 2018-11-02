@@ -10,3 +10,11 @@ To build and install, use CMake to generate the files required for your platform
 
 Installation can be achieved by adding the runtime ( simply the .dll generate with the cmake SIMPLE_SOCKET_SHARED as ON ) to either the execution
 directory of your application or to a location of [PATH](http://www.linfo.org/path_env_var.html) variable.
+
+Currently Tested:
+- Clang 6.0
+- Clang 7
+- GCC 7.3
+- GCC 8.1
+- MCVS 15.7
+- MCVS 15.8
