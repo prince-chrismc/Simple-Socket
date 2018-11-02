@@ -77,7 +77,7 @@ class HomeSplash extends React.Component {
     const language = this.props.language || '';
     return (
       <SplashContainer>
-        <Logo img_src={imgUrl('rj45-256.png')} />
+        <Logo img_src={imgUrl('rj45-512.gif')} />
         <div className="inner">
           <ProjectTitle />
           <PromoSection>
@@ -110,23 +110,23 @@ the async and multicast functionality.</MarkdownBlock>
 );
 
 const Features = () => (
-  <Block layout="threeColumn">
+  <Block layout="threeColumn" background="light">
     {[
       {
         content: 'Application implmentation shouldn\'t be limited by the underlying protocol. You can easily change the type with one parameter when instantiating your socket!',
-        image: imgUrl('rj45-256.png'),
+        image: imgUrl('ip-256.png'),
         imageAlign: 'top',
         title: 'Protocol Independent',
       },
       {
         content: 'Provides a minimalistic approach to non-blocking socket I/O. Requires the application to poll instead of using callbacks.',
-        image: imgUrl('rj45-256.png'),
+        image: imgUrl('async-256.png'),
         imageAlign: 'top',
         title: 'Asynchronous',
       },
       {
         content: 'Offers IGMPv2 support when using UDP sockets. Easily multicast your "Hello World" message to any group.',
-        image: imgUrl('rj45-256.png'),
+        image: imgUrl('Network-Multicast-icon.png'),
         imageAlign: 'top',
         title: 'Multicast Support',
       },
@@ -134,11 +134,16 @@ const Features = () => (
   </Block>
 );
 
+
 const LearnHow = () => (
   <Block id="try" background="light">
     {[
       {
-        content: 'Talk about learning how to use this',
+        content: 'Excited to give Simple Sockets a try? Check out the <a href='
+          + docUrl('Getting-Started') + '>Getting Started Guide</a> for details'
+          + 'on how to quickly build your networked application.<hr>'
+          + 'For more details, check out the <a href=' + docUrl('CSimpleSocket')
+          + '>API</a> documentation to learn about each method.',
         image: imgUrl('rj45-256.png'),
         imageAlign: 'right',
         title: 'Learn How',
@@ -146,6 +151,7 @@ const LearnHow = () => (
     ]}
   </Block>
 );
+
 
 class Index extends React.Component {
   render() {
