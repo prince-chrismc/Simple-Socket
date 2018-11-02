@@ -43,6 +43,7 @@ TEST_CASE( "Sockets are created", "[Socket.Initialize]" )
 
     REQUIRE( socket.Initialize() );
     REQUIRE( socket.GetSocketDescriptor() != INVALID_SOCKET );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
 TEST_CASE( "Sockets can send", "[Socket.Send]" )
@@ -51,11 +52,13 @@ TEST_CASE( "Sockets can send", "[Socket.Send]" )
 
     REQUIRE( socket.Initialize() );
     REQUIRE( socket.Open("8.8.8.8", 53 ) );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
     std::string dnsQuery = "\xAA\xAA\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\
         \x07\x65\x78\x61\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01";
 
     REQUIRE( socket.Send( reinterpret_cast<const uint8*>( dnsQuery.c_str() ), dnsQuery.length() ) );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
 TEST_CASE( "Sockets can receive", "[Socket.Receive]" )
@@ -63,13 +66,17 @@ TEST_CASE( "Sockets can receive", "[Socket.Receive]" )
      CActiveSocket socket;
 
     REQUIRE( socket.Initialize() );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
     REQUIRE( socket.Open("www.google.ca", 80 ) );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
     std::string httpRequest = "GET / HTTP/1.0\r\n\r\n";
 
     REQUIRE( socket.Send( reinterpret_cast<const uint8*>( httpRequest.c_str() ), httpRequest.length() ) );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
     REQUIRE ( socket.Receive( 17 ) );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
     std::string httpResponse = socket.GetData();
 
