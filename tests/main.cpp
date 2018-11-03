@@ -77,6 +77,7 @@ TEST_CASE( "Sockets can send", "[Socket.Send.UDP]" )
         \x07\x65\x78\x61\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01";
 
     REQUIRE( socket.Send( reinterpret_cast<const uint8*>( dnsQuery.c_str() ), dnsQuery.length() ) );
+    CAPTURE( errno );
     REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
@@ -145,7 +146,7 @@ TEST_CASE( "Sockets have server information" )
             &( (sockaddr_in*)pResult->ai_addr )->sin_addr, buff, 16);
 
         CAPTURE( buff );
-        CAPTURE(socket.GetServerAddr());
+        CAPTURE( socket.GetServerAddr() );
 
         REQUIRE( googlesAddr.compare( socket.GetServerAddr()) == 0);
     }
