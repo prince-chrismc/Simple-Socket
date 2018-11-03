@@ -163,9 +163,12 @@ bool CActiveSocket::ConnectUDP( const char *pAddr, uint16 nPort )
       m_timer.Initialize();
       m_timer.SetStartTime();
 
+// on Mac OSX calling SENDTO when 'connected' is the incorrect behavoir
+#if !defined(_DARWIN)
       // Connect to address "xxx.xxx.xxx.xxx"    (IPv4) address only.
       bRetVal = ( connect( m_socket, ( struct sockaddr* )&m_stServerSockaddr, sizeof( m_stServerSockaddr ) ) != CSimpleSocket::SocketError );
-
+#endif
+      
       TranslateSocketError();
 
       m_timer.SetEndTime();
