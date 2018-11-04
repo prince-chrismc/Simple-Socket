@@ -76,7 +76,7 @@ TEST_CASE( "Sockets can send", "[Socket.Send.UDP]" )
     std::string dnsQuery = "\xAA\xAA\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\
         \x07\x65\x78\x61\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01";
 
-    REQUIRE( socket.Send( reinterpret_cast<const uint8*>( dnsQuery.c_str() ), dnsQuery.length() ) );
+    REQUIRE( socket.Send( reinterpret_cast<const uint8*>( dnsQuery.c_str() ), dnsQuery.length() ) == dnsQuery.length() );
 #if defined(_DARWIN)
     CAPTURE( errno );
 #endif
