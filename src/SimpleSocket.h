@@ -126,6 +126,7 @@ public:
     virtual ~CSimpleSocket();
 
     CSimpleSocket& operator=( CSimpleSocket other );
+    CSimpleSocket& operator=( CSimpleSocket&& other );
 
     friend void swap(CSimpleSocket& lhs, CSimpleSocket& rhs) noexcept;
 
@@ -135,9 +136,7 @@ public:
     /// @return true if properly initialized.
     virtual bool Initialize();
 
-    /// Close socket
-    /// @return true if successfully closed otherwise returns false.
-    virtual bool Close();
+    bool Close();
 
     /// Shutdown shut down socket send and receive operations
     ///    CShutdownMode::Receives - Disables further receive operations.

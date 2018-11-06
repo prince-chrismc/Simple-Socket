@@ -88,6 +88,13 @@ The internal buffer is only valid until the next call to Receive(), a call to Cl
 virtual int32 Receive(uint32 nMaxBytes = 1, uint8 * pBuffer = nullptr);
 ```
 
+### Close
+```cpp
+/// Close socket
+/// @return true if successfully closed otherwise returns false.
+bool Close();
+```
+
 ### Get Client Address
 ```cpp
  /// Returns clients Internet host address as a string in standard numbers-and-dots notation.

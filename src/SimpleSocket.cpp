@@ -133,12 +133,16 @@ CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket other )
    return *this;
 }
 
+CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket&& other )
+{
+   swap( *this, other);
+   return *this;
+}
+
 CSimpleSocket::~CSimpleSocket()
 {
-   if( IsSocketValid() )
-   {
-       Close();
-   }
+    Close(); // Checks internally if socket is valid
+    // TO DO DEBATE: Should this terminate is Close failed?
 }
 
 void swap(CSimpleSocket& lhs, CSimpleSocket& rhs) noexcept
@@ -626,31 +630,24 @@ int32 CSimpleSocket::Send( const uint8 *pBuf, size_t bytesToSend )
 // Close() - Close socket and free up any memory allocated for the socket
 //
 //------------------------------------------------------------------------------
-bool CSimpleSocket::Close( void )
+bool CSimpleSocket::Close()
 {
    bool bRetVal = false;
 
-   //--------------------------------------------------------------------------
-   // delete internal buffer
-   //--------------------------------------------------------------------------
-   if( m_sBuffer.length() )
-   {
-      m_sBuffer.clear();
-   }
-
-   //--------------------------------------------------------------------------
    // if socket handle is currently valid, close and then invalidate
-   //--------------------------------------------------------------------------
    if( IsSocketValid() )
    {
-      if( CLOSE( m_socket ) != CSimpleSocket::SocketError )
+      if( CLOSE( m_socket ) == CSimpleSocket::SocketSuccess )
       {
          m_socket = INVALID_SOCKET;
          bRetVal = true;
       }
+      TranslateSocketError();
    }
-
-   TranslateSocketError();
+   else
+   {
+       SetSocketError( CSimpleSocket::SocketInvalidSocket);
+   }
 
    return bRetVal;
 }
