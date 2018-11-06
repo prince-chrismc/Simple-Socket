@@ -122,10 +122,12 @@ public:
 public:
     CSimpleSocket(CSocketType type = SocketTypeTcp);
     CSimpleSocket(const CSimpleSocket& socket);
+    CSimpleSocket(CSimpleSocket&& socket);
     virtual ~CSimpleSocket() = default;
 
-    CSimpleSocket& operator=( const CSimpleSocket &socket );
+    CSimpleSocket& operator=( CSimpleSocket other );
 
+    friend void swap(CSimpleSocket& lhs, CSimpleSocket& rhs) noexcept;
 
     /// Initialize instance of CSocket.  This method MUST be called before an
     /// object can be used. Errors : CSocket::SocketProtocolError,

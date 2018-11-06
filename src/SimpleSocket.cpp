@@ -101,11 +101,6 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
 
 CSimpleSocket::CSimpleSocket( const CSimpleSocket &socket )
 {
-   this->operator=(socket);
-}
-
-CSimpleSocket& CSimpleSocket::operator=( const CSimpleSocket &socket )
-{
    SetSocketHandle( socket.m_socket );
    SetSocketError( socket.GetSocketError() );
    m_sBuffer = socket.GetData();
@@ -116,15 +111,7 @@ CSimpleSocket& CSimpleSocket::operator=( const CSimpleSocket &socket )
    m_nBytesSent = socket.GetBytesSent();
    m_nFlags = socket.m_nFlags;
    m_bIsMulticast = socket.m_bIsMulticast;
-
-   if( m_bIsBlocking  && socket.IsNonblocking() )
-   {
-       SetNonblocking();
-   }
-   else if ( IsNonblocking() && socket.m_bIsBlocking )
-   {
-       SetBlocking();
-   }
+   m_bIsBlocking = socket.m_bIsBlocking;
 
    SetConnectTimeout( socket.GetConnectTimeoutSec(), socket.GetConnectTimeoutUSec() );
    memcpy( &m_stRecvTimeout, &socket.m_stRecvTimeout, sizeof( struct timeval ) );
@@ -133,10 +120,50 @@ CSimpleSocket& CSimpleSocket::operator=( const CSimpleSocket &socket )
    memcpy( &m_stClientSockaddr, &socket.m_stClientSockaddr, SOCKET_ADDR_IN_SIZE );
    memcpy( &m_stServerSockaddr, &socket.m_stServerSockaddr, SOCKET_ADDR_IN_SIZE );
    memcpy( &m_stMulticastGroup, &socket.m_stMulticastGroup, SOCKET_ADDR_IN_SIZE );
+}
 
+CSimpleSocket::CSimpleSocket(CSimpleSocket&& socket)
+{
+   swap( *this, socket);
+}
+
+CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket other )
+{
+   swap( *this, other);
    return *this;
 }
 
+void swap(CSimpleSocket& lhs, CSimpleSocket& rhs) noexcept
+{
+   // enable ADL (not necessary in our case, but good practice)
+   using std::swap;
+
+   swap( lhs.m_socket, rhs.m_socket );
+   swap( lhs.m_socketErrno, rhs.m_socketErrno );
+   swap( lhs.m_sBuffer , rhs.m_sBuffer );
+   swap( lhs.m_nBufferSize, rhs.m_nBufferSize );
+   swap( lhs.m_nSocketDomain, rhs.m_nSocketDomain );
+   swap( lhs.m_nSocketType, rhs.m_nSocketType );
+   swap( lhs.m_nBytesReceived, rhs.m_nBytesReceived );
+   swap( lhs.m_nBytesSent, rhs.m_nBytesSent );
+   swap( lhs.m_nFlags, rhs.m_nFlags );
+   swap( lhs.m_bIsMulticast, rhs.m_bIsMulticast );
+   swap( lhs.m_bIsBlocking, rhs.m_bIsBlocking );
+
+   swap( lhs.m_stConnectTimeout.tv_sec, rhs.m_stConnectTimeout.tv_sec );
+   swap( lhs.m_stConnectTimeout.tv_usec, rhs.m_stConnectTimeout.tv_usec );
+   swap( lhs.m_stRecvTimeout.tv_sec, rhs.m_stRecvTimeout.tv_sec );
+   swap( lhs.m_stRecvTimeout.tv_usec, rhs.m_stRecvTimeout.tv_usec );
+   swap( lhs.m_stSendTimeout.tv_sec, rhs.m_stSendTimeout.tv_sec );
+   swap( lhs.m_stSendTimeout.tv_usec, rhs.m_stSendTimeout.tv_usec );
+
+   swap( lhs.m_stLinger.l_linger, rhs.m_stLinger.l_linger );
+   swap( lhs.m_stLinger.l_linger, rhs.m_stLinger.l_linger );
+
+   swap( lhs.m_stClientSockaddr, rhs.m_stClientSockaddr );
+   swap( lhs.m_stServerSockaddr, rhs.m_stServerSockaddr );
+   swap( lhs.m_stMulticastGroup, rhs.m_stMulticastGroup );
+}
 
 //------------------------------------------------------------------------------
 //
