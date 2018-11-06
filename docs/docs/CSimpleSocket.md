@@ -108,3 +108,48 @@ std::string GetServerAddr();
 ///  @return IP address or empty if invalid
 std::string GetJoinedGroup();
 ```
+### Get Socket Error
+```cpp
+/// Returns the last error that occured for the instace of the CSimpleSocket
+/// instance.  This method should be called immediately to retrieve the
+/// error code for the failing mehtod call.
+///  @return last error that occured.
+CSocketError GetSocketError() const;
+```
+
+### Get Bytes Received
+```cpp
+/// Returns the number of bytes received on the last call to
+/// CSocket::Receive().
+/// @return number of bytes received.
+int32 GetBytesReceived() const;
+```
+### Get Bytes Sent
+```cpp
+/// Returns the number of bytes sent on the last call to
+/// CSocket::Send().
+/// @return number of bytes sent.
+int32 GetBytesSent();
+```
+### Is Non-blocking
+```cpp
+/// Returns blocking/non-blocking state of socket.
+/// @return true if the socket is non-blocking, else return false.
+bool IsNonblocking() const;
+```
+
+### Get Connect Timeout Sec
+```cpp
+/// Gets the timeout value that specifies the maximum number of seconds a
+/// call to CSimpleSocket::Open waits until it completes.
+/// @return the length of time in seconds
+int32 GetConnectTimeoutSec() const;
+```
+
+### Get Connect Timeout Nanoseconds
+```cpp
+/// Gets the timeout value that specifies the maximum number of microseconds
+/// a call to CSimpleSocket::Open waits until it completes.
+/// @return the length of time in microseconds
+int32 GetConnectTimeoutUSec() const;
+```

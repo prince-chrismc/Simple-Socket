@@ -76,7 +76,6 @@ auto constexpr length( const char* str )->long { return *str ? 1 + length( str +
 class CSimpleSocket
 {
 public:
-
    /// Defines the three possible states for shuting down a socket.
    enum CShutdownMode
    {
@@ -94,7 +93,7 @@ public:
         SocketTypeTcp6,      ///< Defines socket as IPv6 TCP socket.
         SocketTypeUdp6,      ///< Defines socket as IPv6 UDP socket.
         SocketTypeRaw        ///< Provides raw network protocol access.
-    } ;
+    };
 
     /// Defines all error codes handled by the CSimpleSocket class.
     enum CSocketError
@@ -122,21 +121,21 @@ public:
 
 public:
     CSimpleSocket(CSocketType type = SocketTypeTcp);
-    CSimpleSocket(CSimpleSocket& socket);
+    CSimpleSocket(const CSimpleSocket& socket);
     virtual ~CSimpleSocket() = default;
 
-    CSimpleSocket *operator=( CSimpleSocket &socket );
+    CSimpleSocket& operator=( const CSimpleSocket &socket );
 
 
     /// Initialize instance of CSocket.  This method MUST be called before an
     /// object can be used. Errors : CSocket::SocketProtocolError,
     /// CSocket::SocketInvalidSocket,
     /// @return true if properly initialized.
-    virtual bool Initialize(void);
+    virtual bool Initialize();
 
     /// Close socket
     /// @return true if successfully closed otherwise returns false.
-    virtual bool Close(void);
+    virtual bool Close();
 
     /// Shutdown shut down socket send and receive operations
     ///    CShutdownMode::Receives - Disables further receive operations.
@@ -226,9 +225,7 @@ public:
     /// @return number of bytes written to the out socket descriptor.
     virtual int32 SendFile(int32 nOutFd, int32 nInFd, off_t *pOffset, int32 nCount);
 
-    /// Returns blocking/non-blocking state of socket.
-    /// @return true if the socket is non-blocking, else return false.
-    bool IsNonblocking(void) {
+    bool IsNonblocking() const {
         return (m_bIsBlocking == false);
     };
 
@@ -242,17 +239,11 @@ public:
 
     std::string GetData() const;
 
-    /// Returns the number of bytes received on the last call to
-    /// CSocket::Receive().
-    /// @return number of bytes received.
-    int32 GetBytesReceived(void) {
+    int32 GetBytesReceived() const {
         return m_nBytesReceived;
     };
 
-    /// Returns the number of bytes sent on the last call to
-    /// CSocket::Send().
-    /// @return number of bytes sent.
-    int32 GetBytesSent(void) {
+    int32 GetBytesSent() const {
         return m_nBytesSent;
     };
 
@@ -279,17 +270,11 @@ public:
     /// @return true if option successfully set
     bool SetOptionReuseAddr();
 
-    /// Gets the timeout value that specifies the maximum number of seconds a
-    /// call to CSimpleSocket::Open waits until it completes.
-    /// @return the length of time in seconds
-    int32 GetConnectTimeoutSec(void) {
+    int32 GetConnectTimeoutSec() const {
         return  m_stConnectTimeout.tv_sec;
     };
 
-    /// Gets the timeout value that specifies the maximum number of microseconds
-    /// a call to CSimpleSocket::Open waits until it completes.
-    /// @return the length of time in microseconds
-    int32 GetConnectTimeoutUSec(void) {
+    int32 GetConnectTimeoutUSec() const {
         return  m_stConnectTimeout.tv_usec;
     };
 
@@ -378,11 +363,7 @@ public:
     /// @return the length of time in seconds
     bool SetSendTimeout(int32 nSendTimeoutSec, int32 nSendTimeoutUsec = 0);
 
-    /// Returns the last error that occured for the instace of the CSimpleSocket
-    /// instance.  This method should be called immediately to retrieve the
-    /// error code for the failing mehtod call.
-    ///  @return last error that occured.
-    CSocketError GetSocketError(void) {
+    CSocketError GetSocketError() const {
         return m_socketErrno;
     };
 
