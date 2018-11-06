@@ -120,6 +120,7 @@ TEST_CASE( "Sockets can receive", "[Socket.Receive.TCP]" )
     std::string httpResponse = socket.GetData();
 
     REQUIRE( httpResponse.length() > 0 );
+    CAPTURE( httpResponse );
     REQUIRE( httpResponse.compare("HTTP/1.0 200 OK\r\n") == 0 );
 }
 
