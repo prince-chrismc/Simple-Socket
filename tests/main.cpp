@@ -99,7 +99,25 @@ TEST_CASE( "Sockets can transfer", "[Socket.Send.TCP]" )
 
 TEST_CASE( "Sockets can read", "[Socket.Receive.UDP]" )
 {
-    // Travis CI didn't like this case =?
+    CActiveSocket socket(CSimpleSocket::SocketTypeUdp);
+
+    REQUIRE( socket.Initialize() );
+    REQUIRE( socket.Open("8.8.8.8", 53 ) );
+
+    std::string dnsQuery = "\xAA\xAA\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\
+        \x07\x65\x78\x61\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01";
+
+    REQUIRE( socket.Send( reinterpret_cast<const uint8*>( dnsQuery.c_str() ), dnsQuery.length() ) == dnsQuery.length() );
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+    // REQUIRE( socket.Receive( 1024 ) /* == 1024 */ ); TO DO : Better Testing for UDP being unreliable over the internet
+    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+    std::string dnsResponse = socket.GetData();
+
+    //REQUIRE( dnsResponse.length() > 0 );
+    CAPTURE( dnsResponse );
+    //REQUIRE( dnsResponse.compare("HTTP/1.0 200 OK\r\n") == 0 );
 }
 
 TEST_CASE( "Sockets can receive", "[Socket.Receive.TCP]" )
