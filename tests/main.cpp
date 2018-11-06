@@ -37,7 +37,7 @@ SOFTWARE.
 #define MAX_PACKET 4096
 #define TEST_PACKET "Test Packet"
 
-TEST_CASE( "Sockets are created", "[Socket.Initialize]" )
+TEST_CASE( "Sockets are created", "[Initialize][TCP]" )
  {
      CSimpleSocket socket;
 
@@ -46,7 +46,7 @@ TEST_CASE( "Sockets are created", "[Socket.Initialize]" )
     REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
-TEST_CASE( "Sockets can open", "[Socket.Open.UDP]" )
+TEST_CASE( "Sockets can open", "[Open][UDP]" )
 {
     CActiveSocket socket(CSimpleSocket::SocketTypeUdp);
 
@@ -56,7 +56,7 @@ TEST_CASE( "Sockets can open", "[Socket.Open.UDP]" )
     REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
-TEST_CASE( "Sockets can connect", "[Socket.Open.TCP]" )
+TEST_CASE( "Sockets can connect", "[Open][TCP]" )
 {
     CActiveSocket socket;
 
@@ -66,7 +66,7 @@ TEST_CASE( "Sockets can connect", "[Socket.Open.TCP]" )
     REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
-TEST_CASE( "Sockets can send", "[Socket.Send.UDP]" )
+TEST_CASE( "Sockets can send", "[Send][UDP]" )
 {
     CActiveSocket socket(CSimpleSocket::SocketTypeUdp);
 
@@ -83,7 +83,7 @@ TEST_CASE( "Sockets can send", "[Socket.Send.UDP]" )
     REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
-TEST_CASE( "Sockets can transfer", "[Socket.Send.TCP]" )
+TEST_CASE( "Sockets can transfer", "[Send][TCP]" )
 {
     CActiveSocket socket;
 
@@ -97,7 +97,7 @@ TEST_CASE( "Sockets can transfer", "[Socket.Send.TCP]" )
     REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
-TEST_CASE( "Sockets can read", "[Socket.Receive.UDP]" )
+TEST_CASE( "Sockets can read", "[Receive][UDP]" )
 {
     CActiveSocket socket(CSimpleSocket::SocketTypeUdp);
 
@@ -120,7 +120,7 @@ TEST_CASE( "Sockets can read", "[Socket.Receive.UDP]" )
     //REQUIRE( dnsResponse.compare("HTTP/1.0 200 OK\r\n") == 0 );
 }
 
-TEST_CASE( "Sockets can receive", "[Socket.Receive.TCP]" )
+TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
 {
     CActiveSocket socket;
 
@@ -180,7 +180,7 @@ TEST_CASE( "Sockets have server information" )
     }
 }
 
-TEST_CASE( "Sockets can disconnect", "[Socket.Close.TCP]" )
+TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
 {
     CActiveSocket socket;
 
@@ -205,7 +205,7 @@ TEST_CASE( "Sockets can disconnect", "[Socket.Close.TCP]" )
     REQUIRE( socket.IsSocketValid() == false );
 }
 
-TEST_CASE( "Sockets are ctor copyable", "[Socket.ctor(socket).TCP]" )
+TEST_CASE( "Sockets are ctor copyable", "[Socket][TCP]" )
 {
     CActiveSocket alpha;
 
@@ -242,7 +242,7 @@ TEST_CASE( "Sockets are ctor copyable", "[Socket.ctor(socket).TCP]" )
     REQUIRE( beta.Close() );
 }
 
-TEST_CASE( "Sockets are assign copyable", "[Socket.=.TCP]" )
+TEST_CASE( "Sockets are assign copyable", "[Socket=][TCP]" )
 {
     CActiveSocket alpha;
 
