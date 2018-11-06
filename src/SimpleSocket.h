@@ -120,10 +120,10 @@ public:
     };
 
 public:
-    CSimpleSocket(CSocketType type = SocketTypeTcp);
-    CSimpleSocket(const CSimpleSocket& socket);
-    CSimpleSocket(CSimpleSocket&& socket);
-    virtual ~CSimpleSocket() = default;
+    CSimpleSocket( CSocketType type = SocketTypeTcp );
+    CSimpleSocket( const CSimpleSocket& socket );
+    CSimpleSocket( CSimpleSocket&& socket );
+    virtual ~CSimpleSocket();
 
     CSimpleSocket& operator=( CSimpleSocket other );
 

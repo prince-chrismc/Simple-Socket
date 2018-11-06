@@ -59,7 +59,6 @@ class CPassiveSocket : public CSimpleSocket
 {
 public:
    CPassiveSocket( CSocketType type = SocketTypeTcp );
-   virtual ~CPassiveSocket();
 
     /// Extracts the first connection request on the queue of pending
     /// connections and creates a newly connected socket.  Used with

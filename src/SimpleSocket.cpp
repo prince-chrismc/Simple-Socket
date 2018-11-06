@@ -133,6 +133,14 @@ CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket other )
    return *this;
 }
 
+CSimpleSocket::~CSimpleSocket()
+{
+   if( IsSocketValid() )
+   {
+       Close();
+   }
+}
+
 void swap(CSimpleSocket& lhs, CSimpleSocket& rhs) noexcept
 {
    // enable ADL (not necessary in our case, but good practice)

@@ -51,11 +51,6 @@ CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType )
 {
 }
 
-CActiveSocket::~CActiveSocket()
-{
-   CSimpleSocket::Close();
-}
-
 bool CActiveSocket::PreConnect( const char * pAddr, uint16 nPort )
 {
    bool bRetVal = true;

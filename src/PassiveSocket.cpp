@@ -52,11 +52,6 @@ CPassiveSocket::CPassiveSocket( CSocketType nType ) : CSimpleSocket( nType )
 {
 }
 
-CPassiveSocket::~CPassiveSocket()
-{
-   CSimpleSocket::Close();
-}
-
 //------------------------------------------------------------------------------
 //
 // Listen() -

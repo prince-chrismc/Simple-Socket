@@ -57,7 +57,6 @@ public:
    friend class CPassiveSocket;
 
    CActiveSocket( CSocketType type = SocketTypeTcp );
-   virtual ~CActiveSocket();
 
     /// Established a connection to the address specified by pAddr.
     /// Connection-based protocol sockets (CSocket::SocketTypeTcp) may
