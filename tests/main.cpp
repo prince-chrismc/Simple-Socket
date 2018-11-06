@@ -184,6 +184,7 @@ TEST_CASE( "Sockets can disconnect", "[Socket.Close.TCP]" )
 
     REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
     REQUIRE( socket.Close() );
+    REQUIRE( socket.IsSocketValid() == false );
 }
 
 TEST_CASE( "Sockets are ctor copyable", "[Socket.ctor(socket).TCP]" )
@@ -217,6 +218,10 @@ TEST_CASE( "Sockets are ctor copyable", "[Socket.ctor(socket).TCP]" )
     httpResponse = beta.GetData();
     CAPTURE( httpResponse );
     REQUIRE( httpResponse.compare("Date: ") == 0 );
+
+    // Only clean up once since we duplicated the socket!
+    REQUIRE( beta.Shutdown( CSimpleSocket::Both ) );
+    REQUIRE( beta.Close() );
 }
 
 TEST_CASE( "Sockets are assign copyable", "[Socket.=.TCP]" )
@@ -250,4 +255,8 @@ TEST_CASE( "Sockets are assign copyable", "[Socket.=.TCP]" )
 
     httpResponse = beta.GetData();
     REQUIRE( httpResponse.compare("Date: ") == 0 );
+
+    // Only clean up once since we duplicated the socket!
+    REQUIRE( beta.Shutdown( CSimpleSocket::Both ) );
+    REQUIRE( beta.Close() );
 }
