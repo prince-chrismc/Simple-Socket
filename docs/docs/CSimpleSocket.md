@@ -129,7 +129,7 @@ int32 GetBytesReceived() const;
 /// Returns the number of bytes sent on the last call to
 /// CSocket::Send().
 /// @return number of bytes sent.
-int32 GetBytesSent();
+int32 GetBytesSent() const;
 ```
 ### Is Non-blocking
 ```cpp
