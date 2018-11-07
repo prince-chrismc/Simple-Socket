@@ -71,9 +71,9 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    m_bIsMulticast( false )
 {
    SetConnectTimeout( 1, 0 );
-   memset( &m_stRecvTimeout, 0, sizeof( struct timeval ) );
-   memset( &m_stSendTimeout, 0, sizeof( struct timeval ) );
-   memset( &m_stLinger, 0, sizeof( struct linger ) );
+   SetReceiveTimeout( 0, 0 );
+   SetSendTimeout( 0, 0 );
+   SetOptionLinger( false, 0 );
    memset( &m_stClientSockaddr, 0, SOCKET_ADDR_IN_SIZE );
    memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
    memset( &m_stMulticastGroup, 0, SOCKET_ADDR_IN_SIZE );
