@@ -37,7 +37,6 @@ int main( int argc, char** argv )
    CPassiveSocket oSocket;
    std::promise<void> oExitSignal;
 
-   oSocket.Initialize(); // Initialize our socket object
    oSocket.Listen( "127.0.0.1", 6789 ); // Bind to local host on port 6789 for ability to wait for incomming connections
 
    auto oRetval = std::async( std::launch::deferred, [ &oSocket, oExitEvent = oExitSignal.get_future() ]() {
@@ -52,14 +51,13 @@ int main( int argc, char** argv )
                pClient->Send( reinterpret_cast<const uint8*>( pClient->GetData().c_str() ),
                               pClient->GetBytesReceived() );
 
-               pClient->Close(); // Close socket since we have completed transmission
+               pClient.reset(); // Close socket since we have completed transmission
             }
          }
       }
    } );
 
    std::this_thread::sleep_for( 1h );
-   oSocket.Close(); // Release the bound socket. Must be done to exit blocking accept call
    oExitSignal.set_value();
    oRetval.get();
 

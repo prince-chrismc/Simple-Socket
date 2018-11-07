@@ -31,8 +31,6 @@ int main( int argc, char** argv )
 {
    CActiveSocket oSocket; // Instantiate active socket object (defaults to TCP).
 
-   oSocket.Initialize(); // Initialize our socket object
-
    if( oSocket.Open( "time-C.timefreq.bldrdoc.gov", 13 ) ) // Attempt connection to known remote server
    {
       if( oSocket.Send( "\n"_bytes, 1 ) ) // Send a request the server for the current time.
@@ -43,8 +41,6 @@ int main( int argc, char** argv )
             std::cout << "Unable to obtain time!" << std::endl;
       }
    }
-
-   oSocket.Close(); // Close the connection.
 
    return 1;
 }

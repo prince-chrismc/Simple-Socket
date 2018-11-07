@@ -43,6 +43,7 @@
 
 #include "SimpleSocket.h"
 
+#include <stdexcept>
 #include <cstdlib>
 
 #if defined(_LINUX) || defined (_DARWIN)
@@ -96,6 +97,11 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    default:
       m_nSocketType = CSimpleSocket::SocketTypeInvalid;
       break;
+   }
+
+   if( ! Initialize() )
+   {
+       throw std::runtime_error("Failed to create socket!" + DescribeError() );
    }
 }
 
@@ -1191,7 +1197,7 @@ void CSimpleSocket::TranslateSocketError( void )
 //
 //------------------------------------------------------------------------------
 
-const char *CSimpleSocket::DescribeError( CSocketError err )
+std::string CSimpleSocket::DescribeError( CSocketError err )
 {
    switch( err ) {
    case CSimpleSocket::SocketError:

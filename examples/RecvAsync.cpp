@@ -122,7 +122,6 @@ int main( int argc, char** argv )
    auto oRetval = std::async( std::launch::async, [ oExitEvent = oExitSignal.get_future(), &oPortEvent ]() {
       CPassiveSocket oSocket;
 
-      oSocket.Initialize(); // Initialize our socket object
       oSocket.SetNonblocking(); // Configure this socket to be non-blocking
       oSocket.Listen( LOCAL_HOST, 0 ); // Bind to local host on port any port
 
@@ -145,12 +144,9 @@ int main( int argc, char** argv )
 
             AsyncMessage oEchoMessage( oBuilder.ExtractMessage() );
             pClient->Send( oEchoMessage.GetWireFormat(), oEchoMessage.GetWireFormatSize() ); // Send response to client and close connection to the client.
-            pClient->Select(); // Wait for the client to read the message
-            pClient->Close(); // Close socket since we have completed transmission
+            pClient.reset(); // Close socket since we have completed transmission
          }
       }
-
-      oSocket.Close(); // Release the bound socket. Must be done to exit blocking accept call
    }
    );
 
@@ -161,7 +157,6 @@ int main( int argc, char** argv )
    // ---------------------------------------------------------------------------------------------
    CActiveSocket oClient;
 
-   oClient.Initialize(); // Initialize our socket object
    oClient.SetNonblocking(); // Configure this socket to be non-blocking
 
    if( oClient.Open( LOCAL_HOST, nPort ) ) // Attempt connection to local server and reported port
@@ -186,7 +181,6 @@ int main( int argc, char** argv )
       }
    }
 
-   oClient.Close(); // Close the connection.
    oExitSignal.set_value();
    oRetval.get();
 

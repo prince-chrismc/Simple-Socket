@@ -54,9 +54,7 @@ int main( int argc, char** argv )
       {
          CSimpleSocket oSender( CSimpleSocket::SocketTypeUdp );
 
-         bool bRetval = oSender.Initialize();
-
-         bRetval = oSender.SetMulticast( true );
+         bool bRetval = oSender.SetMulticast( true );
 
          //bRetval = oSender.BindInterface( "192.168.0.195" );
 
@@ -90,9 +88,7 @@ int main( int argc, char** argv )
    // ---------------------------------------------------------------------------------------------
    CSimpleSocket oReceiver( CSimpleSocket::SocketTypeUdp );
 
-   bool bRetval = oReceiver.Initialize();
-
-   bRetval = oReceiver.SetMulticast( true );
+   bool bRetval = oReceiver.SetMulticast( true );
 
    //bRetval = oReceiver.BindInterface( "192.168.0.195" );
 
@@ -123,7 +119,6 @@ int main( int argc, char** argv )
    oExitSignal.set_value();
 
    //bRetval = oReceiver.Shutdown( CSimpleSocket::Both );
-   oReceiver.Close();
 
    oTxComplete.get();
    oRxComplete.get();

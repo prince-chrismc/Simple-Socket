@@ -130,14 +130,6 @@ public:
 
     friend void swap(CSimpleSocket& lhs, CSimpleSocket& rhs) noexcept;
 
-    /// Initialize instance of CSocket.  This method MUST be called before an
-    /// object can be used. Errors : CSocket::SocketProtocolError,
-    /// CSocket::SocketInvalidSocket,
-    /// @return true if properly initialized.
-    virtual bool Initialize();
-
-    bool Close();
-
     /// Shutdown shut down socket send and receive operations
     ///    CShutdownMode::Receives - Disables further receive operations.
     ///    CShutdownMode::Sends    - Disables further send operations.
@@ -179,8 +171,8 @@ public:
 
     /// Returns a human-readable description of the given error code
     /// or the last error code of a socket
-    static const char *DescribeError(CSocketError err);
-    inline const char *DescribeError() {
+    static std::string DescribeError(CSocketError err);
+    inline std::string DescribeError() {
         return DescribeError(m_socketErrno);
     };
 
@@ -459,6 +451,14 @@ public:
 
 
 protected:
+    /// Initialize instance of CSocket.  This method MUST be called before an
+    /// object can be used. Errors : CSocket::SocketProtocolError,
+    /// CSocket::SocketInvalidSocket,
+    /// @return true if properly initialized.
+    bool Initialize();
+
+    bool Close();
+
     /// Set internal socket error to that specified error
     ///  @param error type of error
     void SetSocketError(CSimpleSocket::CSocketError error) {

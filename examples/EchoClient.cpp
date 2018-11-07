@@ -33,8 +33,6 @@ int main( int argc, char **argv )
 {
    CActiveSocket client;
 
-   client.Initialize(); // Initialize our socket object
-
    if( client.Open( "127.0.0.1", 6789 ) ) // Connect to echo server
    {
       if( client.Send( (uint8 *)TEST_PACKET, strlen( TEST_PACKET ) ) )
@@ -50,8 +48,6 @@ int main( int argc, char **argv )
          }
       }
    }
-
-   client.Close();
 
    return 1;
 }

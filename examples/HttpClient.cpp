@@ -34,12 +34,7 @@ int main(int argc, char** argv)
     CActiveSocket oClient;
     HttpResponseParserAdvance oParser;
 
-    bool retval = oClient.Initialize();
-
-    if (retval)
-    {
-        retval = oClient.Open("www.google.ca", 80);
-    }
+    bool retval = oClient.Open("www.google.ca", 80);
 
     if (retval)
     {
@@ -59,8 +54,6 @@ int main(int argc, char** argv)
     }
 
     HttpResponse oRes = oParser.GetHttpResponse();
-
-    oClient.Close();
 
     std::cout << oRes.GetBody();
     std::cout.flush();
