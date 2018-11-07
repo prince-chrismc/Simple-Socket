@@ -119,6 +119,7 @@ int main( int argc, char** argv )
    oExitSignal.set_value();
 
    //bRetval = oReceiver.Shutdown( CSimpleSocket::Both );
+   oReceiver.Close();
 
    oTxComplete.get();
    oRxComplete.get();

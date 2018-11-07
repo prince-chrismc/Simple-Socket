@@ -138,6 +138,8 @@ public:
     /// @return true if successfully shutdown otherwise returns false.
     virtual bool Shutdown(CShutdownMode nShutdown);
 
+    bool Close();
+
     /// Examine the socket descriptor sets currently owned by the instance of
     /// the socket class (the readfds, writefds, and errorfds parameters) to
     /// see whether some of their descriptors are ready for reading, are ready
@@ -456,8 +458,6 @@ protected:
     /// CSocket::SocketInvalidSocket,
     /// @return true if properly initialized.
     bool Initialize();
-
-    bool Close();
 
     /// Set internal socket error to that specified error
     ///  @param error type of error
