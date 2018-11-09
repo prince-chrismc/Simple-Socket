@@ -76,8 +76,7 @@ int main( int argc, char** argv )
             oSender.Send( reinterpret_cast<const uint8*>( TEST_PACKET ), SIZEOF_TEST_PACKET );
          }
 
-         //oSender.Shutdown( CSimpleSocket::Sends );
-         //oSender.Close();
+         oSender.Shutdown( CSimpleSocket::Both );
 
          return bRetval;
       }
@@ -110,6 +109,8 @@ int main( int argc, char** argv )
 
             std::lock_guard<std::mutex> oPrintLock( muConsoleOut );
             std::cout << "Rx // Obtained: '" << reinterpret_cast<char*>( buffer ) << "' from " << oReceiver.GetClientAddr() << std::endl;
+
+            if( oReceiver.GetBytesReceived() < 1 ) break;
          }
       }
    );
@@ -118,7 +119,7 @@ int main( int argc, char** argv )
 
    oExitSignal.set_value();
 
-   //bRetval = oReceiver.Shutdown( CSimpleSocket::Both );
+   bRetval = oReceiver.Shutdown( CSimpleSocket::Both );
 
    oTxComplete.get();
    oRxComplete.get();
