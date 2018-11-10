@@ -130,13 +130,7 @@ public:
 
     friend void swap(CSimpleSocket& lhs, CSimpleSocket& rhs) noexcept;
 
-    /// Shutdown shut down socket send and receive operations
-    ///    CShutdownMode::Receives - Disables further receive operations.
-    ///    CShutdownMode::Sends    - Disables further send operations.
-    ///    CShutdownBoth::         - Disables further send and receive operations.
-    /// @param nShutdown specifies the type of shutdown.
-    /// @return true if successfully shutdown otherwise returns false.
-    virtual bool Shutdown(CShutdownMode nShutdown);
+    bool Shutdown(CShutdownMode nShutdown);
 
     bool Close();
 
@@ -159,12 +153,7 @@ public:
     /// @return true if socket has data ready, or false if not ready or timed out.
     virtual bool Select(int32 nTimeoutSec, int32 nTimeoutUSec);
 
-    /// Does the current instance of the socket object contain a valid socket
-    /// descriptor.
-    ///  @return true if the socket object contains a valid socket descriptor.
-    virtual bool IsSocketValid(void) {
-        return (m_socket != SocketError);
-    };
+    bool IsSocketValid();
 
     /// Provides a standard error code for cross platform development by
     /// mapping the operating system error to an error defined by the CSocket
@@ -178,14 +167,6 @@ public:
         return DescribeError(m_socketErrno);
     };
 
-    /// Attempts to receive a block of data on an established connection.
-    /// @param nMaxBytes maximum number of bytes to receive.
-    /// @param pBuffer, memory where to receive the data,
-    ///        NULL receives to internal buffer returned with GetData()
-    ///        Non-NULL receives directly there, but GetData() will return WRONG ptr!
-    /// @return number of bytes actually received.
-    /// @return of zero means the connection has been shutdown on the other side.
-    /// @return of -1 means that an error has occurred.
     virtual int32 Receive(uint32 nMaxBytes = 1, uint8 * pBuffer = nullptr);
 
     /// Attempts to send a block of data on an established connection.
@@ -220,9 +201,7 @@ public:
     /// @return number of bytes written to the out socket descriptor.
     virtual int32 SendFile(int32 nOutFd, int32 nInFd, off_t *pOffset, int32 nCount);
 
-    bool IsNonblocking() const {
-        return (m_bIsBlocking == false);
-    };
+    bool IsNonblocking() const;
 
     /// Set the socket to blocking.
     /// @return true if successful set to blocking, else return false;
@@ -234,13 +213,9 @@ public:
 
     std::string GetData() const;
 
-    int32 GetBytesReceived() const {
-        return m_nBytesReceived;
-    };
+    int32 GetBytesReceived() const;
 
-    int32 GetBytesSent() const {
-        return m_nBytesSent;
-    };
+    int32 GetBytesSent() const;
 
     /// Controls the actions taken when CSimpleSocket::Close is executed on a
     /// socket object that has unsent data.  The default value for this option
@@ -265,29 +240,11 @@ public:
     /// @return true if option successfully set
     bool SetOptionReuseAddr();
 
-    int32 GetConnectTimeoutSec() const {
-        return  m_stConnectTimeout.tv_sec;
-    };
+   int32 GetConnectTimeoutSec() const;
 
-    int32 GetConnectTimeoutUSec() const {
-        return  m_stConnectTimeout.tv_usec;
-    };
+   int32 GetConnectTimeoutUSec() const;
 
-    /// Sets the timeout value that specifies the maximum amount of time a call
-    /// to CSimpleSocket::Receive waits until it completes. Use the method
-    /// CSimpleSocket::SetReceiveTimeout to specify the number of seconds to wait.
-    /// If a call to CSimpleSocket::Receive has blocked for the specified length of
-    /// time without receiving additional data, it returns with a partial count
-    /// or CSimpleSocket::GetSocketError set to CSimpleSocket::SocketEwouldblock if no data
-    /// were received.
-    /// @param nConnectTimeoutSec of timeout in seconds.
-    /// @param nConnectTimeoutUsec of timeout in microseconds.
-    /// @return true if socket connection timeout was successfully set.
-    void SetConnectTimeout(int32 nConnectTimeoutSec, int32 nConnectTimeoutUsec = 0)
-    {
-        m_stConnectTimeout.tv_sec = nConnectTimeoutSec;
-        m_stConnectTimeout.tv_usec = nConnectTimeoutUsec;
-    };
+   void SetConnectTimeout(int32 nConnectTimeoutSec, int32 nConnectTimeoutUsec);
 
     /// Gets the timeout value that specifies the maximum number of seconds a
     /// a call to CSimpleSocket::Receive waits until it completes.
@@ -526,6 +483,4 @@ protected:
     fd_set               m_errorFds;          /// error file descriptor set
 };
 
-
 #endif /*  __SOCKET_H__  */
-

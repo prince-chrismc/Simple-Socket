@@ -821,6 +821,25 @@ bool CSimpleSocket::SetOptionReuseAddr()
    return bRetVal;
 }
 
+//------------------------------------------------------------------------------
+int32 CSimpleSocket::GetConnectTimeoutSec() const
+{
+   return m_stConnectTimeout.tv_sec;
+}
+
+//------------------------------------------------------------------------------
+int32 CSimpleSocket::GetConnectTimeoutUSec() const
+{
+   return m_stConnectTimeout.tv_usec;
+}
+
+//------------------------------------------------------------------------------
+void CSimpleSocket::SetConnectTimeout( int32 nConnectTimeoutSec, int32 nConnectTimeoutUsec )
+{
+   m_stConnectTimeout.tv_sec = nConnectTimeoutSec;
+   m_stConnectTimeout.tv_usec = nConnectTimeoutUsec;
+}
+
 
 //------------------------------------------------------------------------------
 //
@@ -961,6 +980,18 @@ std::string CSimpleSocket::GetData() const
    return m_sBuffer;
 }
 
+//------------------------------------------------------------------------------
+int32 CSimpleSocket::GetBytesReceived() const
+{
+   return m_nBytesReceived;
+}
+
+//------------------------------------------------------------------------------
+int32 CSimpleSocket::GetBytesSent() const
+{
+   return m_nBytesSent;
+}
+
 
 //------------------------------------------------------------------------------
 //
@@ -1040,6 +1071,11 @@ int32 CSimpleSocket::SendFile( int32 nOutFd, int32 nInFd, off_t *pOffset, int32 
    return nOutCount;
 }
 
+//------------------------------------------------------------------------------
+bool CSimpleSocket::IsNonblocking() const
+{
+   return ( m_bIsBlocking == false );
+}
 
 //------------------------------------------------------------------------------
 //
@@ -1283,4 +1319,9 @@ bool CSimpleSocket::Select( int32 nTimeoutSec, int32 nTimeoutUSec )
    }
 
    return bRetVal;
+}
+
+bool CSimpleSocket::IsSocketValid()
+{
+   return ( m_socket != INVALID_SOCKET );
 }

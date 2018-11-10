@@ -88,11 +88,30 @@ The internal buffer is only valid until the next call to Receive(), a call to Cl
 virtual int32 Receive(uint32 nMaxBytes = 1, uint8 * pBuffer = nullptr);
 ```
 
+### Shutdown
+```cpp
+/// Shutdown shut down socket send and receive operations
+///    CShutdownMode::Receives - Disables further receive operations.
+///    CShutdownMode::Sends    - Disables further send operations.
+///    CShutdownBoth::         - Disables further send and receive operations.
+/// @param nShutdown specifies the type of shutdown.
+/// @return true if successfully shutdown otherwise returns false.
+bool Shutdown(CShutdownMode nShutdown);
+```
+
 ### Close
 ```cpp
 /// Close socket
 /// @return true if successfully closed otherwise returns false.
 bool Close();
+```
+
+### Is Socket Valid
+```cpp
+/// Does the current instance of the socket object contain a valid socket
+/// descriptor.
+///  @return true if the socket object contains a valid socket descriptor.
+bool IsSocketValid();
 ```
 
 ### Get Client Address
@@ -131,6 +150,7 @@ CSocketError GetSocketError() const;
 /// @return number of bytes received.
 int32 GetBytesReceived() const;
 ```
+
 ### Get Bytes Sent
 ```cpp
 /// Returns the number of bytes sent on the last call to
@@ -138,6 +158,7 @@ int32 GetBytesReceived() const;
 /// @return number of bytes sent.
 int32 GetBytesSent() const;
 ```
+
 ### Is Non-blocking
 ```cpp
 /// Returns blocking/non-blocking state of socket.
@@ -159,4 +180,19 @@ int32 GetConnectTimeoutSec() const;
 /// a call to CSimpleSocket::Open waits until it completes.
 /// @return the length of time in microseconds
 int32 GetConnectTimeoutUSec() const;
+```
+
+### Set Connect Timeout
+```cpp
+/// Sets the timeout value that specifies the maximum amount of time a call
+/// to CSimpleSocket::Receive waits until it completes. Use the method
+/// CSimpleSocket::SetReceiveTimeout to specify the number of seconds to wait.
+/// If a call to CSimpleSocket::Receive has blocked for the specified length of
+/// time without receiving additional data, it returns with a partial count
+/// or CSimpleSocket::GetSocketError set to CSimpleSocket::SocketEwouldblock if no data
+/// were received.
+/// @param nConnectTimeoutSec of timeout in seconds.
+/// @param nConnectTimeoutUsec of timeout in microseconds.
+/// @return true if socket connection timeout was successfully set.
+void SetConnectTimeout(int32 nConnectTimeoutSec, int32 nConnectTimeoutUsec);
 ```
