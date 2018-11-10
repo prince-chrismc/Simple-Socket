@@ -21,6 +21,7 @@ if(UNIX)
       add_compile_options(-g -D_DEBUG)
     ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
       message("Building 'Release' configuration.")
+      add_compile_options(-O3)
     ELSE()
       set(CMAKE_BUILD_TYPE Release)
       message("Defaulting to 'Release' configuration.")
@@ -46,7 +47,7 @@ elseif(WIN32)
         # Special MINGW stuff here
     elseif(MSVC)
         # Special MSVC stuff here
-		add_compile_options(/std:c++17 -W4)
+        add_compile_options(/std:c++17 -W4)
     else()
         # No idea what it is, but there's a good chance it's too weird.
         MESSAGE( FATAL_ERROR "Using unknown WIN32 compiler... NOT. Please add to build system." )
