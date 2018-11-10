@@ -45,6 +45,7 @@
 
 #include <stdexcept>
 #include <cstdlib>
+#include <functional>
 
 #if defined(_LINUX) || defined (_DARWIN)
 #include <netinet/ip.h>
@@ -99,9 +100,9 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
       break;
    }
 
-   if( ! Initialize() )
+   if( !Initialize() )
    {
-       throw std::runtime_error("Failed to create socket!" + DescribeError() );
+      throw std::runtime_error( "Failed to create socket!" + DescribeError() );
    }
 }
 
@@ -128,37 +129,37 @@ CSimpleSocket::CSimpleSocket( const CSimpleSocket &socket )
    memcpy( &m_stMulticastGroup, &socket.m_stMulticastGroup, SOCKET_ADDR_IN_SIZE );
 }
 
-CSimpleSocket::CSimpleSocket(CSimpleSocket&& socket) noexcept
+CSimpleSocket::CSimpleSocket( CSimpleSocket&& socket ) noexcept
 {
-   swap( *this, socket);
+   swap( *this, socket );
 }
 
 CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket other )
 {
-   swap( *this, other);
+   swap( *this, other );
    return *this;
 }
 
 CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket&& other ) noexcept
 {
-   swap( *this, other);
+   swap( *this, other );
    return *this;
 }
 
 CSimpleSocket::~CSimpleSocket()
 {
-    Close(); // Checks internally if socket is valid
-    // TO DO DEBATE: Should this terminate is Close failed?
+   Close(); // Checks internally if socket is valid
+   // TO DO DEBATE: Should this terminate is Close failed?
 }
 
-void swap(CSimpleSocket& lhs, CSimpleSocket& rhs) noexcept
+void swap( CSimpleSocket& lhs, CSimpleSocket& rhs ) noexcept
 {
    // enable ADL (not necessary in our case, but good practice)
    using std::swap;
 
    swap( lhs.m_socket, rhs.m_socket );
    swap( lhs.m_socketErrno, rhs.m_socketErrno );
-   swap( lhs.m_sBuffer , rhs.m_sBuffer );
+   swap( lhs.m_sBuffer, rhs.m_sBuffer );
    swap( lhs.m_nBufferSize, rhs.m_nBufferSize );
    swap( lhs.m_nSocketDomain, rhs.m_nSocketDomain );
    swap( lhs.m_nSocketType, rhs.m_nSocketType );
@@ -464,7 +465,7 @@ uint32 CSimpleSocket::GetWindowSize( uint32 nOptionName )
    //-------------------------------------------------------------------------
    // no socket given, return system default allocate our own new socket
    //-------------------------------------------------------------------------
-   if( m_socket != CSimpleSocket::SocketError )
+   if( IsSocketValid() )
    {
       socklen_t nLen = sizeof( nTcpWinSize );
 
@@ -493,7 +494,7 @@ uint32 CSimpleSocket::SetWindowSize( uint32 nOptionName, uint32 nWindowSize )
     //-------------------------------------------------------------------------
     // no socket given, return system default allocate our own new socket
     //-------------------------------------------------------------------------
-   if( m_socket != CSimpleSocket::SocketError )
+   if( IsSocketValid() )
    {
       SETSOCKOPT( m_socket, SOL_SOCKET, nOptionName, &nWindowSize, sizeof( nWindowSize ) );
       TranslateSocketError();
@@ -562,70 +563,44 @@ bool CSimpleSocket::EnableNagleAlgoritm()
 //------------------------------------------------------------------------------
 int32 CSimpleSocket::Send( const uint8 *pBuf, size_t bytesToSend )
 {
+   if( !IsSocketValid() || bytesToSend == 0 || pBuf == nullptr )
+   {
+      m_nBytesSent = -1;
+      return m_nBytesSent;
+   }
+
    SetSocketError( SocketSuccess );
    m_nBytesSent = 0;
+
+   std::function<int32()> sendMessage = [] { return -1; };
 
    switch( m_nSocketType )
    {
    case CSimpleSocket::SocketTypeTcp:
-   {
-      if( IsSocketValid() )
-      {
-         if( ( bytesToSend > 0 ) && ( pBuf != NULL ) )
-         {
-            m_timer.Initialize();
-            m_timer.SetStartTime();
-
-            //---------------------------------------------------------
-            // Check error condition and attempt to resend if call
-            // was interrupted by a signal.
-            //---------------------------------------------------------
-            do
-            {
-               m_nBytesSent = SEND( m_socket, pBuf, bytesToSend, 0 );
-               TranslateSocketError();
-            } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
-
-            m_timer.SetEndTime();
-         }
-      }
+      sendMessage = [ & ] { return SEND( m_socket, pBuf, bytesToSend, 0 ); };
       break;
-   }
    case CSimpleSocket::SocketTypeUdp:
-   {
-      if( IsSocketValid() )
+      sendMessage = [ & ]
       {
-         if( ( bytesToSend > 0 ) && ( pBuf != NULL ) )
-         {
-            m_timer.Initialize();
-            m_timer.SetStartTime();
-
-            if( GetMulticast() )
-            {
-               do
-               {
-                  m_nBytesSent = SENDTO( m_socket, pBuf, bytesToSend, 0, (const sockaddr *)&m_stMulticastGroup,
-                                         sizeof( m_stMulticastGroup ) );
-                  TranslateSocketError();
-               } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
-            }
-            else
-            {
-               do
-               {
-                  m_nBytesSent = SENDTO( m_socket, pBuf, bytesToSend, 0, (const sockaddr *)&m_stServerSockaddr, sizeof( m_stServerSockaddr ) );
-                  TranslateSocketError();
-               } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
-            }
-
-            m_timer.SetEndTime();
-         }
-      }
+         const sockaddr* addrToSentTo = m_bIsMulticast ? (const sockaddr *)&m_stMulticastGroup : (const sockaddr *)&m_stServerSockaddr;
+         return SENDTO( m_socket, pBuf, bytesToSend, 0, addrToSentTo, SOCKET_ADDR_IN_SIZE );
+      };
       break;
-   }
    default:
       break;
    }
+
+   m_timer.Initialize();
+   m_timer.SetStartTime();
+
+   // Check error condition and attempt to resend if call was interrupted by a signal.
+   do
+   {
+      m_nBytesSent = sendMessage();
+      TranslateSocketError();
+   } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
+
+   m_timer.SetEndTime();
 
    return m_nBytesSent;
 }
@@ -652,7 +627,7 @@ bool CSimpleSocket::Close()
    }
    else
    {
-       SetSocketError( CSimpleSocket::SocketInvalidSocket);
+      SetSocketError( CSimpleSocket::SocketInvalidSocket );
    }
 
    return bRetVal;
@@ -926,11 +901,11 @@ int32 CSimpleSocket::Receive( uint32 nMaxBytes, uint8* pBuffer )
        // Clear the output buffer
       if( pBuffer == nullptr )
       {
-          m_sBuffer.clear();
+         m_sBuffer.clear();
       }
       else
       {
-          pBuffer[ 0 ] = '\0';
+         pBuffer[ 0 ] = '\0';
       }
    }
    else if( pBuffer == nullptr )
