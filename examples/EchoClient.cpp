@@ -26,8 +26,11 @@ SOFTWARE.
 
 #include "ActiveSocket.h"       // Include header for active socket object definition
 
-static constexpr auto MAX_PACKET = 4096;
-static constexpr auto TEST_PACKET = "Test Packet";
+static constexpr const auto MAX_PACKET = 4096;
+static constexpr const auto TEST_PACKET = "Test Packet";
+
+static constexpr unsigned int SIZEOF_TEST_PACKET = length( TEST_PACKET );
+static_assert( SIZEOF_TEST_PACKET == 11, "Failed to compute SIZEOF_TEST_PACKET" );
 
 int main( int argc, char **argv )
 {
@@ -35,7 +38,7 @@ int main( int argc, char **argv )
 
    if( client.Open( "127.0.0.1", 6789 ) ) // Connect to echo server
    {
-      if( client.Send( (uint8 *)TEST_PACKET, strlen( TEST_PACKET ) ) )
+      if( client.Send( (const uint8*)TEST_PACKET, SIZEOF_TEST_PACKET ) == SIZEOF_TEST_PACKET )
       {
          auto numBytes = 0;
          if( ( numBytes = client.Receive( MAX_PACKET ) ) > 0 )

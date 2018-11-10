@@ -70,13 +70,13 @@
 #define INVALID_SOCKET    ~(0)
 #endif
 
-constexpr auto operator"" _bytes( const char* text, std::size_t ) { return (const uint8 *)text; }
+inline auto operator"" _bytes( const char* text, std::size_t ) { return reinterpret_cast<const uint8 *>(text); }
 auto constexpr length( const char* str )->long { return *str ? 1 + length( str + 1 ) : 0; }
 
 class CSimpleSocket
 {
 public:
-   /// Defines the three possible states for shuting down a socket.
+   /// Defines the three possible states for shutting down a socket.
    enum CShutdownMode
    {
       Receives = SHUT_RD, ///< Shutdown passive socket.

@@ -29,34 +29,34 @@ SOFTWARE.
 #include "ActiveSocket.h"
 #include <iostream>
 
-int main(int argc, char** argv)
+int main( int argc, char** argv )
 {
-    CActiveSocket oClient;
-    HttpResponseParserAdvance oParser;
+   CActiveSocket oClient;
+   HttpResponseParserAdvance oParser;
 
-    bool retval = oClient.Open("www.google.ca", 80);
+   bool retval = oClient.Open( "www.google.ca", 80 );
 
-    if (retval)
-    {
-        HttpRequest oReq(HttpRequestGet, "/", HttpVersion11, "www.google.ca");
-        oReq.SetContentType(HttpContentHtml);
-        std::string sRawRequest = oReq.GetWireFormat();
-        retval = oClient.Send((uint8*)sRawRequest.c_str(), sRawRequest.size());
-    }
+   if( retval )
+   {
+      HttpRequest oReq( HttpRequestGet, "/", HttpVersion11, "www.google.ca" );
+      oReq.SetContentType( HttpContentHtml );
+      std::string sRawRequest = oReq.GetWireFormat();
+      retval = oClient.Send( (uint8*)sRawRequest.c_str(), sRawRequest.size() );
+   }
 
-    if (retval)
-    {
-        do
-        {
-            if( oClient.Receive(1024) <= 0 ) break; // Transmission succesful
+   if( retval )
+   {
+      do
+      {
+         if( oClient.Receive( 1024 ) <= 0 ) break; // Transmission succesful
 
-        } while( !oParser.AppendResponseData( oClient.GetData() ) );
-    }
+      } while( !oParser.AppendResponseData( oClient.GetData() ) );
+   }
 
-    HttpResponse oRes = oParser.GetHttpResponse();
+   HttpResponse oRes = oParser.GetHttpResponse();
 
-    std::cout << oRes.GetBody();
-    std::cout.flush();
+   std::cout << oRes.GetBody();
+   std::cout.flush();
 
-    return 0;
+   return 0;
 }
