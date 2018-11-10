@@ -25,9 +25,12 @@ SOFTWARE.
 */
 
 #ifndef _CLANG
-#define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS // Not supported by Clang 6.0
-#else
-#include <string_view>
+   #define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS // Not supported by Clang 6.0
+#endif
+
+#ifdef __cpp_lib_experimental_string_view
+   #include <experimental/string_view>
+   using std::string_view = std::experimental::string_view;
 #endif
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
@@ -36,7 +39,7 @@ SOFTWARE.
 #include "PassiveSocket.h"       // Include header for active socket object definition
 
 #if defined(_LINUX) || defined (_DARWIN)
-#include <netdb.h>
+   #include <netdb.h>
 #endif
 
 static constexpr auto DNS_QUERY_LENGTH = 30;
