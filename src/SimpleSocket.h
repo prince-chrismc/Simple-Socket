@@ -72,6 +72,7 @@
 
 inline auto operator"" _bytes( const char* text, std::size_t ) { return reinterpret_cast<const uint8 *>(text); }
 auto constexpr length( const char* str )->long { return *str ? 1 + length( str + 1 ) : 0; }
+auto constexpr length( const uint8* str )->long { return *str ? 1 + length( str + 1 ) : 0; }
 
 class CSimpleSocket
 {
@@ -135,22 +136,12 @@ public:
     bool Close();
 
     bool Select();
-
     bool Select( int32 nTimeoutSec, int32 nTimeoutUSec );
 
     bool IsSocketValid() const;
 
-    /// Provides a standard error code for cross platform development by
-    /// mapping the operating system error to an error defined by the CSocket
-    /// class.
-    void TranslateSocketError(void);
-
-    /// Returns a human-readable description of the given error code
-    /// or the last error code of a socket
+    std::string DescribeError() const;
     static std::string DescribeError(CSocketError err);
-    inline std::string DescribeError() {
-        return DescribeError(m_socketErrno);
-    };
 
     virtual int32 Receive(uint32 nMaxBytes = 1, uint8 * pBuffer = nullptr);
 
@@ -403,9 +394,11 @@ protected:
 
     /// Set internal socket error to that specified error
     ///  @param error type of error
-    void SetSocketError(CSimpleSocket::CSocketError error) {
-        m_socketErrno = error;
-    };
+   void SetSocketError(CSimpleSocket::CSocketError error);
+
+    /// Provides a standard error code for cross platform development by mapping the
+    /// operating system error to an error defined by the CSimpleSocket class.
+    void TranslateSocketError();
 
     /// Set object socket handle to that specified as parameter
     ///  @param socket value of socket descriptor
@@ -423,7 +416,6 @@ private:
     /// Generic function used to set the send/receive window size
     ///  @return zero on failure else the number of bytes of the TCP window size if successful.
     uint32 SetWindowSize(uint32 nOptionName, uint32 nWindowSize);
-
 
     /// Attempts to send at most nNumItem blocks described by sendVector
     /// to the socket descriptor associated with the socket object.

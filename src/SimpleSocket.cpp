@@ -212,6 +212,12 @@ bool CSimpleSocket::Initialize()
 }
 
 //-------------------------------------------------------------------------------------------------
+void CSimpleSocket::SetSocketError(CSimpleSocket::CSocketError error)
+{
+   m_socketErrno = error;
+}
+
+//-------------------------------------------------------------------------------------------------
 //
 // BindInterface()
 //
@@ -1243,6 +1249,12 @@ std::string CSimpleSocket::DescribeError( CSocketError err )
    default:
       return "No such CSimpleSocket error";
    }
+}
+
+//-------------------------------------------------------------------------------------------------
+std::string CSimpleSocket::DescribeError() const
+{
+   return DescribeError(m_socketErrno);
 }
 
 //-------------------------------------------------------------------------------------------------

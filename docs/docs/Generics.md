@@ -23,6 +23,11 @@ inline auto operator"" _bytes( const char* text, std::size_t ) { return reinterp
 auto constexpr length( const char* str )->long { return *str ? 1 + length( str + 1 ) : 0; }
 ```
 
+```cpp
+/// Returns a human-readable description of the given error code
+static std::string DescribeError(CSocketError err);
+```
+
 ## Enums
 ### CShutdownMode
 Defines the three possible states for shuting down a socket.

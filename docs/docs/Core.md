@@ -13,6 +13,8 @@ platform _and_ protocol independent manner.
    - Close
 - Status
    - Is Socket Valid
+   - Select
+   - Describe Error
 - Information
    - Get Client Address
    - Get Server Address
@@ -86,6 +88,11 @@ bool Select(int32 nTimeoutSec, int32 nTimeoutUSec);
 bool Select();
 ```
 
+### Describe Error
+```cpp
+/// Returns a human-readable description of the last error code of a socket
+std::string DescribeError() const;
+```
 ## Information
 ### Get Client Address
 ```cpp
