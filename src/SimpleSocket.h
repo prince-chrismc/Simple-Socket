@@ -134,24 +134,9 @@ public:
 
     bool Close();
 
-    /// Examine the socket descriptor sets currently owned by the instance of
-    /// the socket class (the readfds, writefds, and errorfds parameters) to
-    /// see whether some of their descriptors are ready for reading, are ready
-    /// for writing, or have an exceptional condition pending, respectively.
-    /// Block until an event happens on the specified file descriptors.
-    /// @return true if socket has data ready, or false if not ready or timed out.
-    virtual bool Select(void) {
-        return Select(0,0);
-    };
+    bool Select();
 
-    /// Examine the socket descriptor sets currently owned by the instance of
-    /// the socket class (the readfds, writefds, and errorfds parameters) to
-    /// see whether some of their descriptors are ready for reading, are ready
-    /// for writing, or have an exceptional condition pending, respectively.
-    /// @param nTimeoutSec timeout in seconds for select.
-    /// @param nTimeoutUSec timeout in micro seconds for select.
-    /// @return true if socket has data ready, or false if not ready or timed out.
-    virtual bool Select(int32 nTimeoutSec, int32 nTimeoutUSec);
+    bool Select( int32 nTimeoutSec, int32 nTimeoutUSec );
 
     bool IsSocketValid();
 

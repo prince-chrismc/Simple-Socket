@@ -6,12 +6,14 @@ title: Core Socket Functionality
 platform _and_ protocol independent manner.
 
 ### Table of Contents
-- Functions
-   - Get Data
+- Functionality
    - Receive
+   - Get Data
    - Shutdown
    - Close
+- Status
    - Is Socket Valid
+- Information
    - Get Client Address
    - Get Server Address
    - Get Joined Group
@@ -19,15 +21,7 @@ platform _and_ protocol independent manner.
    - Get Bytes Received
    - Get Bytes Sent
 
-## Functions
-### Get Data
-```cpp
-/// Get a pointer to internal receive buffer. This memory is managed
-/// internally by the CSocket class.
-/// @return copy of data if valid, else returns empty.
-str::string GetData();
-```
-
+## Functionality
 ### Receive
 The internal buffer is only valid until the next call to Receive() returns, or until the object goes out of scope.
 ```cpp
@@ -40,6 +34,14 @@ The internal buffer is only valid until the next call to Receive() returns, or u
 /// @return of zero means the connection has been shutdown on the other side.
 /// @return of -1 means that an error has occurred.
 virtual int32 Receive(uint32 nMaxBytes = 1, uint8 * pBuffer = nullptr);
+```
+
+### Get Data
+```cpp
+/// Get a pointer to internal receive buffer. This memory is managed
+/// internally by the CSocket class.
+/// @return copy of data if valid, else returns empty.
+str::string GetData();
 ```
 
 ### Shutdown
@@ -58,14 +60,33 @@ bool Shutdown(CShutdownMode nShutdown);
 bool Close();
 ```
 
+## Status
 ### Is Socket Valid
 ```cpp
 /// Does the current instance of the socket object contain a valid socket
 /// descriptor.
 ///  @return true if the socket object contains a valid socket descriptor.
-bool IsSocketValid();
+bool IsSocketValid() const;
 ```
 
+### Select
+```cpp
+/// Examine the socket descriptor currently managed by this instance to see
+/// whether some of its file descriptors are ready for reading, for writing,
+/// or have an exceptional condition pending,
+/// @param nTimeoutSec timeout in seconds for select.
+/// @param nTimeoutUSec timeout in micro seconds for select.
+/// @return true if socket has data ready, or false if timed out or error pending.
+bool Select(int32 nTimeoutSec, int32 nTimeoutUSec);
+```
+
+```cpp
+/// Block until an event happens on the managed socket descriptors.
+/// @return true if socket has data ready, or false if not ready or timed out.
+bool Select();
+```
+
+## Information
 ### Get Client Address
 ```cpp
  /// Returns clients Internet host address as a string in standard numbers-and-dots notation.
