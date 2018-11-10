@@ -24,8 +24,10 @@ SOFTWARE.
 
 */
 
-#ifdef __cpp_lib_uncaught_exceptions
+#ifndef _CLANG
 #define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS // Not supported by Clang 6.0
+#else
+#include <string_view>
 #endif
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
@@ -65,6 +67,7 @@ TEST_CASE( "Sockets can connect", "[Open][TCP]" )
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
+#ifndef _DARWIN
 TEST_CASE( "Sockets can send", "[Send][UDP]" )
 {
    CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
@@ -75,6 +78,7 @@ TEST_CASE( "Sockets can send", "[Send][UDP]" )
    REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
+#endif
 
 TEST_CASE( "Sockets can transfer", "[Send][TCP]" )
 {
@@ -88,6 +92,7 @@ TEST_CASE( "Sockets can transfer", "[Send][TCP]" )
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
+#ifndef _DARWIN
 TEST_CASE( "Sockets can read", "[Receive][UDP]" )
 {
    CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
@@ -111,6 +116,7 @@ TEST_CASE( "Sockets can read", "[Receive][UDP]" )
    // Dont compare the two bytes for the TTL since it changes...
    REQUIRE( dnsResponse.compare( 39, 6, "\x00\x04\x5d\xb8\xd8\x22", 6 ) == 0 );
 }
+#endif
 
 TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
 {
