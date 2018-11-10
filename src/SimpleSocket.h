@@ -138,7 +138,7 @@ public:
 
     bool Select( int32 nTimeoutSec, int32 nTimeoutUSec );
 
-    bool IsSocketValid();
+    bool IsSocketValid() const;
 
     /// Provides a standard error code for cross platform development by
     /// mapping the operating system error to an error defined by the CSocket
