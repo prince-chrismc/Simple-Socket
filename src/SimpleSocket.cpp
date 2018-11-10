@@ -641,12 +641,13 @@ bool CSimpleSocket::Close()
 //------------------------------------------------------------------------------
 bool CSimpleSocket::Shutdown( CShutdownMode nShutdown )
 {
-   CSocketError nRetVal = SocketEunknown;
+   if( shutdown( m_socket, nShutdown ) == SocketError )
+   {
+      TranslateSocketError();
+      return false;
+   }
 
-   nRetVal = (CSocketError)shutdown( m_socket, CSimpleSocket::Sends );
-   TranslateSocketError();
-
-   return nRetVal == CSimpleSocket::SocketSuccess;
+   return true;
 }
 
 
