@@ -43,7 +43,9 @@
 
 #include "ActiveSocket.h"
 
-#if defined(_LINUX) || defined (_DARWIN)
+#ifdef _WIN32
+#include <Ws2tcpip.h>
+#elif defined(_LINUX) || defined (_DARWIN)
 #include <netdb.h>
 #endif
 

@@ -43,8 +43,8 @@
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
-#include <cerrno>
-#include <cstring>
+//#include <cerrno>
+//#include <cstring>
 
 #if defined(_LINUX) || defined (_DARWIN)
 #include <arpa/inet.h>
@@ -58,12 +58,11 @@
 #endif
 
 #ifdef _WIN32
-#include <io.h>
 #include <winsock2.h>
-#include <Ws2tcpip.h>
 #endif
 
 #include "StatTimer.h"
+#include "Host.h"
 #include <string>
 
 #ifndef INVALID_SOCKET

@@ -24,14 +24,15 @@ SOFTWARE.
 
 */
 
-   #define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS // Not supported by Clang 6.0
-
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS // Not supported by Clang 6.0
 #include "catch2/catch.hpp"
 
-#include "PassiveSocket.h"       // Include header for active socket object definition
+#include "PassiveSocket.h"
 
-#if defined(_LINUX) || defined (_DARWIN)
+#ifdef _WIN32
+#include <Ws2tcpip.h>
+#elif defined(_LINUX) || defined (_DARWIN)
    #include <netdb.h>
 #endif
 

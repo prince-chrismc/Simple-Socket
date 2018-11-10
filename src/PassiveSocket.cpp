@@ -44,9 +44,12 @@
 #include "PassiveSocket.h"
 #include <memory>
 
-#if defined(_LINUX) || defined (_DARWIN)
+#ifdef _WIN32
+#include <Ws2tcpip.h>
+#elif defined(_LINUX) || defined (_DARWIN)
 #include <netinet/ip.h>
 #endif
+
 
 CPassiveSocket::CPassiveSocket( CSocketType nType ) : CSimpleSocket( nType )
 {
