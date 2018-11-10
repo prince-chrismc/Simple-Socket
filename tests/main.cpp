@@ -37,9 +37,9 @@ SOFTWARE.
 #include <netdb.h>
 #endif
 
-static const std::string_view DNS_QUERY = "\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00example.com\x00\x01\x00\x01";
-                                        //"\xAA\xAA\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x07\x65\x78\x61\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01";
-static const std::string_view HTTP_GET_ROOT_REQUEST = "GET / HTTP/1.0\r\n\r\n";
+static constexpr auto DNS_QUERY_LENGTH = 30;
+static constexpr uint8 DNS_QUERY[ DNS_QUERY_LENGTH ] = { '\x12','\x34','\x01','\x00','\x00','\x01','\x00','\x00','\x00','\x00','\x00','\x00','\x07','\x65','\x78','\x61','\x6d','\x70','\x6c','\x65','\x03','\x63','\x6f','\x6d','\x00','\x00','\x01','\x00','\x01' };
+static constexpr std::string_view HTTP_GET_ROOT_REQUEST = "GET / HTTP/1.0\r\n\r\n";
 
 TEST_CASE( "Sockets are created", "[Initialize][TCP]" )
 {
@@ -72,7 +72,7 @@ TEST_CASE( "Sockets can send", "[Send][UDP]" )
    REQUIRE( socket.Open( "8.8.8.8", 53 ) );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Send( reinterpret_cast<const uint8*>( DNS_QUERY.data() ), DNS_QUERY.length() ) == DNS_QUERY.length() );
+   REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
@@ -95,17 +95,21 @@ TEST_CASE( "Sockets can read", "[Receive][UDP]" )
    REQUIRE( socket.Open( "8.8.8.8", 53 ) );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Send( reinterpret_cast<const uint8*>( DNS_QUERY.data() ), DNS_QUERY.length() ) == DNS_QUERY.length() );
+   REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   //REQUIRE( socket.Receive( 1024 ) == 1024 ); // TO DO : Better Testing for UDP being unreliable over the internet
+   REQUIRE( socket.Receive( 1024 ) == 45 );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   std::string dnsResponse = socket.GetData();
+   const std::string dnsResponse = socket.GetData();
 
-   REQUIRE( dnsResponse.length() > 0 );
-   CAPTURE( dnsResponse );
-   REQUIRE( dnsResponse == "HTTP/1.0 200 OK\r\n" );
+   REQUIRE( dnsResponse.length() == 45 );
+   REQUIRE( dnsResponse.compare( 0, 37, "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61" \
+            "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00" \
+            "\x01\x00\x01\x00\x00", 37 ) == 0
+   );
+   // Dont compare the two bytes for the TTL since it changes...
+   REQUIRE( dnsResponse.compare( 39, 6, "\x00\x04\x5d\xb8\xd8\x22", 6 ) == 0 );
 }
 
 TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
