@@ -24,9 +24,7 @@ SOFTWARE.
 
 */
 
-#ifndef __CSTATTIMER_H__
-#define __CSTATTIMER_H__
-
+#pragma once
 #include <chrono>
 
 class CStatTimer
@@ -51,5 +49,3 @@ private:
    TimePoint m_startTime;
    TimePoint m_endTime;
 };
-
-#endif // __CSTATTIMER_H__
