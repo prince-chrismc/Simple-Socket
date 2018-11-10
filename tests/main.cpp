@@ -24,14 +24,7 @@ SOFTWARE.
 
 */
 
-#ifndef _CLANG
    #define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS // Not supported by Clang 6.0
-#endif
-
-#ifdef __cpp_lib_experimental_string_view
-   #include <experimental/string_view>
-   using std::string_view = std::experimental::string_view;
-#endif
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch2/catch.hpp"
@@ -44,7 +37,7 @@ SOFTWARE.
 
 static constexpr auto DNS_QUERY_LENGTH = 30;
 static constexpr uint8 DNS_QUERY[ DNS_QUERY_LENGTH ] = { '\x12','\x34','\x01','\x00','\x00','\x01','\x00','\x00','\x00','\x00','\x00','\x00','\x07','\x65','\x78','\x61','\x6d','\x70','\x6c','\x65','\x03','\x63','\x6f','\x6d','\x00','\x00','\x01','\x00','\x01' };
-static constexpr std::string_view HTTP_GET_ROOT_REQUEST = "GET / HTTP/1.0\r\n\r\n";
+static const std::string HTTP_GET_ROOT_REQUEST = "GET / HTTP/1.0\r\n\r\n";
 
 TEST_CASE( "Sockets are created", "[Initialize][TCP]" )
 {
