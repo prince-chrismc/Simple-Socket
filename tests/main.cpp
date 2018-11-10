@@ -25,7 +25,7 @@ SOFTWARE.
 */
 
 #ifdef __cpp_lib_uncaught_exceptions
-   #define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS // Not supported by Clang 6.0
+#define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS // Not supported by Clang 6.0
 #endif
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
@@ -34,242 +34,226 @@ SOFTWARE.
 #include "PassiveSocket.h"       // Include header for active socket object definition
 
 #if defined(_LINUX) || defined (_DARWIN)
-    #include <netdb.h>
+#include <netdb.h>
 #endif
 
-#define MAX_PACKET 4096
-#define TEST_PACKET "Test Packet"
+static const std::string_view DNS_QUERY = "\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00example.com\x00\x01\x00\x01";
+                                        //"\xAA\xAA\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x07\x65\x78\x61\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01";
+static const std::string_view HTTP_GET_ROOT_REQUEST = "GET / HTTP/1.0\r\n\r\n";
 
 TEST_CASE( "Sockets are created", "[Initialize][TCP]" )
- {
-     CSimpleSocket socket;
+{
+   CSimpleSocket socket;
 
-    REQUIRE( socket.GetSocketDescriptor() != INVALID_SOCKET );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.GetSocketDescriptor() != INVALID_SOCKET );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
 TEST_CASE( "Sockets can open", "[Open][UDP]" )
 {
-    CActiveSocket socket(CSimpleSocket::SocketTypeUdp);
+   CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
 
-    REQUIRE( socket.Open("8.8.8.8", 53 ) );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
 TEST_CASE( "Sockets can connect", "[Open][TCP]" )
 {
-    CActiveSocket socket;
+   CActiveSocket socket;
 
-    REQUIRE( socket.Open("www.google.ca", 80 ) );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.Open( "www.google.ca", 80 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
 TEST_CASE( "Sockets can send", "[Send][UDP]" )
 {
-    CActiveSocket socket(CSimpleSocket::SocketTypeUdp);
+   CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
 
-    REQUIRE( socket.Open("8.8.8.8", 53 ) );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   const std::string dnsQuery = "\xAA\xAA\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\
-        \x07\x65\x78\x61\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01";
-
-    REQUIRE( socket.Send( reinterpret_cast<const uint8*>( dnsQuery.c_str() ), dnsQuery.length() ) == dnsQuery.length() );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.Send( reinterpret_cast<const uint8*>( DNS_QUERY.data() ), DNS_QUERY.length() ) == DNS_QUERY.length() );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
 TEST_CASE( "Sockets can transfer", "[Send][TCP]" )
 {
-    CActiveSocket socket;
+   CActiveSocket socket;
 
-    REQUIRE( socket.Open("www.google.ca", 80 ) );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.Open( "www.google.ca", 80 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   const std::string httpRequest = "GET / HTTP/1.0\r\n\r\n";
-
-    REQUIRE( socket.Send( reinterpret_cast<const uint8*>( httpRequest.c_str() ), httpRequest.length() )
-    == httpRequest.length() );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
+            == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
 TEST_CASE( "Sockets can read", "[Receive][UDP]" )
 {
-    CActiveSocket socket(CSimpleSocket::SocketTypeUdp);
+   CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
 
-    REQUIRE( socket.Open("8.8.8.8", 53 ) );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   const std::string dnsQuery = "\xAA\xAA\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\
-        \x07\x65\x78\x61\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01";
+   REQUIRE( socket.Send( reinterpret_cast<const uint8*>( DNS_QUERY.data() ), DNS_QUERY.length() ) == DNS_QUERY.length() );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-    REQUIRE( socket.Send( reinterpret_cast<const uint8*>( dnsQuery.c_str() ), dnsQuery.length() ) == dnsQuery.length() );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   //REQUIRE( socket.Receive( 1024 ) == 1024 ); // TO DO : Better Testing for UDP being unreliable over the internet
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-    // REQUIRE( socket.Receive( 1024 ) /* == 1024 */ ); TO DO : Better Testing for UDP being unreliable over the internet
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   std::string dnsResponse = socket.GetData();
 
-    std::string dnsResponse = socket.GetData();
-
-    //REQUIRE( dnsResponse.length() > 0 );
-    CAPTURE( dnsResponse );
-    //REQUIRE( dnsResponse.compare("HTTP/1.0 200 OK\r\n") == 0 );
+   REQUIRE( dnsResponse.length() > 0 );
+   CAPTURE( dnsResponse );
+   REQUIRE( dnsResponse == "HTTP/1.0 200 OK\r\n" );
 }
 
 TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
 {
-    CActiveSocket socket;
+   CActiveSocket socket;
 
-    REQUIRE( socket.Open("www.google.ca", 80 ) );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.Open( "www.google.ca", 80 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-    std::string httpRequest = "GET / HTTP/1.0\r\n\r\n";
+   REQUIRE( socket.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
+            == HTTP_GET_ROOT_REQUEST.length() );
 
-    REQUIRE( socket.Send( reinterpret_cast<const uint8*>( httpRequest.c_str() ), httpRequest.length() )
-    == httpRequest.length() );
+   REQUIRE( socket.Receive( 17 ) == 17 );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-    REQUIRE( socket.Receive( 17 ) == 17 );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   std::string httpResponse = socket.GetData();
 
-    std::string httpResponse = socket.GetData();
-
-    REQUIRE( httpResponse.length() > 0 );
-    CAPTURE( httpResponse );
-    REQUIRE( httpResponse == "HTTP/1.0 200 OK\r\n" );
+   REQUIRE( httpResponse.length() > 0 );
+   CAPTURE( httpResponse );
+   REQUIRE( httpResponse == "HTTP/1.0 200 OK\r\n" );
 }
 
 TEST_CASE( "Sockets have server information" )
 {
-    CActiveSocket socket;
+   CActiveSocket socket;
 
-    REQUIRE( socket.Open("www.google.ca", 80 ) );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.Open( "www.google.ca", 80 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-    sockaddr_in serverAddr;
-    memset( &serverAddr, 0, sizeof( serverAddr ) );
-    serverAddr.sin_family = AF_INET;
+   sockaddr_in serverAddr;
+   memset( &serverAddr, 0, sizeof( serverAddr ) );
+   serverAddr.sin_family = AF_INET;
 
-    SECTION("Socket.GetServerAddr")
-    {
-        addrinfo hints{};
-        memset( &hints, 0, sizeof( hints ) );
-        hints.ai_flags = AI_ALL;
-        hints.ai_family = AF_INET;
-        addrinfo* pResult = NULL;
-        const int iErrorCode = getaddrinfo( "www.google.ca", NULL, &hints, &pResult );
+   SECTION( "Socket.GetServerAddr" )
+   {
+      addrinfo hints{};
+      memset( &hints, 0, sizeof( hints ) );
+      hints.ai_flags = AI_ALL;
+      hints.ai_family = AF_INET;
+      addrinfo* pResult = NULL;
+      const int iErrorCode = getaddrinfo( "www.google.ca", NULL, &hints, &pResult );
 
-        REQUIRE( iErrorCode == 0 );
+      REQUIRE( iErrorCode == 0 );
 
-        char buff[16];
-        std::string googlesAddr =  inet_ntop(AF_INET,
-            &( (sockaddr_in*)pResult->ai_addr )->sin_addr, buff, 16);
+      char buff[ 16 ];
+      std::string googlesAddr = inet_ntop( AF_INET, &( (sockaddr_in*)pResult->ai_addr )->sin_addr, buff, 16 );
 
-        CAPTURE( buff );
-        CAPTURE( socket.GetServerAddr() );
+      CAPTURE( buff );
+      CAPTURE( socket.GetServerAddr() );
 
-        REQUIRE( googlesAddr == socket.GetServerAddr());
-    }
+      REQUIRE( googlesAddr == socket.GetServerAddr() );
+   }
 
-    SECTION("Socket.GetServerPort")
-    {
-        REQUIRE( socket.GetServerPort() == 80 );
-    }
+   SECTION( "Socket.GetServerPort" )
+   {
+      REQUIRE( socket.GetServerPort() == 80 );
+   }
 }
 
 TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
 {
-    CActiveSocket socket;
+   CActiveSocket socket;
 
-    REQUIRE( socket.Open("www.google.ca", 80 ) );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.Open( "www.google.ca", 80 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-    std::string httpRequest = "GET / HTTP/1.0\r\n\r\n";
+   REQUIRE( socket.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
+            == HTTP_GET_ROOT_REQUEST.length() );
 
-    REQUIRE( socket.Send( reinterpret_cast<const uint8*>( httpRequest.c_str() ), httpRequest.length() )
-    == httpRequest.length() );
+   REQUIRE( socket.Receive( 17 ) == 17 );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-    REQUIRE( socket.Receive( 17 ) == 17 );
-    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   std::string httpResponse = socket.GetData();
 
-    std::string httpResponse = socket.GetData();
+   REQUIRE( httpResponse.length() > 0 );
+   REQUIRE( httpResponse == "HTTP/1.0 200 OK\r\n" );
 
-    REQUIRE( httpResponse.length() > 0 );
-    REQUIRE( httpResponse.compare("HTTP/1.0 200 OK\r\n") == 0 );
-
-    REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
-    REQUIRE( socket.Close() );
-    REQUIRE( socket.IsSocketValid() == false );
+   REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
+   REQUIRE( socket.Close() );
+   REQUIRE( socket.IsSocketValid() == false );
 }
 
 TEST_CASE( "Sockets are ctor copyable", "[Socket][TCP]" )
 {
-    CActiveSocket alpha;
+   CActiveSocket alpha;
 
-    REQUIRE( alpha.Open("www.google.ca", 80 ) );
+   REQUIRE( alpha.Open( "www.google.ca", 80 ) );
 
-   const std::string httpRequest = "GET / HTTP/1.0\r\n\r\n";
+   REQUIRE( alpha.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
+            == HTTP_GET_ROOT_REQUEST.length() );
 
-    REQUIRE( alpha.Send( reinterpret_cast<const uint8*>( httpRequest.c_str() ), httpRequest.length() )
-    == httpRequest.length() );
+   REQUIRE( alpha.Receive( 17 ) == 17 );
+   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-    REQUIRE( alpha.Receive( 17 ) == 17 );
-    REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
+   std::string httpResponse = alpha.GetData();
 
-    std::string httpResponse = alpha.GetData();
+   REQUIRE( httpResponse.length() > 0 );
+   REQUIRE( httpResponse == "HTTP/1.0 200 OK\r\n" );
 
-    REQUIRE( httpResponse.length() > 0 );
-    REQUIRE( httpResponse == "HTTP/1.0 200 OK\r\n" );
+   CActiveSocket beta( alpha );
 
-    CActiveSocket beta(alpha);
+   REQUIRE( beta.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
+            == HTTP_GET_ROOT_REQUEST.length() );
 
-    REQUIRE( beta.Send( reinterpret_cast<const uint8*>( httpRequest.c_str() ), httpRequest.length() )
-    == httpRequest.length() );
+   REQUIRE( beta.Receive( 6 ) == 6 );
+   REQUIRE( beta.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-    REQUIRE( beta.Receive( 6 ) == 6 );
-    REQUIRE( beta.GetSocketError() == CSimpleSocket::SocketSuccess );
+   httpResponse = beta.GetData();
+   CAPTURE( httpResponse );
+   REQUIRE( httpResponse == "Date: " );
 
-    httpResponse = beta.GetData();
-    CAPTURE( httpResponse );
-    REQUIRE( httpResponse == "Date: " );
-
-    // Only clean up once since we duplicated the socket!
-    REQUIRE( beta.Shutdown( CSimpleSocket::Both ) );
-    REQUIRE( beta.Close() );
-    REQUIRE( beta.IsSocketValid() == false );
+   // Only clean up once since we duplicated the socket!
+   REQUIRE( beta.Shutdown( CSimpleSocket::Both ) );
+   REQUIRE( beta.Close() );
+   REQUIRE( beta.IsSocketValid() == false );
 }
 
 TEST_CASE( "Sockets are assign copyable", "[Socket=][TCP]" )
 {
-    CActiveSocket alpha;
+   CActiveSocket alpha;
 
-    REQUIRE( alpha.Open("www.google.ca", 80 ) );
+   REQUIRE( alpha.Open( "www.google.ca", 80 ) );
 
-   const std::string httpRequest = "GET / HTTP/1.0\r\n\r\n";
+   REQUIRE( alpha.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
+            == HTTP_GET_ROOT_REQUEST.length() );
 
-    REQUIRE( alpha.Send( reinterpret_cast<const uint8*>( httpRequest.c_str() ), httpRequest.length() )
-    == httpRequest.length() );
+   REQUIRE( alpha.Receive( 17 ) == 17 );
+   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-    REQUIRE( alpha.Receive( 17 ) == 17 );
-    REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
+   std::string httpResponse = alpha.GetData();
 
-    std::string httpResponse = alpha.GetData();
+   REQUIRE( httpResponse.length() > 0 );
+   REQUIRE( httpResponse == "HTTP/1.0 200 OK\r\n" );
 
-    REQUIRE( httpResponse.length() > 0 );
-    REQUIRE( httpResponse == "HTTP/1.0 200 OK\r\n" );
+   CActiveSocket beta;
+   beta = alpha;
 
-    CActiveSocket beta;
-    beta = alpha;
+   REQUIRE( beta.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
+            == HTTP_GET_ROOT_REQUEST.length() );
 
-    REQUIRE( beta.Send( reinterpret_cast<const uint8*>( httpRequest.c_str() ), httpRequest.length() )
-    == httpRequest.length() );
+   REQUIRE( beta.Receive( 6 ) == 6 );
+   REQUIRE( beta.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-    REQUIRE( beta.Receive( 6 ) == 6 );
-    REQUIRE( beta.GetSocketError() == CSimpleSocket::SocketSuccess );
+   httpResponse = beta.GetData();
+   REQUIRE( httpResponse == "Date: " );
 
-    httpResponse = beta.GetData();
-    REQUIRE( httpResponse == "Date: " );
-
-    // Only clean up once since we duplicated the socket!
-    REQUIRE( beta.Shutdown( CSimpleSocket::Both ) );
-    REQUIRE( beta.Close() );
-    REQUIRE( beta.IsSocketValid() == false );
+   // Only clean up once since we duplicated the socket!
+   REQUIRE( beta.Shutdown( CSimpleSocket::Both ) );
+   REQUIRE( beta.Close() );
+   REQUIRE( beta.IsSocketValid() == false );
 }
