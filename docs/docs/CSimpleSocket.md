@@ -98,6 +98,7 @@ virtual int32 Receive(uint32 nMaxBytes = 1, uint8 * pBuffer = nullptr);
 /// @return true if successfully shutdown otherwise returns false.
 bool Shutdown(CShutdownMode nShutdown);
 ```
+> NOTE: this method is able to allowing blocking sockets to close **ONLY** if the socket currently is not in a blocking state; in other works if your application is waiting for a message close will most liekly be required to exit the blocking call.
 
 ### Close
 ```cpp
