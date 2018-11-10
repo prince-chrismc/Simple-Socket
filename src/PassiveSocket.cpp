@@ -43,6 +43,7 @@
 
 #include "PassiveSocket.h"
 #include <memory>
+#include "Host.h"
 
 #if defined(_LINUX) || defined (_DARWIN)
 #include <netinet/ip.h>
@@ -165,7 +166,7 @@ auto CPassiveSocket::Accept() -> std::unique_ptr<CActiveSocket>
       {
          errno = 0;
          socklen_t nSockAddrLen( SOCKET_ADDR_IN_SIZE );
-         const SOCKET socket = accept( m_socket, ( struct sockaddr * )&m_stClientSockaddr, &nSockAddrLen ); // Wait for incoming connection.
+         const SOCKET socket = SimpleSocket::ACCEPT( m_socket, m_stClientSockaddr ); // Wait for incoming connection.
 
          if( socket != INVALID_SOCKET )
          {

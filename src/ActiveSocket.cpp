@@ -241,12 +241,12 @@ bool CActiveSocket::Open( const char *pAddr, uint16 nPort )
    //--------------------------------------------------------------------------
    if( bRetVal )
    {
-      socklen_t nSockLen = SOCKET_ADDR_IN_SIZE;
+      socklen_t nSockLen = SimpleSocket::SOCKET_ADDR_IN_SIZE;
 
-      memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
+      memset( &m_stServerSockaddr, 0, SimpleSocket::SOCKET_ADDR_IN_SIZE );
       getpeername( m_socket, (sockaddr*)&m_stServerSockaddr, &nSockLen );
 
-      memset( &m_stClientSockaddr, 0, SOCKET_ADDR_IN_SIZE );
+      memset( &m_stClientSockaddr, 0, SimpleSocket::SOCKET_ADDR_IN_SIZE );
       getsockname( m_socket, (sockaddr*)&m_stClientSockaddr, &nSockLen );
 
       SetSocketError( SocketSuccess );
