@@ -65,7 +65,6 @@
 
 #include "StatTimer.h"
 #include <string>
-#include "Host.h"
 
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET    ~(0)
@@ -406,6 +405,8 @@ protected:
     void SetSocketHandle(SOCKET socket) {
         m_socket = socket;
     };
+
+    static constexpr int SOCKET_ADDR_IN_SIZE = sizeof( sockaddr_in );
 
 private:
     /// Generic function used to get the send/receive window size

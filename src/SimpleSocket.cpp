@@ -75,9 +75,9 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    SetReceiveTimeout( 0, 0 );
    SetSendTimeout( 0, 0 );
    SetOptionLinger( false, 0 );
-   memset( &m_stClientSockaddr, 0, SimpleSocket::SOCKET_ADDR_IN_SIZE );
-   memset( &m_stServerSockaddr, 0, SimpleSocket::SOCKET_ADDR_IN_SIZE );
-   memset( &m_stMulticastGroup, 0, SimpleSocket::SOCKET_ADDR_IN_SIZE );
+   memset( &m_stClientSockaddr, 0, SOCKET_ADDR_IN_SIZE );
+   memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
+   memset( &m_stMulticastGroup, 0, SOCKET_ADDR_IN_SIZE );
 
    switch( nType )
    {
@@ -124,9 +124,9 @@ CSimpleSocket::CSimpleSocket( const CSimpleSocket &socket )
    memcpy( &m_stRecvTimeout, &socket.m_stRecvTimeout, sizeof( struct timeval ) );
    memcpy( &m_stSendTimeout, &socket.m_stSendTimeout, sizeof( struct timeval ) );
    memcpy( &m_stLinger, &socket.m_stLinger, sizeof( struct linger ) );
-   memcpy( &m_stClientSockaddr, &socket.m_stClientSockaddr, SimpleSocket::SOCKET_ADDR_IN_SIZE );
-   memcpy( &m_stServerSockaddr, &socket.m_stServerSockaddr, SimpleSocket::SOCKET_ADDR_IN_SIZE );
-   memcpy( &m_stMulticastGroup, &socket.m_stMulticastGroup, SimpleSocket::SOCKET_ADDR_IN_SIZE );
+   memcpy( &m_stClientSockaddr, &socket.m_stClientSockaddr, SOCKET_ADDR_IN_SIZE );
+   memcpy( &m_stServerSockaddr, &socket.m_stServerSockaddr, SOCKET_ADDR_IN_SIZE );
+   memcpy( &m_stMulticastGroup, &socket.m_stMulticastGroup, SOCKET_ADDR_IN_SIZE );
 }
 
 CSimpleSocket::CSimpleSocket( CSimpleSocket&& socket ) noexcept
@@ -588,7 +588,7 @@ int32 CSimpleSocket::Send( const uint8 *pBuf, size_t bytesToSend )
       sendMessage = [ & ]
       {
          const sockaddr* addrToSentTo = m_bIsMulticast ? (const sockaddr *)&m_stMulticastGroup : (const sockaddr *)&m_stServerSockaddr;
-         return SENDTO( m_socket, pBuf, bytesToSend, 0, addrToSentTo, SimpleSocket::SOCKET_ADDR_IN_SIZE );
+         return SENDTO( m_socket, pBuf, bytesToSend, 0, addrToSentTo, SOCKET_ADDR_IN_SIZE );
       };
       break;
    default:
@@ -622,7 +622,7 @@ bool CSimpleSocket::Close()
    // if socket handle is currently valid, close and then invalidate
    if( IsSocketValid() )
    {
-      if( SimpleSocket::CLOSE( m_socket ) == CSimpleSocket::SocketSuccess )
+      if( CLOSE( m_socket ) == CSimpleSocket::SocketSuccess )
       {
          m_socket = INVALID_SOCKET;
          bRetVal = true;
@@ -897,7 +897,7 @@ int32 CSimpleSocket::Receive( uint32 nMaxBytes, uint8* pBuffer )
       do
       {
          sockaddr_in* addrToRxFrom = m_bIsMulticast ? &m_stClientSockaddr : &m_stServerSockaddr;
-         uint32 srcSize = SimpleSocket::SOCKET_ADDR_IN_SIZE;
+         uint32 srcSize = SOCKET_ADDR_IN_SIZE;
          m_nBytesReceived = RECVFROM( m_socket, ( pWorkBuffer + m_nBytesReceived ),
                                       nMaxBytes, 0, addrToRxFrom, &srcSize );
          TranslateSocketError();
