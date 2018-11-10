@@ -18,7 +18,7 @@ if(UNIX)
     set(CMAKE_CXX_STANDARD 17)
     IF(CMAKE_BUILD_TYPE MATCHES Debug)
       message("Building 'Debug' configuration.")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -D_DEBUG")
+      add_compile_options(-g -D_DEBUG)
     ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
       message("Building 'Release' configuration.")
     ELSE()
@@ -29,6 +29,8 @@ if(UNIX)
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_definitions(-D_CLANG)
     endif()
+
+    add_compile_options(-Wall -Wextra)
 
     if(CYGWIN)
         # Special Cygwin stuff here
@@ -44,7 +46,7 @@ elseif(WIN32)
         # Special MINGW stuff here
     elseif(MSVC)
         # Special MSVC stuff here
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+		add_compile_options(/std:c++17 -W4)
     else()
         # No idea what it is, but there's a good chance it's too weird.
         MESSAGE( FATAL_ERROR "Using unknown WIN32 compiler... NOT. Please add to build system." )
