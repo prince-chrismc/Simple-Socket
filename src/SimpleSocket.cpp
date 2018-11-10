@@ -128,7 +128,7 @@ CSimpleSocket::CSimpleSocket( const CSimpleSocket &socket )
    memcpy( &m_stMulticastGroup, &socket.m_stMulticastGroup, SOCKET_ADDR_IN_SIZE );
 }
 
-CSimpleSocket::CSimpleSocket(CSimpleSocket&& socket)
+CSimpleSocket::CSimpleSocket(CSimpleSocket&& socket) noexcept
 {
    swap( *this, socket);
 }
@@ -139,7 +139,7 @@ CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket other )
    return *this;
 }
 
-CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket&& other )
+CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket&& other ) noexcept
 {
    swap( *this, other);
    return *this;

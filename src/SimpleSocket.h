@@ -122,11 +122,11 @@ public:
 public:
     CSimpleSocket( CSocketType type = SocketTypeTcp );
     CSimpleSocket( const CSimpleSocket& socket );
-    CSimpleSocket( CSimpleSocket&& socket );
+    CSimpleSocket( CSimpleSocket&& socket ) noexcept;
     virtual ~CSimpleSocket();
 
     CSimpleSocket& operator=( CSimpleSocket other );
-    CSimpleSocket& operator=( CSimpleSocket&& other );
+    CSimpleSocket& operator=( CSimpleSocket&& other ) noexcept;
 
     friend void swap(CSimpleSocket& lhs, CSimpleSocket& rhs) noexcept;
 
@@ -137,6 +137,8 @@ public:
     /// @param nShutdown specifies the type of shutdown.
     /// @return true if successfully shutdown otherwise returns false.
     virtual bool Shutdown(CShutdownMode nShutdown);
+
+    bool Close();
 
     /// Examine the socket descriptor sets currently owned by the instance of
     /// the socket class (the readfds, writefds, and errorfds parameters) to
@@ -456,8 +458,6 @@ protected:
     /// CSocket::SocketInvalidSocket,
     /// @return true if properly initialized.
     bool Initialize();
-
-    bool Close();
 
     /// Set internal socket error to that specified error
     ///  @param error type of error
