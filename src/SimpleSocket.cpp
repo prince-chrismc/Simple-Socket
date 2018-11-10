@@ -906,9 +906,10 @@ int32 CSimpleSocket::Receive( uint32 nMaxBytes, uint8* pBuffer )
    case CSimpleSocket::SocketTypeUdp:
       do
       {
+         sockaddr_in* addrToRxFrom = m_bIsMulticast ? &m_stClientSockaddr : &m_stServerSockaddr;
          uint32 srcSize = SOCKET_ADDR_IN_SIZE;
          m_nBytesReceived = RECVFROM( m_socket, ( pWorkBuffer + m_nBytesReceived ),
-                                      nMaxBytes, 0, &m_stClientSockaddr, &srcSize );
+                                      nMaxBytes, 0, addrToRxFrom, &srcSize );
          TranslateSocketError();
       } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
       break;
