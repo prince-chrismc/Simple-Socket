@@ -44,8 +44,6 @@
 #ifndef __HOST_H__
 #define __HOST_H__
 
-#include <climits>
-
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
 /* Type Definition Macros                                                    */
@@ -62,47 +60,19 @@ using uint16 = unsigned short;
 using int16  = short;
 using uint32 = unsigned int;
 using int32  = int;
-using uint64 = unsigned long long int;
-using int64  = long long int;
+using uint64 = unsigned long long;
+using int64  = long long;
 
 #if defined(_LINUX) || defined(_DARWIN)
-   typedef int            SOCKET;
+   using SOCKET = int;
 #elif defined( _WIN32 )
-   struct iovec {
-      void  *iov_base;
+   struct iovec
+   {
+      void*  iov_base;
       size_t iov_len;
    };
 
-   typedef int socklen_t;
-#endif
-
-
-#ifdef _WIN32
-
-#ifndef UINT8_MAX
-   #define UINT8_MAX  (UCHAR_MAX)
-#endif
-#ifndef UINT16_MAX
-   #define UINT16_MAX (USHRT_MAX)
-#endif
-#ifndef UINT32_MAX
-   #define UINT32_MAX (ULONG_MAX)
-#endif
-
-#ifndef SIZE_MAX
-   constexpr size_t SIZE_MAX = ( __WORDSIZE == 64 ) ? 18446744073709551615UL : 4294967295U;
-#endif
-
-#ifndef htonll
-   #ifdef _BIG_ENDIAN
-      #define htonll(x)   (x)
-      #define ntohll(x)   (x)
-   #else
-      #define htonll(x)   ((((uint64)htonl(x)) << 32) + htonl(x >> 32))
-      #define ntohll(x)   ((((uint64)ntohl(x)) << 32) + ntohl(x >> 32))
-   #endif
-#endif
-
+   using socklen_t = int;
 #endif
 
 /*---------------------------------------------------------------------------*/

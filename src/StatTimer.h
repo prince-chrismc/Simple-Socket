@@ -28,7 +28,6 @@ SOFTWARE.
 #define __CSTATTIMER_H__
 
 #include <chrono>
-#include "Host.h"
 
 class CStatTimer
 {
@@ -36,17 +35,15 @@ class CStatTimer
 public:
    CStatTimer() = default;
 
-   void Initialize() const noexcept { /* Does Nothing Meaningful */ }
-
    TimePoint GetStartTime() const { return m_startTime; }
    void SetStartTime() { m_startTime = GetTimeNow(); }
 
    TimePoint GetEndTime() const { return m_endTime; };
    void SetEndTime() { m_endTime = GetTimeNow(); }
 
-   uint64 GetMilliSeconds() const { return std::chrono::duration_cast<std::chrono::milliseconds>( m_startTime - m_endTime ).count(); }
-   uint64 GetMicroSeconds() const { return std::chrono::duration_cast<std::chrono::microseconds>( m_startTime - m_endTime ).count(); }
-   uint64 GetSeconds() const { return std::chrono::duration_cast<std::chrono::seconds>( m_startTime - m_endTime ).count(); }
+   auto GetMilliSeconds() const { return std::chrono::duration_cast<std::chrono::milliseconds>( m_startTime - m_endTime ).count(); }
+   auto GetMicroSeconds() const { return std::chrono::duration_cast<std::chrono::microseconds>( m_startTime - m_endTime ).count(); }
+   auto GetSeconds() const { return std::chrono::duration_cast<std::chrono::seconds>( m_startTime - m_endTime ).count(); }
 
    static TimePoint GetTimeNow() { return std::chrono::high_resolution_clock::now(); }
 

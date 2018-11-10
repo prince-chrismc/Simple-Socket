@@ -201,7 +201,6 @@ bool CSimpleSocket::Initialize()
    WSAStartup( MAKEWORD( 2, 2 ), &m_hWSAData );
 #endif
 
-   m_timer.Initialize();
    m_timer.SetStartTime();
    m_socket = socket( m_nSocketDomain, m_nSocketType, 0 ); // Create the basic Socket Handle
    m_timer.SetEndTime();
@@ -596,7 +595,6 @@ int32 CSimpleSocket::Send( const uint8 *pBuf, size_t bytesToSend )
       break;
    }
 
-   m_timer.Initialize();
    m_timer.SetStartTime();
 
    // Check error condition and attempt to resend if call was interrupted by a signal.
@@ -883,7 +881,6 @@ int32 CSimpleSocket::Receive( uint32 nMaxBytes, uint8* pBuffer )
 
    SetSocketError( CSimpleSocket::SocketSuccess );
 
-   m_timer.Initialize();
    m_timer.SetStartTime();
 
    switch( m_nSocketType )

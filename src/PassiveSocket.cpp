@@ -99,7 +99,6 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
       }
    }
 
-   m_timer.Initialize();
    m_timer.SetStartTime();
 
    //--------------------------------------------------------------------------
@@ -160,7 +159,6 @@ auto CPassiveSocket::Accept() -> std::unique_ptr<CActiveSocket>
    {
       CSocketError socketErrno = SocketSuccess;
 
-      m_timer.Initialize();
       m_timer.SetStartTime();
 
       do
