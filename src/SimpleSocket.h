@@ -43,10 +43,10 @@
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
-//#include <cerrno>
-//#include <cstring>
 
 #if defined(_LINUX) || defined (_DARWIN)
+#include <cerrno>
+#include <cstring>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <sys/uio.h>
