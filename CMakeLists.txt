@@ -16,6 +16,7 @@ if(UNIX)
     add_definitions(-D_LINUX)
     set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_EXECUTABLE_SUFFIX .run)
+    set(THREAD_LIB pthread)
 
     if(CMAKE_BUILD_TYPE MATCHES Debug)
       add_compile_options(-g -D_DEBUG)
@@ -81,19 +82,19 @@ set_target_properties(Simple-Socket PROPERTIES VERSION ${BUILD_VERSION} SOVERSIO
 # Examples
 if(SIMPLE_SOCKET_EXAMPLES)
     ADD_EXECUTABLE(asyncclient-example examples/RecvAsync.cpp)
-    TARGET_LINK_LIBRARIES(asyncclient-example Simple-Socket)
+    TARGET_LINK_LIBRARIES(asyncclient-example Simple-Socket ${THREAD_LIB})
 
     ADD_EXECUTABLE(querydaytime-example examples/QueryDayTime.cpp)
     TARGET_LINK_LIBRARIES(querydaytime-example Simple-Socket)
 
     ADD_EXECUTABLE(echoserver-example examples/EchoServer.cpp)
-    TARGET_LINK_LIBRARIES(echoserver-example Simple-Socket)
+    TARGET_LINK_LIBRARIES(echoserver-example Simple-Socket ${THREAD_LIB})
 
     ADD_EXECUTABLE(echoclient-example examples/EchoClient.cpp)
     TARGET_LINK_LIBRARIES(echoclient-example Simple-Socket)
 
     ADD_EXECUTABLE(multicast-example examples/Multicast.cpp)
-    TARGET_LINK_LIBRARIES(multicast-example Simple-Socket)
+    TARGET_LINK_LIBRARIES(multicast-example Simple-Socket ${THREAD_LIB})
 
     ADD_EXECUTABLE(dnsclient-example ${DNS_SOURCE})
     TARGET_LINK_LIBRARIES(dnsclient-example Simple-Socket)
@@ -106,5 +107,5 @@ endif()
 # Tester
 if(SIMPLE_SOCKET_TEST)
     ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp)
-    TARGET_LINK_LIBRARIES(Simple-Socket-tester Simple-Socket)
+    TARGET_LINK_LIBRARIES(Simple-Socket-tester Simple-Socket ${THREAD_LIB})
 endif()
