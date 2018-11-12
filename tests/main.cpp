@@ -195,6 +195,36 @@ TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
    REQUIRE( socket.IsSocketValid() == false );
 }
 
+#ifndef _DARWIN
+TEST_CASE( "Sockets can close", "[Receive][UDP]" )
+{
+   CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+
+   REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   REQUIRE( socket.Receive( 1024 ) == 45 );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   const std::string dnsResponse = socket.GetData();
+
+   REQUIRE( dnsResponse.length() == 45 );
+   REQUIRE( dnsResponse.compare( 0, 37, "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61" \
+            "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00" \
+            "\x01\x00\x01\x00\x00", 37 ) == 0
+   );
+   // Dont compare the two bytes for the TTL since it changes...
+   REQUIRE( dnsResponse.compare( 39, 6, "\x00\x04\x5d\xb8\xd8\x22", 6 ) == 0 );
+
+   REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
+   REQUIRE( socket.Close() );
+   REQUIRE( socket.IsSocketValid() == false );
+}
+#endif
+
 TEST_CASE( "Sockets are ctor copyable", "[Socket][TCP]" )
 {
    CActiveSocket alpha;
