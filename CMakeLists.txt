@@ -15,6 +15,7 @@ endif()
 if(UNIX)
     add_definitions(-D_LINUX)
     set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_EXECUTABLE_SUFFIX .run)
 
     if(CMAKE_BUILD_TYPE MATCHES Debug)
       add_compile_options(-g -D_DEBUG)
@@ -32,7 +33,6 @@ if(UNIX)
     add_compile_options(-Wall -Wextra)
 
     if(APPLE)
-        # Special Apple stuff here
         remove_definitions(-D_LINUX)
         add_definitions(-D_DARWIN)
     endif()
@@ -41,10 +41,8 @@ elseif(WIN32)
     set(PROJECT_LIBS Ws2_32.lib)
 
     if(MSVC)
-        # Special MSVC stuff here
         add_compile_options(/std:c++17 -W4)
     else()
-        # No idea what it is, but there's a good chance it's too weird.
         message( FATAL_ERROR "Using unknown WIN32 compiler... NOT. Please add to build system." )
     endif()
 endif()
@@ -82,60 +80,31 @@ set_target_properties(Simple-Socket PROPERTIES VERSION ${BUILD_VERSION} SOVERSIO
 
 # Examples
 if(SIMPLE_SOCKET_EXAMPLES)
-   if(UNIX)
-        ADD_EXECUTABLE(asyncclient-example.run examples/RecvAsync.cpp)
-        TARGET_LINK_LIBRARIES(asyncclient-example.run Simple-Socket pthread)
+    ADD_EXECUTABLE(asyncclient-example examples/RecvAsync.cpp)
+    TARGET_LINK_LIBRARIES(asyncclient-example Simple-Socket)
 
-        ADD_EXECUTABLE(querydaytime-example.run examples/QueryDayTime.cpp)
-        TARGET_LINK_LIBRARIES(querydaytime-example.run Simple-Socket)
+    ADD_EXECUTABLE(querydaytime-example examples/QueryDayTime.cpp)
+    TARGET_LINK_LIBRARIES(querydaytime-example Simple-Socket)
 
-        ADD_EXECUTABLE(echoserver-example.run examples/EchoServer.cpp)
-        TARGET_LINK_LIBRARIES(echoserver-example.run Simple-Socket pthread)
+    ADD_EXECUTABLE(echoserver-example examples/EchoServer.cpp)
+    TARGET_LINK_LIBRARIES(echoserver-example Simple-Socket)
 
-        ADD_EXECUTABLE(echoclient-example.run examples/EchoClient.cpp)
-        TARGET_LINK_LIBRARIES(echoclient-example.run Simple-Socket)
+    ADD_EXECUTABLE(echoclient-example examples/EchoClient.cpp)
+    TARGET_LINK_LIBRARIES(echoclient-example Simple-Socket)
 
-        ADD_EXECUTABLE(multicast-example.run examples/Multicast.cpp)
-        TARGET_LINK_LIBRARIES(multicast-example.run Simple-Socket pthread)
+    ADD_EXECUTABLE(multicast-example examples/Multicast.cpp)
+    TARGET_LINK_LIBRARIES(multicast-example Simple-Socket)
 
-        ADD_EXECUTABLE(dnsclient-example.run ${DNS_SOURCE})
-        TARGET_LINK_LIBRARIES(dnsclient-example.run Simple-Socket)
+    ADD_EXECUTABLE(dnsclient-example ${DNS_SOURCE})
+    TARGET_LINK_LIBRARIES(dnsclient-example Simple-Socket)
 
-        ADD_EXECUTABLE(httpclient-example.run examples/HttpClient.cpp ${HTTP_SOURCE})
-        target_include_directories(httpclient-example.run PRIVATE examples/http/)
-        TARGET_LINK_LIBRARIES(httpclient-example.run Simple-Socket)
-    elseif(WIN32)
-        ADD_EXECUTABLE(asyncclient-example examples/RecvAsync.cpp)
-        TARGET_LINK_LIBRARIES(asyncclient-example Simple-Socket)
-
-        ADD_EXECUTABLE(querydaytime-example examples/QueryDayTime.cpp)
-        TARGET_LINK_LIBRARIES(querydaytime-example Simple-Socket)
-
-        ADD_EXECUTABLE(echoserver-example examples/EchoServer.cpp)
-        TARGET_LINK_LIBRARIES(echoserver-example Simple-Socket)
-
-        ADD_EXECUTABLE(echoclient-example examples/EchoClient.cpp)
-        TARGET_LINK_LIBRARIES(echoclient-example Simple-Socket)
-
-        ADD_EXECUTABLE(multicast-example examples/Multicast.cpp)
-        TARGET_LINK_LIBRARIES(multicast-example Simple-Socket)
-
-        ADD_EXECUTABLE(dnsclient-example ${DNS_SOURCE})
-        TARGET_LINK_LIBRARIES(dnsclient-example Simple-Socket)
-
-        ADD_EXECUTABLE(httpclient-example examples/HttpClient.cpp ${HTTP_SOURCE})
-        target_include_directories(httpclient-example PRIVATE examples/http/)
-        TARGET_LINK_LIBRARIES(httpclient-example Simple-Socket)
-    endif()
+    ADD_EXECUTABLE(httpclient-example examples/HttpClient.cpp ${HTTP_SOURCE})
+    target_include_directories(httpclient-example PRIVATE examples/http/)
+    TARGET_LINK_LIBRARIES(httpclient-example Simple-Socket)
 endif()
 
 # Tester
-if(NOT SIMPLE_SOCKET_DEP_ONLY AND SIMPLE_SOCKET_TEST)
-    if(UNIX)
-        ADD_EXECUTABLE(Simple-Socket-tester.run tests/main.cpp)
-        TARGET_LINK_LIBRARIES(Simple-Socket-tester.run Simple-Socket pthread)
-    elseif(WIN32)
-        ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp)
-        TARGET_LINK_LIBRARIES(Simple-Socket-tester Simple-Socket)
-    endif()
+if(SIMPLE_SOCKET_TEST)
+    ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp)
+    TARGET_LINK_LIBRARIES(Simple-Socket-tester Simple-Socket)
 endif()
