@@ -13,19 +13,17 @@ endif()
 
 # OS and compiler checks.
 if(UNIX)
-    # linux / normal unix
     add_definitions(-D_LINUX)
     set(CMAKE_CXX_STANDARD 17)
-    IF(CMAKE_BUILD_TYPE MATCHES Debug)
-      message("Building 'Debug' configuration.")
+
+    if(CMAKE_BUILD_TYPE MATCHES Debug)
       add_compile_options(-g -D_DEBUG)
-    ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
-      message("Building 'Release' configuration.")
+    elseif(CMAKE_BUILD_TYPE MATCHES Release)
       add_compile_options(-O3)
-    ELSE()
+    else()
       set(CMAKE_BUILD_TYPE Release)
       message("Defaulting to 'Release' configuration.")
-    ENDIF()
+    endif()
 
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_definitions(-D_CLANG)
@@ -33,24 +31,21 @@ if(UNIX)
 
     add_compile_options(-Wall -Wextra)
 
-    if(CYGWIN)
-        # Special Cygwin stuff here
-    elseif(APPLE)
+    if(APPLE)
         # Special Apple stuff here
         remove_definitions(-D_LINUX)
         add_definitions(-D_DARWIN)
     endif()
 elseif(WIN32)
     add_definitions(-D_WIN32)
-    SET(PROJECT_LIBS Ws2_32.lib)
-    if(MINGW)
-        # Special MINGW stuff here
-    elseif(MSVC)
+    set(PROJECT_LIBS Ws2_32.lib)
+
+    if(MSVC)
         # Special MSVC stuff here
         add_compile_options(/std:c++17 -W4)
     else()
         # No idea what it is, but there's a good chance it's too weird.
-        MESSAGE( FATAL_ERROR "Using unknown WIN32 compiler... NOT. Please add to build system." )
+        message( FATAL_ERROR "Using unknown WIN32 compiler... NOT. Please add to build system." )
     endif()
 endif()
 
@@ -66,46 +61,27 @@ include_directories(src)
 set(DATA_FILE docs/README.md )
 FILE(GLOB SIMPLE_SOCKET_HEADERS "src/*.h")
 FILE(GLOB SIMPLE_SOCKET_SOURCES "src/*.cpp")
-SET_SOURCE_FILES_PROPERTIES( ${SIMPLE_SOCKET_HEADERS} PROPERTIES HEADER_FILE_ONLY TRUE ) # mark headers as headers...
 LIST(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS}) # append to sources so that dependency checks work on headers
 
 FILE(GLOB DNS_SOURCE "examples/dns/*")
 FILE(GLOB HTTP_SOURCE "examples/http/*")
 
 # Project Options
-OPTION(SIMPLE_SOCKET_SHARED "Build Simple-Socket lib as shared." OFF)
-OPTION(SIMPLE_SOCKET_DEP_ONLY "Build for use inside other CMake projects as a dependency." OFF)
+OPTION(BUILD_SHARED_LIBS "Build Simple-Socket as a shared library." OFF)
 OPTION(SIMPLE_SOCKET_EXAMPLES "Build the examples" ON)
 OPTION(SIMPLE_SOCKET_TEST "Build the tester" OFF)
 
 # Build the lib and install into configured prefix
-if(SIMPLE_SOCKET_SHARED)
-    if(SIMPLE_SOCKET_DEP_ONLY)
-        ADD_LIBRARY(Simple-Socket SHARED ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
-        install(TARGETS Simple-Socket
-                        RUNTIME DESTINATION bin
-                        LIBRARY DESTINATION lib
-                        ARCHIVE DESTINATION lib/${BUILD_VERSION} )
-        install(FILES ${SIMPLE_SOCKET_HEADERS} DESTINATION include)
-    else()
-        ADD_LIBRARY(Simple-Socket SHARED ${SIMPLE_SOCKET_SOURCES})
-    endif()
-else(NOT SIMPLE_SOCKET_SHARED)
-    if(SIMPLE_SOCKET_DEP_ONLY)
-        ADD_LIBRARY(Simple-Socket STATIC ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
-        install(TARGETS Simple-Socket
-                        LIBRARY DESTINATION lib
-                        ARCHIVE DESTINATION lib/${BUILD_VERSION} )
-        install(FILES ${SIMPLE_SOCKET_HEADERS} DESTINATION include)
-    else()
-        ADD_LIBRARY(Simple-Socket STATIC ${SIMPLE_SOCKET_SOURCES})
-    endif()
-endif()
+ADD_LIBRARY(Simple-Socket ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
+install(TARGETS Simple-Socket
+                RUNTIME DESTINATION bin
+                ARCHIVE DESTINATION lib )
+install(FILES ${SIMPLE_SOCKET_HEADERS} DESTINATION include)
 TARGET_LINK_LIBRARIES(Simple-Socket ${PROJECT_LIBS})
 set_target_properties(Simple-Socket PROPERTIES VERSION ${BUILD_VERSION} SOVERSION ${BUILD_MAJOR})
 
 # Examples
-if(NOT SIMPLE_SOCKET_DEP_ONLY AND SIMPLE_SOCKET_EXAMPLES)
+if(SIMPLE_SOCKET_EXAMPLES)
    if(UNIX)
         ADD_EXECUTABLE(asyncclient-example.run examples/RecvAsync.cpp)
         TARGET_LINK_LIBRARIES(asyncclient-example.run Simple-Socket pthread)
