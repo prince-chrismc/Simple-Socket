@@ -31,8 +31,7 @@ To build and install, use CMake to generate the files required for your platform
 - Unix Systems: The command is `make` which produce a release and debug version depending on the `CMAKE_BUILD_TYPE` specified.
 - Windows Systems: The usual MSVC files can be build through the IDE or via command line interface.
 
-Installation can be achieved by adding the runtime ( simply the .dll generate with the cmake SIMPLE_SOCKET_SHARED as ON ) to either the execution
-directory of your application or to a location of [PATH](http://www.linfo.org/path_env_var.html) variable.
+Installation can be achieved by adding the runing `make install` from your build folder.
 
 ## Class Overview
 Network communications via sockets can be abstracted into two categories of functionality; the active socket and the passive socket.
