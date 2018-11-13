@@ -62,15 +62,15 @@ TEST_CASE( "Sockets can connect", "[Open][TCP]" )
 {
    CActiveSocket socket;
 
-   SECTION("Bad Port")
+   SECTION( "Bad Port" )
    {
-      REQUIRE( socket.Open( "www.google.ca", 0 ) == false);
+      REQUIRE( socket.Open( "www.google.ca", 0 ) == false );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidPort );
    }
 
    SECTION( "No Address" )
    {
-      REQUIRE( socket.Open( nullptr, 35345) == false );
+      REQUIRE( socket.Open( nullptr, 35345 ) == false );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
    }
 
@@ -332,28 +332,41 @@ TEST_CASE( "Sockets are assign copyable", "[Socket=][TCP]" )
 }
 
 #ifndef _DARWIN
+#include <future>
+
 TEST_CASE( "Sockets can echo", "[Echo][UDP]" )
 {
+   CPassiveSocket server( CSimpleSocket::SocketTypeUdp );
+
+   REQUIRE( server.Listen( "127.0.0.1", 35346 ) );
+   REQUIRE( server.GetSocketError() == CSimpleSocket::SocketSuccess );
+
    CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
 
-   REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+   REQUIRE( socket.Open( "127.0.0.1", 35346 ) );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+   auto serverRespone = std::async( std::launch::async, [ & ]
+                                    {
+                                       REQUIRE( server.Receive( 1024 ) == TEXT_PACKET_LENGTH );
+                                       const std::string message = server.GetData();
+                                       REQUIRE( server.Send( (uint8*)socket.GetData().c_str(), server.GetBytesReceived() )
+                                                == message.length() );
+                                    }
+   );
+
+   REQUIRE( socket.Send( TEXT_PACKET, TEXT_PACKET_LENGTH ) == TEXT_PACKET_LENGTH );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Receive( 1024 ) == 45 );
+   REQUIRE( socket.Receive( 1024 ) == TEXT_PACKET_LENGTH );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    const std::string dnsResponse = socket.GetData();
 
-   REQUIRE( dnsResponse.length() == 45 );
-   REQUIRE( dnsResponse.compare( 0, 37, "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61" \
-            "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00" \
-            "\x01\x00\x01\x00\x00", 37 ) == 0
-   );
-   // Dont compare the two bytes for the TTL since it changes...
-   REQUIRE( dnsResponse.compare( 39, 6, "\x00\x04\x5d\xb8\xd8\x22", 6 ) == 0 );
+   CAPTURE( dnsResponse );
+
+   REQUIRE( dnsResponse.length() == TEXT_PACKET_LENGTH );
+   REQUIRE( dnsResponse.compare( reinterpret_cast<const char*>( TEXT_PACKET ) ) == 0 );
 
    REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
    REQUIRE( socket.Close() );
