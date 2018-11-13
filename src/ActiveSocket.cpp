@@ -89,7 +89,7 @@ bool CActiveSocket::PreConnect( const char * pAddr, uint16 nPort )
    addrinfo hints;
    memset( &hints, 0, sizeof( hints ) );
    hints.ai_flags = AI_ALL;
-   hints.ai_family = AF_NET;
+   hints.ai_family = AF_INET;
    addrinfo* pResult = nullptr;
    const int iErrorCode = getaddrinfo( pAddr, NULL, &hints, &pResult ); /// https://codereview.stackexchange.com/a/17866
 
