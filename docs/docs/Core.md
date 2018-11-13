@@ -6,7 +6,9 @@ title: Core Socket Functionality
 platform _and_ protocol independent manner.
 
 ### Table of Contents
+- Active Socket
 - Functionality
+   - Open # Active Only
    - Receive
    - Get Data
    - Shutdown
@@ -23,7 +25,30 @@ platform _and_ protocol independent manner.
    - Get Bytes Received
    - Get Bytes Sent
 
+## Active Socket
+```cpp
+/// Provides a platform independent class to create an active socket.
+/// An active socket is used to create a socket which connects to a server.
+/// This type of object would be used when an application needs to send/receive
+/// data with a server.
+class CActiveSocket : public CSimpleSocket
+```
+
 ## Functionality
+### Open
+> Note: This function is only available on `CActiveSocket`
+```cpp
+/// Established a connection to the address specified by pAddr.
+/// Connection-based protocol sockets (CSocket::SocketTypeTcp) may
+/// successfully call Open() only once, however; connectionless protocol
+/// sockets (CSocket::SocketTypeUdp) may use Open() multiple times to
+/// change their association.
+///  @param pAddr specifies the destination address to connect.
+///  @param nPort specifies the destination port.
+///  @return true if successful connection made, otherwise false.
+virtual bool Open( const char *pAddr, uint16 nPort );
+```
+
 ### Receive
 The internal buffer is only valid until the next call to Receive() returns, or until the object goes out of scope.
 ```cpp

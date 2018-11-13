@@ -86,7 +86,7 @@ using int64  = long long;
    #define SHUT_WR                1
    #define SHUT_RDWR              2
    #define ACCEPT(a,b,c)          accept(a,b,c)
-   #define CONNECT(a,b,c)         connect(a,b,c)
+   #define CONNECT(a,b,c)         connect(a,(sockaddr *)b,c)
    #define CLOSE(a)               closesocket(a)
    #define READ(a,b,c)            _read(a,b,c)
    #define SEEK(a,b,c)            _lseek(a,b,c)
@@ -105,12 +105,13 @@ using int64  = long long;
    #define WRITEV(a,b,c)          Writev(b, c)
    #define GETSOCKOPT(a,b,c,d,e)  getsockopt(a,b,c,(char *)d, (int *)e)
    #define SETSOCKOPT(a,b,c,d,e)  setsockopt(a,b,c,(char *)d, (int)e)
-   #define GETHOSTBYNAME(a)       gethostbyname(a)
+   #define GETPEERNAME(a, b, c)   getpeername( a, (sockaddr*)b, c)
+   #define GETSOCKNAME(a, b, c)   getsockname( a, (sockaddr*)b, c)
 
 #elif defined(_LINUX) || defined(_DARWIN)
 
    #define ACCEPT(a,b,c)          accept(a,b,c)
-   #define CONNECT(a,b,c)         connect(a,b,c)
+   #define CONNECT(a,b,c)         connect(a,(sockaddr *)b,c)
    #define CLOSE(a)               close(a)
    #define READ(a,b,c)            pread(a,b,c,0)
    #define SEEK(a,b,c)            lseek(a,b,c)
@@ -129,7 +130,8 @@ using int64  = long long;
    #define WRITEV(a,b,c)          writev(a, b, c)
    #define GETSOCKOPT(a,b,c,d,e)  getsockopt((int)a,(int)b,(int)c,(void *)d,(socklen_t *)e)
    #define SETSOCKOPT(a,b,c,d,e)  setsockopt((int)a,(int)b,(int)c,(const void *)d,(int)e)
-   #define GETHOSTBYNAME(a)       gethostbyname(a)
+   #define GETPEERNAME(a, b, c)   getpeername( a, (sockaddr*)b, c)
+   #define GETSOCKNAME(a, b, c)   getsockname( a, (sockaddr*)b, c)
 
 #endif
 

@@ -60,8 +60,31 @@ TEST_CASE( "Sockets can connect", "[Open][TCP]" )
 {
    CActiveSocket socket;
 
-   REQUIRE( socket.Open( "www.google.ca", 80 ) );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   SECTION("Bad Port")
+   {
+      REQUIRE( socket.Open( "www.google.ca", 0 ) == false);
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidPort );
+   }
+
+   SECTION( "No Address" )
+   {
+      REQUIRE( socket.Open( nullptr, 35345) == false );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
+   }
+
+   SECTION( "No Handle" )
+   {
+      REQUIRE( socket.Close() );
+      REQUIRE( socket.IsSocketValid() == false );
+      REQUIRE( socket.Open( "www.google.ca", 80 ) == false );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+   }
+
+   SECTION( "To Google" )
+   {
+      REQUIRE( socket.Open( "www.google.ca", 80 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
 }
 
 #ifndef _DARWIN

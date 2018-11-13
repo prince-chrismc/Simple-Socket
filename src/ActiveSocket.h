@@ -45,12 +45,6 @@
 
 #include "SimpleSocket.h"
 
-class CPassiveSocket;
-
-/// Provides a platform independent class to create an active socket.
-/// An active socket is used to create a socket which connects to a server.
-/// This type of object would be used when an application needs to send/receive
-/// data from a server.
 class CActiveSocket : public CSimpleSocket
 {
 public:
@@ -58,32 +52,14 @@ public:
 
    CActiveSocket( CSocketType type = SocketTypeTcp );
 
-    /// Established a connection to the address specified by pAddr.
-    /// Connection-based protocol sockets (CSocket::SocketTypeTcp) may
-    /// successfully call Open() only once, however; connectionless protocol
-    /// sockets (CSocket::SocketTypeUdp) may use Open() multiple times to
-    /// change their association.
-    ///  @param pAddr specifies the destination address to connect.
-    ///  @param nPort specifies the destination port.
-    ///  @return true if successful connection made, otherwise false.
    virtual bool Open( const char *pAddr, uint16 nPort );
 
 private:
-    /// Utility function used to configure socket before connecting
-    ///  @return true if setup is made, otherwise false.
-   bool PreConnect( const char *pAddr, uint16 nPort );
-
-    /// Utility function used to create a TCP connection, called from Open().
-    ///  @return true if successful connection made, otherwise false.
-   bool ConnectTCP( const char *pAddr, uint16 nPort );
-
-   /// Utility function used to create a UDP connection, called from Open().
-   ///  @return true if successful connection made, otherwise false.
-   bool ConnectUDP( const char *pAddr, uint16 nPort );
-
-   /// Utility function used to create a RAW connection, called from Open().
-   ///  @return true if successful connection made, otherwise false.
-   bool ConnectRAW( const char *pAddr, uint16 nPort );
+   bool Validate( const char *pAddr, uint16 nPort );
+   bool PreConnect( const char *pAddr, uint16 nPort ); // Convert and Save params for OS layer
+   bool ConnectTCP();
+   bool ConnectUDP();
+   bool ConnectRAW();
 };
 
 #endif /*  __ACTIVESOCKET_H__  */
