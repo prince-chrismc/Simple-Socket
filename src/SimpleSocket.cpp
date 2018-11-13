@@ -231,12 +231,11 @@ bool CSimpleSocket::BindInterface( const char *pInterface )
    {
       if( pInterface )
       {
-         struct in_addr stInterfaceAddr;
+         in_addr stInterfaceAddr{};
          memset( &stInterfaceAddr, 0, sizeof( stInterfaceAddr ) );
          inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.s_addr );
 
-         bRetVal = ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_MULTICAST_IF,
-                     &stInterfaceAddr, sizeof( stInterfaceAddr ) )
+         bRetVal = ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_MULTICAST_IF, &stInterfaceAddr, sizeof( stInterfaceAddr ) )
                      == SocketSuccess );
          TranslateSocketError();
       }
@@ -245,14 +244,14 @@ bool CSimpleSocket::BindInterface( const char *pInterface )
    {
       if( pInterface )
       {
-         struct sockaddr_in stInterfaceAddr;
+         sockaddr_in stInterfaceAddr;
          // Set up the sockaddr structure
-         stInterfaceAddr.sin_family = AF_INET;
+         stInterfaceAddr.sin_family = m_nSocketDomain;
          inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.sin_addr.s_addr );
          stInterfaceAddr.sin_port = 0;
 
          // Bind the socket using the such that it only use a specified interface
-         if( bind( m_socket, (sockaddr*)&stInterfaceAddr, sizeof( stInterfaceAddr ) ) == SocketError )
+         if( bind( m_socket, (sockaddr*)&stInterfaceAddr, SOCKET_ADDR_IN_SIZE ) == SocketError )
          {
             TranslateSocketError();
          }

@@ -443,20 +443,20 @@ protected:
     uint32               m_nFlags;            /// socket flags
     bool                 m_bIsBlocking;       /// is socket blocking
     bool                 m_bIsMulticast;      /// is the UDP socket multicast;
-    struct timeval       m_stConnectTimeout;  /// connection timeout
-    struct timeval       m_stRecvTimeout;     /// receive timeout
-    struct timeval       m_stSendTimeout;     /// send timeout
-    struct sockaddr_in   m_stServerSockaddr;  /// server address
-    struct sockaddr_in   m_stClientSockaddr;  /// client address
-    struct sockaddr_in   m_stMulticastGroup;  /// multicast group to bind to
-    struct linger        m_stLinger;          /// linger flag
+    struct timeval       m_stConnectTimeout{};/// connection timeout
+    struct timeval       m_stRecvTimeout{};   /// receive timeout
+    struct timeval       m_stSendTimeout{};   /// send timeout
+    struct sockaddr_in   m_stServerSockaddr{};/// server address
+    struct sockaddr_in   m_stClientSockaddr{};/// client address
+    struct sockaddr_in   m_stMulticastGroup{};/// multicast group to bind to
+    struct linger        m_stLinger{};        /// linger flag
     CStatTimer           m_timer;             /// internal statistics.
 #ifdef WIN32
-    WSADATA              m_hWSAData;          /// Windows
+    WSADATA              m_hWSAData{};        /// Windows
 #endif
-    fd_set               m_writeFds;          /// write file descriptor set
-    fd_set               m_readFds;           /// read file descriptor set
-    fd_set               m_errorFds;          /// error file descriptor set
+    fd_set               m_writeFds{};        /// write file descriptor set
+    fd_set               m_readFds{};         /// read file descriptor set
+    fd_set               m_errorFds{};        /// error file descriptor set
 };
 
 #endif /*  __SOCKET_H__  */
