@@ -193,6 +193,10 @@ TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
    REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
    REQUIRE( socket.Close() );
    REQUIRE( socket.IsSocketValid() == false );
+
+   REQUIRE( socket.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
+            == CSimpleSocket::SocketError );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
 }
 
 #ifndef _DARWIN
@@ -222,6 +226,9 @@ TEST_CASE( "Sockets can close", "[Receive][UDP]" )
    REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
    REQUIRE( socket.Close() );
    REQUIRE( socket.IsSocketValid() == false );
+
+   REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == CSimpleSocket::SocketError );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
 }
 #endif
 
@@ -258,6 +265,10 @@ TEST_CASE( "Sockets are ctor copyable", "[Socket][TCP]" )
    REQUIRE( beta.Shutdown( CSimpleSocket::Both ) );
    REQUIRE( beta.Close() );
    REQUIRE( beta.IsSocketValid() == false );
+
+   REQUIRE( alpha.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
+            == CSimpleSocket::SocketError );
+   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
 }
 
 TEST_CASE( "Sockets are assign copyable", "[Socket=][TCP]" )

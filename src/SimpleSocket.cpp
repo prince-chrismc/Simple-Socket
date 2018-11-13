@@ -572,6 +572,7 @@ int32 CSimpleSocket::Send( const uint8 *pBuf, size_t bytesToSend )
 {
    if( !IsSocketValid() || bytesToSend == 0 || pBuf == nullptr )
    {
+      SetSocketError( IsSocketValid() ? SocketInvalidPointer : SocketInvalidSocket );
       m_nBytesSent = -1;
       return m_nBytesSent;
    }
