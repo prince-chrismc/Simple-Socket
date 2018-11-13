@@ -30,8 +30,6 @@ SOFTWARE.
 
 using namespace std::chrono_literals;
 
-auto WireToText = []( const uint8* text ) constexpr { return (const char*)text; };
-
 static constexpr const int32 NEXT_BYTE = 1;
 static constexpr const char* TEST_PACKET = "Test Packet";
 static constexpr const char* LOCAL_HOST = "127.0.0.1";
@@ -45,11 +43,11 @@ class AsyncMessage final
 public:
    AsyncMessage( const std::string& sMessage ) : m_sMessage( std::to_string( sMessage.size() ) + "\n" + sMessage ) {}
    AsyncMessage( const AsyncMessage& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; }
-   AsyncMessage( const AsyncMessage&& oNewMessage ) noexcept { m_sMessage = oNewMessage.m_sMessage; }
+   AsyncMessage( AsyncMessage&& oNewMessage ) noexcept { std::swap( m_sMessage, oNewMessage.m_sMessage ); }
    ~AsyncMessage() = default;
 
    AsyncMessage& operator=( const AsyncMessage& oNewMessage ) = default;
-   AsyncMessage& operator=( const AsyncMessage&& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; return *this; }
+   AsyncMessage& operator=( AsyncMessage&& oNewMessage ) noexcept { std::swap( m_sMessage, oNewMessage.m_sMessage ); return *this; }
 
    constexpr const std::string& ToString() const { return m_sMessage; }
 

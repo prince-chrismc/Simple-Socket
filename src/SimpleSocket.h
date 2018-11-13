@@ -71,7 +71,6 @@
 
 inline auto operator"" _bytes( const char* text, std::size_t ) { return reinterpret_cast<const uint8 *>(text); }
 auto constexpr length( const char* str )->long { return *str ? 1 + length( str + 1 ) : 0; }
-auto constexpr length( const uint8* str )->long { return *str ? 1 + length( str + 1 ) : 0; }
 
 class CSimpleSocket
 {
