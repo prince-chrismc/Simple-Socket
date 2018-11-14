@@ -348,10 +348,9 @@ TEST_CASE( "Sockets can echo", "[Echo][UDP]" )
 
    auto serverRespone = std::async( std::launch::async, [ & ]
                                     {
-                                       REQUIRE( server.Receive( 1024 ) == TEXT_PACKET_LENGTH );
-                                       const std::string message = server.GetData();
-                                       REQUIRE( server.Send( (uint8*)socket.GetData().c_str(), server.GetBytesReceived() )
-                                                == message.length() );
+                                       uint8 buffer[ TEXT_PACKET_LENGTH + 1 ];
+                                       REQUIRE( server.Receive( 1024, buffer ) == TEXT_PACKET_LENGTH );
+                                       REQUIRE( server.Send( buffer, server.GetBytesReceived() ) == TEXT_PACKET_LENGTH );
                                     }
    );
 
@@ -361,12 +360,15 @@ TEST_CASE( "Sockets can echo", "[Echo][UDP]" )
    REQUIRE( socket.Receive( 1024 ) == TEXT_PACKET_LENGTH );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   const std::string dnsResponse = socket.GetData();
+   const std::string actualResponse = socket.GetData();
+   const std::string expectedResponse( reinterpret_cast<const char*>( TEXT_PACKET ), TEXT_PACKET_LENGTH );
 
-   CAPTURE( dnsResponse );
+   CAPTURE( actualResponse );
+   CAPTURE( expectedResponse );
 
-   REQUIRE( dnsResponse.length() == TEXT_PACKET_LENGTH );
-   REQUIRE( dnsResponse.compare( reinterpret_cast<const char*>( TEXT_PACKET ) ) == 0 );
+   REQUIRE( expectedResponse.length() == TEXT_PACKET_LENGTH );
+   REQUIRE( memcmp( TEXT_PACKET, expectedResponse.c_str(), TEXT_PACKET_LENGTH ) == 0 );
+   REQUIRE( expectedResponse.compare( 0, TEXT_PACKET_LENGTH, reinterpret_cast<const char*>( TEXT_PACKET ), TEXT_PACKET_LENGTH ) == 0 );
 
    REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
    REQUIRE( socket.Close() );
