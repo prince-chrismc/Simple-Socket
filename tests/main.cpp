@@ -314,7 +314,11 @@ TEST_CASE( "Sockets are assign copyable", "[Socket=][TCP]" )
    REQUIRE( httpResponse == "HTTP/1.0 200 OK\r\n" );
 
    CActiveSocket beta;
+   REQUIRE( beta.Close() );
+   REQUIRE( beta.IsSocketValid() == false );
+
    beta = alpha;
+   REQUIRE( beta.IsSocketValid() );
 
    REQUIRE( beta.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
             == HTTP_GET_ROOT_REQUEST.length() );
