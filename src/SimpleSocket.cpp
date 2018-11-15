@@ -244,9 +244,9 @@ bool CSimpleSocket::BindInterface( const char *pInterface )
    {
       if( pInterface )
       {
-         sockaddr_in stInterfaceAddr;
+         sockaddr_in stInterfaceAddr{};
          // Set up the sockaddr structure
-         stInterfaceAddr.sin_family = m_nSocketDomain;
+         stInterfaceAddr.sin_family = static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain );
          inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.sin_addr.s_addr );
          stInterfaceAddr.sin_port = 0;
 
@@ -417,7 +417,7 @@ std::string CSimpleSocket::GetServerAddr()
 
 in_addr CSimpleSocket::GetServerAddrOnWire() const
 {
-   return in_addr{ m_stServerSockaddr.sin_addr.s_addr };
+   return m_stServerSockaddr.sin_addr;
 }
 
 //-------------------------------------------------------------------------------------------------
