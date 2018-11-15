@@ -337,10 +337,11 @@ public:
     };
 
     std::string GetServerAddr();
+    in_addr GetServerAddrOnWire() const;
 
     /// Returns the port number on which the server is connected.
     ///  @return server port number.
-    uint16 GetServerPort() {
+    uint16 GetServerPort() const {
         return ntohs(m_stServerSockaddr.sin_port);
     };
 

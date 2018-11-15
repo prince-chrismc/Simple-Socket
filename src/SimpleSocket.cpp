@@ -415,6 +415,11 @@ std::string CSimpleSocket::GetServerAddr()
    return buff;
 }
 
+in_addr CSimpleSocket::GetServerAddrOnWire() const
+{
+   return in_addr{ m_stServerSockaddr.sin_addr.s_addr };
+}
+
 //-------------------------------------------------------------------------------------------------
 //
 // GetJoinedGroup()
