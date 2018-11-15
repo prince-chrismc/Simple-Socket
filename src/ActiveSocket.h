@@ -60,6 +60,9 @@ private:
    bool ConnectTCP();
    bool ConnectUDP();
    bool ConnectRAW();
+
+   sockaddr_in* GetUdpRxAddrBuffer() override;
+   sockaddr_in* GetUdpTxAddrBuffer() override;
 };
 
 #endif /*  __ACTIVESOCKET_H__  */

@@ -246,3 +246,15 @@ bool CActiveSocket::Open( const char *pAddr, uint16 nPort )
 
    return bRetVal;
 }
+
+//------------------------------------------------------------------------------
+sockaddr_in* CActiveSocket::GetUdpRxAddrBuffer()
+{
+   return m_bIsMulticast ? &m_stClientSockaddr : &m_stServerSockaddr;
+}
+
+//------------------------------------------------------------------------------
+sockaddr_in* CActiveSocket::GetUdpTxAddrBuffer()
+{
+   return m_bIsMulticast ? &m_stMulticastGroup : &m_stServerSockaddr;
+}

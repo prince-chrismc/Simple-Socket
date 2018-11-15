@@ -425,11 +425,14 @@ private:
     /// @return number of bytes actually sent, return of zero means the
     /// connection has been shutdown on the other side, and a return of -1
     /// means that an error has occurred.
-    int32 Writev(const struct iovec *pVector, size_t nCount);
+    int32 Writev(const struct iovec *sendVector, size_t nNumItems );
 
     /// Flush the socket descriptor owned by the object.
     /// @return true data was successfully sent, else return false;
     bool Flush();
+
+    virtual sockaddr_in* GetUdpRxAddrBuffer();
+    virtual sockaddr_in* GetUdpTxAddrBuffer();
 
 protected:
     SOCKET               m_socket;            /// socket handle

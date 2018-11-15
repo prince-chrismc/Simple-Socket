@@ -213,7 +213,7 @@ bool CSimpleSocket::Initialize()
 }
 
 //-------------------------------------------------------------------------------------------------
-void CSimpleSocket::SetSocketError(CSimpleSocket::CSocketError error)
+void CSimpleSocket::SetSocketError( CSimpleSocket::CSocketError error )
 {
    m_socketErrno = error;
 }
@@ -577,7 +577,7 @@ int32 CSimpleSocket::Send( const uint8 *pBuf, size_t bytesToSend )
    if( !IsSocketValid() || bytesToSend == 0 || pBuf == nullptr )
    {
       SetSocketError( IsSocketValid() ? SocketInvalidPointer : SocketInvalidSocket );
-      m_nBytesSent = -1;
+      m_nBytesSent = SocketError;
       return m_nBytesSent;
    }
 
@@ -594,7 +594,7 @@ int32 CSimpleSocket::Send( const uint8 *pBuf, size_t bytesToSend )
    case CSimpleSocket::SocketTypeUdp:
       sendMessage = [ & ]
       {
-         const sockaddr* addrToSentTo = m_bIsMulticast ? (const sockaddr *)&m_stMulticastGroup : (const sockaddr *)&m_stServerSockaddr;
+         const auto addrToSentTo = reinterpret_cast<const sockaddr *>( GetUdpTxAddrBuffer() );
          return SENDTO( m_socket, pBuf, bytesToSend, 0, addrToSentTo, SOCKET_ADDR_IN_SIZE );
       };
       break;
@@ -703,6 +703,17 @@ bool CSimpleSocket::Flush()
    return bRetVal;
 }
 
+//-------------------------------------------------------------------------------------------------
+sockaddr_in* CSimpleSocket::GetUdpRxAddrBuffer()
+{
+   return &m_stClientSockaddr;
+}
+
+//-------------------------------------------------------------------------------------------------
+sockaddr_in* CSimpleSocket::GetUdpTxAddrBuffer()
+{
+   return m_bIsMulticast ? &m_stMulticastGroup : &m_stClientSockaddr;
+}
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -870,11 +881,16 @@ bool CSimpleSocket::SetOptionLinger( bool bEnable, uint16 nTime )
 //-------------------------------------------------------------------------------------------------
 int32 CSimpleSocket::Receive( uint32 nMaxBytes, uint8* pBuffer )
 {
-   m_nBytesReceived = 0;
-
-   if( !IsSocketValid() ) // If the socket is invalid then return false.
+   if( !IsSocketValid() )
    {
       SetSocketError( CSimpleSocket::SocketInvalidSocket );
+      m_nBytesReceived = SocketError;
+      return m_nBytesReceived;
+   }
+
+   if( nMaxBytes == 0 )
+   {
+      m_nBytesReceived = nMaxBytes;
       return m_nBytesReceived;
    }
 
@@ -885,38 +901,51 @@ int32 CSimpleSocket::Receive( uint32 nMaxBytes, uint8* pBuffer )
       m_sBuffer.assign( nMaxBytes, '\0' );
       pWorkBuffer = reinterpret_cast<uint8*>( &m_sBuffer[ 0 ] ); // Use string's internal memory as the buffer
    }
+   else
+   {
+      try
+      {
+         pBuffer[ nMaxBytes - 1 ] = '\0';
+      }
+      catch( ... )
+      {
+         SetSocketError( CSimpleSocket::SocketInvalidPointer );
+         m_nBytesReceived = SocketError;
+         return m_nBytesReceived;
+      }
+   }
 
    SetSocketError( CSimpleSocket::SocketSuccess );
+   m_nBytesReceived = 0;
 
-   m_timer.SetStartTime();
+   std::function<int32()> receivePacket = [] { return -1; };
 
    switch( m_nSocketType )
    {
    case CSimpleSocket::SocketTypeTcp:
-      do
-      {
-         m_nBytesReceived = RECV( m_socket, ( pWorkBuffer + m_nBytesReceived ),
-                                  nMaxBytes, m_nFlags );
-         TranslateSocketError();
-      } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
+      receivePacket = [ & ] { return RECV( m_socket, ( pWorkBuffer + m_nBytesReceived ), nMaxBytes, m_nFlags ); };
       break;
    case CSimpleSocket::SocketTypeUdp:
-      do
+      receivePacket = [ & ]
       {
-         sockaddr_in* addrToRxFrom = m_bIsMulticast ? &m_stClientSockaddr : &m_stServerSockaddr;
          uint32 srcSize = SOCKET_ADDR_IN_SIZE;
-         m_nBytesReceived = RECVFROM( m_socket, ( pWorkBuffer + m_nBytesReceived ),
-                                      nMaxBytes, 0, addrToRxFrom, &srcSize );
-         TranslateSocketError();
-      } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
+         return RECVFROM( m_socket, ( pWorkBuffer + m_nBytesReceived ), nMaxBytes, 0, GetUdpRxAddrBuffer(), &srcSize );
+      };
       break;
    default:
       //SetSocketError( CSimpleSocket::SocketProtocolError );
       break;
    }
 
+   m_timer.SetStartTime();
+
+   do
+   {
+      m_nBytesReceived = receivePacket();
+      TranslateSocketError();
+   } while( GetSocketError() == CSimpleSocket::SocketInterrupted );
+
    m_timer.SetEndTime();
-   TranslateSocketError();
 
    if( m_nBytesReceived == CSimpleSocket::SocketError )
    {
@@ -1258,7 +1287,7 @@ std::string CSimpleSocket::DescribeError( CSocketError err )
 //-------------------------------------------------------------------------------------------------
 std::string CSimpleSocket::DescribeError() const
 {
-   return DescribeError(m_socketErrno);
+   return DescribeError( m_socketErrno );
 }
 
 //-------------------------------------------------------------------------------------------------
