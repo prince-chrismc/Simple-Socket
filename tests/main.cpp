@@ -30,27 +30,44 @@ SOFTWARE.
 
 #include "PassiveSocket.h"
 
+#include <string_view>
+
 #ifdef _WIN32
 #include <Ws2tcpip.h>
 #elif defined(_LINUX) || defined (_DARWIN)
 #include <netdb.h>
 #endif
 
-static constexpr auto DNS_QUERY_LENGTH = 29;
+using namespace std::string_view_literals;
+
+static constexpr auto HTTP_GET_ROOT_REQUEST = "GET / HTTP/1.0\r\n\r\n"sv;
 static constexpr uint8 DNS_QUERY[] = { '\x12','\x34','\x01','\x00','\x00','\x01','\x00','\x00','\x00','\x00','\x00','\x00','\x07','\x65','\x78','\x61','\x6d','\x70','\x6c','\x65','\x03','\x63','\x6f','\x6d','\x00','\x00','\x01','\x00','\x01' };
-static const std::string HTTP_GET_ROOT_REQUEST = "GET / HTTP/1.0\r\n\r\n";
+static constexpr auto DNS_QUERY_LENGTH = ( sizeof( DNS_QUERY ) / sizeof( DNS_QUERY[ 0 ] ) );
 static constexpr uint8 TEXT_PACKET[] = { 'T', 'e', 's', 't', ' ', 'P', 'a', 'c', 'k', 'e', 't' };
-static constexpr auto TEXT_PACKET_LENGTH = 11;
+static constexpr auto TEXT_PACKET_LENGTH = ( sizeof( TEXT_PACKET ) / sizeof( TEXT_PACKET[ 0 ] ) );
 
-TEST_CASE( "Sockets are created", "[Initialize][TCP]" )
+TEST_CASE( "Valid sockets are created", "[Initialization]" )
 {
-   CSimpleSocket socket;
+   SECTION("TCP socket instantiation", "[TCP]")
+   {
+      CSimpleSocket socket;
 
-   REQUIRE( socket.GetSocketDescriptor() != INVALID_SOCKET );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.GetSocketDescriptor() != INVALID_SOCKET );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
+   }
+
+   SECTION( "UDP  socket instantiation", "[UDP]" )
+   {
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+
+      REQUIRE( socket.GetSocketDescriptor() != INVALID_SOCKET );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeUdp );
+   }
 }
 
-TEST_CASE( "Sockets can open", "[Open][UDP]" )
+TEST_CASE( "Open socket for communication", "[Open][UDP]" )
 {
    CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
 
@@ -58,7 +75,7 @@ TEST_CASE( "Sockets can open", "[Open][UDP]" )
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
-TEST_CASE( "Sockets can connect", "[Open][TCP]" )
+TEST_CASE( "Establish connection to remote host", "[Open][TCP]" )
 {
    CActiveSocket socket;
 
@@ -163,6 +180,9 @@ TEST_CASE( "Sockets have server information" )
 {
    CActiveSocket socket;
 
+   CHECK( socket.GetServerAddr() == "0.0.0.0" );
+   CHECK( socket.GetServerPort() == 0 );
+
    REQUIRE( socket.Open( "www.google.ca", 80 ) );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
@@ -204,7 +224,7 @@ TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    CHECK( socket.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
-            == HTTP_GET_ROOT_REQUEST.length() );
+          == HTTP_GET_ROOT_REQUEST.length() );
 
    CHECK( socket.Receive( 17 ) == 17 );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -224,7 +244,7 @@ TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
 }
 
 #ifndef _DARWIN
-TEST_CASE( "Sockets can close", "[Receive][UDP]" )
+TEST_CASE( "Sockets can close", "[Close][UDP]" )
 {
    CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
 
@@ -241,8 +261,8 @@ TEST_CASE( "Sockets can close", "[Receive][UDP]" )
 
    CHECK( dnsResponse.length() == 45 );
    CHECK_THAT( dnsResponse, Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61" \
-                 "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00" \
-                 "\x01\x00\x01\x00\x00" )
+               "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00" \
+               "\x01\x00\x01\x00\x00" )
    );
    CHECK_THAT( dnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22" ) );  // NOLINT(misc-string-literal-with-embedded-nul)
 
