@@ -71,13 +71,22 @@ TEST_CASE( "Open socket for communication", "[Open][UDP]" )
 {
    CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
 
+   CHECK( socket.GetServerAddr() == "0.0.0.0" );
+   CHECK( socket.GetServerPort() == 0 );
+
    REQUIRE( socket.Open( "8.8.8.8", 53 ) );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   CHECK( socket.GetServerAddr() == "8.8.8.8" );
+   CHECK( socket.GetServerPort() == 53 );
 }
 
 TEST_CASE( "Establish connection to remote host", "[Open][TCP]" )
 {
    CActiveSocket socket;
+
+   CHECK( socket.GetServerAddr() == "0.0.0.0" );
+   CHECK( socket.GetServerPort() == 0 );
 
    SECTION( "Bad Port" )
    {
@@ -221,7 +230,7 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
    }
 }
 
-TEST_CASE( "Sockets have server information" )
+TEST_CASE( "Sockets have remotes information", "[TCP]" )
 {
    CActiveSocket socket;
 
@@ -405,18 +414,40 @@ TEST_CASE( "Sockets can echo", "[Echo][UDP]" )
 {
    CPassiveSocket server( CSimpleSocket::SocketTypeUdp );
 
+   CHECK( server.GetServerAddr() == "0.0.0.0" );
+   CHECK( server.GetServerPort() == 0 );
+
+   CHECK( server.GetClientAddr() == "0.0.0.0" );
+   CHECK( server.GetClientPort() == 0 );
+
    REQUIRE( server.Listen( "127.0.0.1", 35346 ) );
    REQUIRE( server.GetSocketError() == CSimpleSocket::SocketSuccess );
 
+   CHECK( server.GetServerAddr() == "127.0.0.1" );
+   CHECK( server.GetServerPort() == 35346 );
+
    CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+
+   CHECK( socket.GetServerAddr() == "0.0.0.0" );
+   CHECK( socket.GetServerPort() == 0 );
 
    REQUIRE( socket.Open( "127.0.0.1", 35346 ) );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   CHECK( socket.GetServerAddr() == "127.0.0.1" );
+   CHECK( socket.GetServerPort() == 35346 );
+
+   CAPTURE( socket.GetClientAddr() );
+   CAPTURE( socket.GetClientPort() );
 
    auto serverRespone = std::async( std::launch::async, [ & ]
                                     {
                                        uint8 buffer[ TEXT_PACKET_LENGTH + 1 ];
                                        REQUIRE( server.Receive( 1024, buffer ) == TEXT_PACKET_LENGTH );
+
+                                       CHECK( server.GetClientAddr() == socket.GetClientAddr() );
+                                       CHECK( server.GetClientPort() == socket.GetClientPort() );
+
                                        REQUIRE( server.Send( buffer, server.GetBytesReceived() ) == TEXT_PACKET_LENGTH );
                                     }
    );
@@ -426,6 +457,9 @@ TEST_CASE( "Sockets can echo", "[Echo][UDP]" )
 
    REQUIRE( socket.Receive( 1024 ) == TEXT_PACKET_LENGTH );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   CHECK( socket.GetServerAddr() == "127.0.0.1" );
+   CHECK( socket.GetServerPort() == 35346 );
 
    const std::string actualResponse = socket.GetData();
    const std::string expectedResponse( reinterpret_cast<const char*>( TEXT_PACKET ), TEXT_PACKET_LENGTH );
