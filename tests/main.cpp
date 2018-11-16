@@ -48,7 +48,7 @@ static constexpr auto TEXT_PACKET_LENGTH = ( sizeof( TEXT_PACKET ) / sizeof( TEX
 
 TEST_CASE( "Valid sockets are created", "[Initialization]" )
 {
-   SECTION("TCP socket instantiation", "[TCP]")
+   SECTION( "TCP socket instantiation", "[TCP]" )
    {
       CSimpleSocket socket;
 
@@ -115,6 +115,7 @@ TEST_CASE( "Sockets can send", "[Send][UDP]" )
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+   REQUIRE( socket.GetBytesSent() == DNS_QUERY_LENGTH );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 #endif
@@ -128,6 +129,7 @@ TEST_CASE( "Sockets can transfer", "[Send][TCP]" )
 
    REQUIRE( socket.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
             == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
 
@@ -143,6 +145,7 @@ TEST_CASE( "Sockets can read", "[Receive][UDP]" )
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    REQUIRE( socket.Receive( 1024 ) == 45 );
+   REQUIRE( socket.GetBytesReceived() == 45 );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    const std::string dnsResponse = socket.GetData();
@@ -167,13 +170,55 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
           == HTTP_GET_ROOT_REQUEST.length() );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Receive( 2048 ) == 2048 );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   CHECK( socket.GetBytesReceived() == CSimpleSocket::SocketError );
 
-   const std::string httpResponse = socket.GetData();
+   SECTION( "No Handle" )
+   {
+      CHECK( socket.Close() );
+      CHECK_FALSE( socket.IsSocketValid() );
+      CHECK( socket.Receive( 2048 ) == CSimpleSocket::SocketError );
+      CHECK( socket.GetBytesReceived() == CSimpleSocket::SocketError );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+   }
 
-   REQUIRE( httpResponse.length() > 0 );
-   REQUIRE_THAT( httpResponse, Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) && Catch::Contains( "<title>Google</title>" ) );
+   SECTION( "Nothing ???" )
+   {
+      CHECK( socket.Receive( 0 ) == 0 );
+      CHECK( socket.GetBytesReceived() == 0 );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+
+   SECTION( "Using interal buffer" )
+   {
+      REQUIRE( socket.Receive( 2048 ) == 2048 );
+      REQUIRE( socket.GetBytesReceived() == 2048 );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      const std::string httpResponse = socket.GetData();
+
+      REQUIRE( httpResponse.length() > 0 );
+      REQUIRE_THAT( httpResponse, Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) && Catch::Contains( "<title>Google</title>" ) );
+   }
+
+   SECTION( "Using external buffer" )
+   {
+      uint8 buffer[ 2048 ];
+      REQUIRE( socket.Receive( 2048, buffer ) == 2048 );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      const std::string httpResponse( reinterpret_cast<const char*>( buffer ), socket.GetBytesReceived() );
+
+      REQUIRE( httpResponse.length() > 0 );
+      REQUIRE_THAT( httpResponse, Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) && Catch::Contains( "<title>Google</title>" ) );
+   }
+
+   SECTION( "external buffer is too small", "[.]" )
+   {
+      // sadly this test is not valid https://github.com/catchorg/Catch2/issues/553
+      //uint8 buffer[ 512 ];
+      //CHECK( socket.Receive( 1024, buffer ) == CSimpleSocket::SocketError );
+      //CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidPointer );
+   }
 }
 
 TEST_CASE( "Sockets have server information" )

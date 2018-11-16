@@ -901,19 +901,6 @@ int32 CSimpleSocket::Receive( uint32 nMaxBytes, uint8* pBuffer )
       m_sBuffer.assign( nMaxBytes, '\0' );
       pWorkBuffer = reinterpret_cast<uint8*>( &m_sBuffer[ 0 ] ); // Use string's internal memory as the buffer
    }
-   else
-   {
-      try
-      {
-         pBuffer[ nMaxBytes - 1 ] = '\0';
-      }
-      catch( ... )
-      {
-         SetSocketError( CSimpleSocket::SocketInvalidPointer );
-         m_nBytesReceived = SocketError;
-         return m_nBytesReceived;
-      }
-   }
 
    SetSocketError( CSimpleSocket::SocketSuccess );
    m_nBytesReceived = 0;
