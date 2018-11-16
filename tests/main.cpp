@@ -465,11 +465,9 @@ TEST_CASE( "Sockets can echo", "[Echo][UDP]" )
    const std::string expectedResponse( reinterpret_cast<const char*>( TEXT_PACKET ), TEXT_PACKET_LENGTH );
 
    CAPTURE( actualResponse );
-   CAPTURE( expectedResponse );
 
-   REQUIRE( expectedResponse.length() == TEXT_PACKET_LENGTH );
-   REQUIRE( memcmp( TEXT_PACKET, expectedResponse.c_str(), TEXT_PACKET_LENGTH ) == 0 );
-   REQUIRE( expectedResponse.compare( 0, TEXT_PACKET_LENGTH, reinterpret_cast<const char*>( TEXT_PACKET ), TEXT_PACKET_LENGTH ) == 0 );
+   REQUIRE( actualResponse.length() == TEXT_PACKET_LENGTH );
+   REQUIRE_THAT( actualResponse, Catch::StartsWith( expectedResponse ) );
 
    REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
    REQUIRE( socket.Close() );
