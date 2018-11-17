@@ -21,7 +21,7 @@ jobs:
           command: 'apt-get update && apt-get install -y gcc g++ cmake'
       - run:
           name: Build
-          command: 'mkdir build-circle && cd build-circle && cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug -DSIMPLE_SOCKET_TEST=ON && make-j3'
+          command: 'mkdir build-circle && cd build-circle && cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug -DSIMPLE_SOCKET_TEST=ON && make -j3'
       - run:
           name: Test
           command: './Simple-Socket-tester.run'
