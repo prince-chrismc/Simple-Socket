@@ -24,7 +24,7 @@ jobs:
           command: 'mkdir build-circle && cd build-circle && cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug -DSIMPLE_SOCKET_TEST=ON && make -j3'
       - run:
           name: Test
-          command: './Simple-Socket-tester.run'
+          command: './build-circle/Simple-Socket-tester.run'
 
 workflows:
   version: 2
