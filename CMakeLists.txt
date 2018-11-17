@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 project(Simple-Socket)
 
 # CMake Settings
@@ -9,12 +9,14 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
   message(SEND_ERROR "In-source builds are not allowed.")
 endif()
 
-#set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # OS and compiler checks.
 if(UNIX)
     add_definitions(-D_LINUX)
     set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
     set(CMAKE_EXECUTABLE_SUFFIX .run)
     set(THREAD_LIB pthread)
 
@@ -29,7 +31,9 @@ if(UNIX)
 
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_definitions(-D_CLANG)
+        add_compile_options(-stdlib=libc++)
     endif()
+
 
     add_compile_options(-Wall -Wextra)
 
