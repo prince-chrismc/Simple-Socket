@@ -199,8 +199,8 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
 
    SECTION( "Using interal buffer" )
    {
-      REQUIRE( socket.Receive( 2048 ) == 2048 );
-      REQUIRE( socket.GetBytesReceived() == 2048 );
+      REQUIRE( socket.Receive( 1024 ) == 1024 );
+      REQUIRE( socket.GetBytesReceived() == 1024 );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
       const std::string httpResponse = socket.GetData();
@@ -211,8 +211,9 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
 
    SECTION( "Using external buffer" )
    {
-      uint8 buffer[ 2048 ];
-      REQUIRE( socket.Receive( 2048, buffer ) == 2048 );
+      uint8 buffer[ 1024 ];
+      REQUIRE( socket.Receive( 1024, buffer ) == 1024 );
+      REQUIRE( socket.GetBytesReceived() == 1024 );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
       const std::string httpResponse( reinterpret_cast<const char*>( buffer ), socket.GetBytesReceived() );
@@ -221,13 +222,46 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
       REQUIRE_THAT( httpResponse, Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) && Catch::Contains( "<title>Google</title>" ) );
    }
 
-   SECTION( "external buffer is too small", "[.]" )
+   SECTION( "external buffer is too small" )
    {
       // sadly this test is not valid https://github.com/catchorg/Catch2/issues/553
       //uint8 buffer[ 512 ];
       //CHECK( socket.Receive( 1024, buffer ) == CSimpleSocket::SocketError );
       //CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidPointer );
    }
+}
+
+TEST_CASE( "Receive a huge message", "[!mayfail][TCP]" )
+{
+   CActiveSocket socket;
+
+   CHECK( socket.Open( "www.google.ca", 80 ) );
+   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   CHECK( socket.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
+          == HTTP_GET_ROOT_REQUEST.length() );
+   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   CHECK( socket.GetBytesReceived() == CSimpleSocket::SocketError );
+
+   // Testing with values above 1368 is risky because the
+   // internet might fragment packets and fail the test
+   REQUIRE( socket.Receive( 8420 ) > 1024 );
+
+   // This list of values are ones I've seen and make sence based on the OS
+   // And network enviroment... DISCLAIMER: It's very subjective!
+   auto accpetedValues = { 8420,       // MAX
+                           1418, 2836, // UBUNTU
+                           1368        // MAC
+                         };
+   CHECK_THAT( accpetedValues, Catch::VectorContains( socket.GetBytesReceived() ) );
+
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   const std::string httpResponse = socket.GetData();
+
+   REQUIRE( httpResponse.length() > 0 );
+   REQUIRE_THAT( httpResponse, Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) && Catch::Contains( "<title>Google</title>" ) );
 }
 
 TEST_CASE( "Sockets have remotes information", "[TCP]" )
