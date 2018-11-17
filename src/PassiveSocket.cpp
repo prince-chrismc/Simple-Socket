@@ -74,7 +74,10 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
    // of setting in a TIMED_WAIT state.
    //--------------------------------------------------------------------------
    SETSOCKOPT( m_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&nReuse, sizeof( int32 ) );
-   SETSOCKOPT( m_socket, IPPROTO_TCP, IP_TOS, &nReuse, sizeof( int32 ) );
+   if(m_nSocketType == SocketTypeTcp)
+   {
+      SETSOCKOPT( m_socket, IPPROTO_TCP, IP_TOS, &nReuse, sizeof( int32 ) );
+   }
 #endif
 
    memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
