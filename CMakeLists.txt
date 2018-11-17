@@ -9,7 +9,7 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
   message(SEND_ERROR "In-source builds are not allowed.")
 endif()
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # OS and compiler checks.
 if(UNIX)
@@ -31,9 +31,8 @@ if(UNIX)
 
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_definitions(-D_CLANG)
-        add_compile_options(-stdlib=libc++)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     endif()
-
 
     add_compile_options(-Wall -Wextra)
 
