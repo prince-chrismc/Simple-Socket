@@ -199,8 +199,8 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
 
    SECTION( "Using interal buffer" )
    {
-      REQUIRE( socket.Receive( 1024 ) == 1024 );
-      REQUIRE( socket.GetBytesReceived() == 1024 );
+      REQUIRE( socket.Receive( 1368 ) == 1368 );
+      REQUIRE( socket.GetBytesReceived() == 1368 );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
       const std::string httpResponse = socket.GetData();
@@ -211,9 +211,9 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
 
    SECTION( "Using external buffer" )
    {
-      uint8 buffer[ 1024 ];
-      REQUIRE( socket.Receive( 1024, buffer ) == 1024 );
-      REQUIRE( socket.GetBytesReceived() == 1024 );
+      uint8 buffer[ 1368 ];
+      REQUIRE( socket.Receive( 1368, buffer ) == 1368 );
+      REQUIRE( socket.GetBytesReceived() == 1368 );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
       const std::string httpResponse( reinterpret_cast<const char*>( buffer ), socket.GetBytesReceived() );
@@ -252,7 +252,8 @@ TEST_CASE( "Receive a huge message", "[!mayfail][TCP]" )
    // And network enviroment... DISCLAIMER: It's very subjective!
    auto accpetedValues = { 8420,       // MAX
                            1418, 2836, // UBUNTU
-                           1368        // MAC
+                           1368,       // MAC
+                           7090        // TRAVIS_CI
                          };
    CHECK_THAT( accpetedValues, Catch::VectorContains( socket.GetBytesReceived() ) );
 
