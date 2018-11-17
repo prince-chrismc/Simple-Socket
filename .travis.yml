@@ -17,24 +17,6 @@ matrix:
           - libc++abi-7-dev
       env:
       - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-
-    - os: linux
-      sudo: true
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-8
-          - sourceline: "http://apt.llvm.org/trusty/ llvm-toolchain-trusty-8 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          packages:
-          - clang-8
-          - lldb-8
-          - lld-8
-          - libc++-8-dev
-          - libc++abi-8-dev
-      env:
-      - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
         
     - os: linux
       addons:
