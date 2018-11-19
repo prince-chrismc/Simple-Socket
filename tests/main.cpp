@@ -323,7 +323,7 @@ TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
    REQUIRE( socket.Close() );
    REQUIRE_FALSE( socket.IsSocketValid() );
 
-   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == CSimpleSocket::SocketError );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
 }
 
