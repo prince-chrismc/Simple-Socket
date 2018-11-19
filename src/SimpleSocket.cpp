@@ -616,6 +616,11 @@ int32 CSimpleSocket::Send( const uint8 *pBuf, size_t bytesToSend )
    return m_nBytesSent;
 }
 
+int32 CSimpleSocket::Send( std::string buffer )
+{
+   return Send( reinterpret_cast<const uint8*>( buffer.c_str() ), buffer.length() );
+}
+
 
 //-------------------------------------------------------------------------------------------------
 //

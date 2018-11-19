@@ -136,8 +136,7 @@ TEST_CASE( "Sockets can transfer", "[Send][TCP]" )
    CHECK( socket.Open( "www.google.ca", 80 ) );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
-            == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
    REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
@@ -175,8 +174,7 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
    CHECK( socket.Open( "www.google.ca", 80 ) );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   CHECK( socket.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
-          == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    CHECK( socket.GetBytesReceived() == CSimpleSocket::SocketError );
@@ -238,8 +236,7 @@ TEST_CASE( "Receive a huge message", "[!mayfail][TCP]" )
    CHECK( socket.Open( "www.google.ca", 80 ) );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   CHECK( socket.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
-          == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    CHECK( socket.GetBytesReceived() == CSimpleSocket::SocketError );
@@ -312,8 +309,7 @@ TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
    CHECK( socket.Open( "www.google.ca", 80 ) );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   CHECK( socket.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
-          == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
 
    CHECK( socket.Receive( 17 ) == 17 );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -327,8 +323,7 @@ TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
    REQUIRE( socket.Close() );
    REQUIRE_FALSE( socket.IsSocketValid() );
 
-   REQUIRE( socket.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
-            == CSimpleSocket::SocketError );
+   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
 }
 
@@ -370,8 +365,7 @@ TEST_CASE( "Sockets are ctor copyable", "[Socket][TCP]" )
 
    REQUIRE( alpha.Open( "www.google.ca", 80 ) );
 
-   REQUIRE( alpha.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
-            == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
 
    REQUIRE( alpha.Receive( 17 ) == 17 );
    REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -383,8 +377,7 @@ TEST_CASE( "Sockets are ctor copyable", "[Socket][TCP]" )
 
    CActiveSocket beta( alpha );
 
-   REQUIRE( beta.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
-            == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
 
    REQUIRE( beta.Receive( 6 ) == 6 );
    REQUIRE( beta.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -398,8 +391,7 @@ TEST_CASE( "Sockets are ctor copyable", "[Socket][TCP]" )
    REQUIRE( beta.Close() );
    REQUIRE_FALSE( beta.IsSocketValid() );
 
-   REQUIRE( alpha.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
-            == CSimpleSocket::SocketError );
+   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) == CSimpleSocket::SocketError );
    REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
 }
 
@@ -427,8 +419,7 @@ TEST_CASE( "Sockets are assign copyable", "[Socket=][TCP]" )
    beta = alpha;
    REQUIRE( beta.IsSocketValid() );
 
-   REQUIRE( beta.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
-            == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
 
    REQUIRE( beta.Receive( 6 ) == 6 );
    REQUIRE( beta.GetSocketError() == CSimpleSocket::SocketSuccess );

@@ -69,7 +69,6 @@
 #define INVALID_SOCKET    ~(0)
 #endif
 
-inline auto operator"" _bytes( const char* text, std::size_t ) { return reinterpret_cast<const uint8 *>(text); }
 auto constexpr length( const char* str )->long { return *str ? 1 + length( str + 1 ) : 0; }
 
 class CSimpleSocket
@@ -149,7 +148,8 @@ public:
     /// @return number of bytes actually sent.
     /// @return of zero means the connection has been shutdown on the other side.
     /// @return of -1 means that an error has occurred.
-    virtual int32 Send(const uint8 *pBuf, size_t bytesToSend);
+    virtual int32 Send( const uint8 *pBuf, size_t bytesToSend );
+    virtual int32 Send(std::string buffer);
 
     /// Attempts to send at most nNumItem blocks described by sendVector
     /// to the socket descriptor associated with the socket object.
