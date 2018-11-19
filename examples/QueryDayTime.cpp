@@ -33,7 +33,7 @@ int main( int argc, char** argv )
 
    if( oSocket.Open( "time-C.timefreq.bldrdoc.gov", 13 ) ) // Attempt connection to known remote server
    {
-      if( oSocket.Send( "\n"_bytes, 1 ) ) // Send a request the server for the current time.
+      if( oSocket.Send( "\n" ) ) // Send a request the server for the current time.
       {
          if( oSocket.Receive( 48 ) ) // Receive response from the server.
             std::cout << oSocket.GetData() << std::endl;

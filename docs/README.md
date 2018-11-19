@@ -79,16 +79,13 @@ The following code will connect to a DAYTIME server on port 13, query for the cu
 #include <string>
 #include "ActiveSocket.h" // Include header for active socket object definition
 
-constexpr const uint8* operator"" _byte( const char* text, std::size_t ) { return (const uint8 *)text; }
-auto WireToText = []( const uint8* text ) constexpr { return (const char*)text; };
-
 int main( int argc, char** argv )
 {
    CActiveSocket oSocket; // Instantiate active socket object (defaults to TCP).
 
    if( oSocket.Open( "time-C.timefreq.bldrdoc.gov", 13 ) ) // Attempt connection to known remote server
    {
-      if( oSocket.Send( "\n"_byte, 1 ) ) // Send a request the server for the current time.
+      if( oSocket.Send( "\n" ) ) // Send a request the server for the current time.
       {
          if( oSocket.Receive( 48 ) ) // Receive response from the server.
             std::cout << oSocket.GetData() << std::endl;
