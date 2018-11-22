@@ -68,4 +68,6 @@ script:
 after_success:
 - if [[ "$COVERALL" == "ON" ]]; then
     echo "Updating coverall"
+    gem install coveralls-lcov
+    coveralls-lcov Simple-Socket-Coverage.info
   fi;
