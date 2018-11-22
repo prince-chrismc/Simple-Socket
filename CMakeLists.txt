@@ -109,6 +109,8 @@ endif()
 
 # Tester
 if(SIMPLE_SOCKET_TEST)
+    ENABLE_TESTING()
     ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp)
     TARGET_LINK_LIBRARIES(Simple-Socket-tester Simple-Socket ${THREAD_LIB})
+    ADD_TEST(NAME Socket-Tester COMMAND Simple-Socket-tester)
 endif()
