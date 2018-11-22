@@ -15,6 +15,7 @@ endif()
 # OS and compiler checks.
 if(UNIX)
     add_definitions(-D_LINUX)
+    add_compile_options(-Wall -Wextra)
     set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set(CMAKE_CXX_EXTENSIONS OFF)
@@ -34,8 +35,6 @@ if(UNIX)
         add_definitions(-D_CLANG)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     endif()
-
-    add_compile_options(-Wall -Wextra)
 
     if(APPLE)
         remove_definitions(-D_LINUX)
@@ -111,15 +110,19 @@ endif()
 # Tester
 if(SIMPLE_SOCKET_TEST)
     ENABLE_TESTING()
-    ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp)
+    ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp ${SIMPLE_SOCKET_SOURCES})
 
-    if(CMAKE_COMPILER_IS_GNUCXX)
+    if(CMAKE_COMPILER_IS_GNUCXX AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER "7"
+    AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "8" )
+        message("generating coverage")
         include(CodeCoverage)
         set(GCOV_LIB gcov)
-        setup_target_for_coverage(Coverage Simple-Socket-tester coverage)
+        APPEND_COVERAGE_COMPILER_FLAGS()
+        set(COVERAGE_LCOV_EXCLUDES '*tests/*' '*7/*')
+        SETUP_TARGET_FOR_COVERAGE_LCOV(NAME ${PROJECT_NAME}-Coverage EXECUTABLE Simple-Socket-tester)
     endif()
 
-    TARGET_LINK_LIBRARIES(Simple-Socket-tester Simple-Socket ${THREAD_LIB} ${GCOV_LIB})
+    TARGET_LINK_LIBRARIES(Simple-Socket-tester ${THREAD_LIB} ${GCOV_LIB})
     ADD_TEST(NAME Socket-Tester COMMAND Simple-Socket-tester)
 
 endif()
