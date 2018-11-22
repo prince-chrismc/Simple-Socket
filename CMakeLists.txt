@@ -4,6 +4,7 @@ project(Simple-Socket)
 # CMake Settings
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
   message(SEND_ERROR "In-source builds are not allowed.")
@@ -111,6 +112,14 @@ endif()
 if(SIMPLE_SOCKET_TEST)
     ENABLE_TESTING()
     ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp)
-    TARGET_LINK_LIBRARIES(Simple-Socket-tester Simple-Socket ${THREAD_LIB})
+
+    if(CMAKE_COMPILER_IS_GNUCXX)
+        include(CodeCoverage)
+        set(GCOV_LIB gcov)
+        setup_target_for_coverage(Coverage Simple-Socket-tester coverage)
+    endif()
+
+    TARGET_LINK_LIBRARIES(Simple-Socket-tester Simple-Socket ${THREAD_LIB} ${GCOV_LIB})
     ADD_TEST(NAME Socket-Tester COMMAND Simple-Socket-tester)
+
 endif()
