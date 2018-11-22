@@ -66,4 +66,4 @@ script:
 - ./Simple-Socket-tester.run
 
 after_success:
-- if [[ "$COVERALL" == "ON" ]]; then echo "Updating coverall"; gem install coveralls-lcov; coveralls-lcov Simple-Socket-Coverage.info; fi;
+- if [[ "$COVERALL" == "ON" ]]; then echo "Updating coverall"; gem install coveralls-lcov; coveralls-lcov build-travis/Simple-Socket-Coverage.info; fi;
