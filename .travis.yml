@@ -71,5 +71,5 @@ after_success:
     make Simple-Socket-Coverage;
     gem install coveralls-lcov;
     echo "Updating coverall.io";
-    coveralls-lcov Simple-Socket-Coverage.info;
+    coveralls-lcov Simple-Socket-Coverage.info.cleaned;
   fi;

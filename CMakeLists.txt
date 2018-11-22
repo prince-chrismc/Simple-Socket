@@ -118,7 +118,7 @@ if(SIMPLE_SOCKET_TEST)
         include(CodeCoverage)
         set(GCOV_LIB gcov)
         APPEND_COVERAGE_COMPILER_FLAGS()
-        set(COVERAGE_LCOV_EXCLUDES '*tests/*' '*7/*')
+        set(COVERAGE_LCOV_EXCLUDES '*tests/*' '*examples/*' '*7/*')
         SETUP_TARGET_FOR_COVERAGE_LCOV(NAME ${PROJECT_NAME}-Coverage EXECUTABLE Simple-Socket-tester)
     endif()
 
