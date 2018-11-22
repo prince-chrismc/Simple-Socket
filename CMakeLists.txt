@@ -110,19 +110,21 @@ endif()
 # Tester
 if(SIMPLE_SOCKET_TEST)
     ENABLE_TESTING()
-    ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp ${SIMPLE_SOCKET_SOURCES})
 
     if(CMAKE_COMPILER_IS_GNUCXX AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER "7"
     AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "8" )
-        message("generating coverage")
         include(CodeCoverage)
-        set(GCOV_LIB gcov)
         APPEND_COVERAGE_COMPILER_FLAGS()
+        
         set(COVERAGE_LCOV_EXCLUDES '*tests/*' '*examples/*' '*7/*')
+        
+        ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp ${SIMPLE_SOCKET_SOURCES})
+        TARGET_LINK_LIBRARIES(Simple-Socket-tester ${THREAD_LIB} gcov)
         SETUP_TARGET_FOR_COVERAGE_LCOV(NAME ${PROJECT_NAME}-Coverage EXECUTABLE Simple-Socket-tester)
+    else()
+        ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp)
+        TARGET_LINK_LIBRARIES(Simple-Socket-tester Simple-Socket ${THREAD_LIB})
     endif()
 
-    TARGET_LINK_LIBRARIES(Simple-Socket-tester ${THREAD_LIB} ${GCOV_LIB})
     ADD_TEST(NAME Socket-Tester COMMAND Simple-Socket-tester)
-
 endif()
