@@ -38,6 +38,18 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
 
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - lcov
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+        - COVERALL="ON"
+
     - os: osx
       osx_image: xcode10
       env:
@@ -62,3 +74,8 @@ script:
 - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=Debug -DSIMPLE_SOCKET_TEST=ON
 - make -j3
 - make test
+
+after_success:
+- if [[ "$COVERALL" == "ON" ]]; then
+    echo "Updating coverall"
+  fi
