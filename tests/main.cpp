@@ -57,7 +57,7 @@ TEST_CASE( "Valid sockets are created", "[Initialization]" )
       REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
    }
 
-   SECTION( "UDP  socket instantiation", "[UDP]" )
+   SECTION( "UDP socket instantiation", "[UDP]" )
    {
       CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
 
@@ -65,6 +65,17 @@ TEST_CASE( "Valid sockets are created", "[Initialization]" )
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeUdp );
    }
+
+///#ifdef _LINUX
+//   SECTION( "RAW socket instantiation", "[RAW][LINUX][!shouldfail]" )
+//   {
+//      CActiveSocket socket( CSimpleSocket::SocketTypeRaw );
+//
+//     REQUIRE( socket.GetSocketDescriptor() != INVALID_SOCKET );
+//      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+//      REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeRaw );
+//   }
+///#endif
 }
 
 TEST_CASE( "Open socket for communication", "[Open][UDP]" )
