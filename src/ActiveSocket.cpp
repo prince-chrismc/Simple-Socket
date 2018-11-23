@@ -102,6 +102,10 @@ bool CActiveSocket::PreConnect( const char * pAddr, uint16 nPort )
       {
          SetSocketError( SocketInvalidAddress );
       }
+      else
+      {
+         TranslateSocketError();
+      }
 #endif
       bRetVal = false;
    }
