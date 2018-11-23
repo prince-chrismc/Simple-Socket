@@ -109,12 +109,7 @@ bool CActiveSocket::PreConnect( const char * pAddr, uint16 nPort )
    {
       m_stServerSockaddr.sin_addr = reinterpret_cast<sockaddr_in*>( pResult->ai_addr )->sin_addr;
       m_stServerSockaddr.sin_port = htons( nPort );
-
-      if( (int32)m_stServerSockaddr.sin_addr.s_addr == CSimpleSocket::SocketError )
-      {
-         TranslateSocketError();
-         bRetVal = false;
-      }
+      freeaddrinfo( pResult );
    }
 
    return bRetVal;

@@ -100,6 +100,18 @@ TEST_CASE( "Establish connection to remote host", "[Open][TCP]" )
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
    }
 
+   SECTION( "Bad Address" )
+   {
+      CHECK_FALSE( socket.Open( "132.354.134.546", 35345 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
+   }
+
+   SECTION( "Unknow Host name" )
+   {
+      CHECK_FALSE( socket.Open( "xyz.allphebties.cool", 34867 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
+   }
+
    SECTION( "No Handle" )
    {
       CHECK( socket.Close() );
