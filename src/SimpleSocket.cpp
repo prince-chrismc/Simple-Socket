@@ -1210,6 +1210,7 @@ void CSimpleSocket::TranslateSocketError( void )
       break;
    case WSANO_DATA:
    case WSAEADDRNOTAVAIL:
+   case WSAHOST_NOT_FOUND:
       SetSocketError( CSimpleSocket::SocketInvalidAddress );
       break;
    case WSAEADDRINUSE:

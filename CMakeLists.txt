@@ -115,9 +115,9 @@ if(SIMPLE_SOCKET_TEST)
     AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "8" )
         include(CodeCoverage)
         APPEND_COVERAGE_COMPILER_FLAGS()
-        
+
         set(COVERAGE_LCOV_EXCLUDES '*tests/*' '*examples/*' '*7/*')
-        
+
         ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp ${SIMPLE_SOCKET_SOURCES})
         TARGET_LINK_LIBRARIES(Simple-Socket-tester ${THREAD_LIB} gcov)
         SETUP_TARGET_FOR_COVERAGE_LCOV(NAME ${PROJECT_NAME}-Coverage EXECUTABLE Simple-Socket-tester)
