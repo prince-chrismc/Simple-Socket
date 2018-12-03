@@ -55,6 +55,8 @@ script:
       
 jobs:
   include:
+    - stage: "Test"
+    
     - stage: "Coverage"
       addons:
         apt:
