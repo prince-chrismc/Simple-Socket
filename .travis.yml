@@ -7,54 +7,54 @@ if: branch = master
 before_install:
 - eval "${MATRIX_EVAL}"
 
+matrix:
+  include:
+  - os: linux
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-trusty-7
+        packages:
+        - clang-7
+        - lldb-7
+        - lld-7
+        - libc++-7-dev
+        - libc++abi-7-dev
+    env:
+    - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
+  
+  - os: linux
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-8
+    env:
+      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+  
+  - os: osx
+    osx_image: xcode10
+    env:
+    - MATRIX_EVAL=""
+  
+  - os: osx
+    osx_image: xcode9.4
+    env:
+    - MATRIX_EVAL=""
+
+script:
+- mkdir build-travis
+- cd build-travis
+- cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX
+- make -j3
+- cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=Debug -DSIMPLE_SOCKET_TEST=ON
+- make -j3
+- ./Simple-Socket-tester.run
+      
 jobs:
   include:
-    - stage: "Test"
-      matrix:
-      - os: linux
-        addons:
-          apt:
-            sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-7
-            packages:
-            - clang-7
-            - lldb-7
-            - lld-7
-            - libc++-7-dev
-            - libc++abi-7-dev
-        env:
-        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-      
-      - os: linux
-        addons:
-          apt:
-            sources:
-              - ubuntu-toolchain-r-test
-            packages:
-              - g++-8
-        env:
-          - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-      
-      - os: osx
-        osx_image: xcode10
-        env:
-        - MATRIX_EVAL=""
-      
-      - os: osx
-        osx_image: xcode9.4
-        env:
-        - MATRIX_EVAL=""
-
-      script:
-      - mkdir build-travis
-      - cd build-travis
-      - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX
-      - make -j3
-      - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=Debug -DSIMPLE_SOCKET_TEST=ON
-      - make -j3
-      - ./Simple-Socket-tester.run
-
     - stage: "Coverage"
       addons:
         apt:
