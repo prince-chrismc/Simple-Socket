@@ -1,48 +1,60 @@
 dist: trusty
 sudo: false
 language: cpp
-
-if: branch = master
-
-before_install:
-- eval "${MATRIX_EVAL}"
-
 matrix:
   include:
-  - os: linux
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        - llvm-toolchain-trusty-7
-        packages:
-        - clang-7
-        - lldb-7
-        - lld-7
-        - libc++-7-dev
-        - libc++abi-7-dev
-    env:
-    - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-  
-  - os: linux
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-8
-    env:
-      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-  
-  - os: osx
-    osx_image: xcode10
-    env:
-    - MATRIX_EVAL=""
-  
-  - os: osx
-    osx_image: xcode9.4
-    env:
-    - MATRIX_EVAL=""
+    - os: linux
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-7
+          packages:
+          - clang-7
+          - lldb-7
+          - lld-7
+          - libc++-7-dev
+          - libc++abi-7-dev
+      env:
+      - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
+        
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - lcov
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - COVERALL="ON"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+
+    - os: osx
+      osx_image: xcode10
+      env:
+        - MATRIX_EVAL=""
+
+    - os: osx
+      osx_image: xcode9.4
+      env:
+        - MATRIX_EVAL=""
+        
+before_install:
+    - eval "${MATRIX_EVAL}"
+
+# require the branch name to be master
+if: branch = master
 
 script:
 - mkdir build-travis
@@ -52,26 +64,10 @@ script:
 - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=Debug -DSIMPLE_SOCKET_TEST=ON
 - make -j3
 - ./Simple-Socket-tester.run
-      
-jobs:
-  include:
-    - stage: "Test"
-    
-    - stage: "Coverage"
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
-          packages:
-          - g++-7
-          - lcov
-      env:
-      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-      script:
-      - mkdir build-travis
-      - cd build-travis
-      - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_TEST=ON
-      - make Simple-Socket-Coverage
-      after_success:
-      - gem install coveralls-lcov
-      - coveralls-lcov Simple-Socket-Coverage.info.cleaned
+
+after_success:
+- if [[ "$COVERALL" == "ON" ]]; then
+    make Simple-Socket-Coverage;
+    gem install coveralls-lcov;
+    coveralls-lcov Simple-Socket-Coverage.info.cleaned;
+  fi;
