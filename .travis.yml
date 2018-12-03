@@ -7,24 +7,11 @@ if: branch = master
 before_install:
 - eval "${MATRIX_EVAL}"
 
-matrix:
-  include:
-   - os: osx
-     osx_image: xcode10
-   - os: osx
-     osx_image: xcode9.4
-   - os: linux
-     addons:
-       apt:
-         sources:
-         - ubuntu-toolchain-r-test
-         packages:
-         - g++-7
-         - lcov
-
 jobs:
   include:
     - stage: "Test"
+      osx_image: xcode10
+      osx_image: xcode9.4
       env:
       - MATRIX_EVAL=""
       script:
@@ -35,8 +22,13 @@ jobs:
       - ./Simple-Socket-tester.run
       
     - stage: "Coverage"
-      matrix:
-        include:
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - g++-7
+          - lcov
       env:
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       script:
