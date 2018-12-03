@@ -5,23 +5,19 @@ language: cpp
 if: branch = master
 
 before_install:
-  - eval "${MATRIX_EVAL}"
-
+- eval "${MATRIX_EVAL}"
+  
 jobs:
   include:
-      # Build
-    - stage:
-      script:
-      - echo "Build stage"
-      
-      # Test
-    - stage:
-      - os: osx
-        osx_image: xcode10
-      - os: osx
-        osx_image: xcode9.4
+    - stage: "Test"
+      matrix:
+        include:
+        - os: osx
+          osx_image: xcode10
+        - os: osx
+          osx_image: xcode9.4
       env:
-        - MATRIX_EVAL=""
+      - MATRIX_EVAL=""
       script:
       - mkdir build-travis
       - cd build-travis
@@ -29,16 +25,17 @@ jobs:
       - make -j3
       - ./Simple-Socket-tester.run
       
-      # Coverage
-    - stage:
-      - os: linux
-        addons:
-          apt:
-            sources:
-            - ubuntu-toolchain-r-test
-            packages:
-            - g++-7
-            - lcov
+    - stage: "Coverage"
+      matrix:
+        include:
+        - os: linux
+          addons:
+            apt:
+              sources:
+              - ubuntu-toolchain-r-test
+              packages:
+              - g++-7
+              - lcov
       env:
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       script:
