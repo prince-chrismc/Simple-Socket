@@ -9,14 +9,13 @@ before_install:
 
 jobs:
   include:
-    - stage: "Build"
+      # Build
+    - stage:
       script:
       - echo "Build stage"
       
-      #
-      # Testing Phase
-      #
-    - stage: "Test"
+      # Test
+    - stage:
       - os: osx
         osx_image: xcode10
       - os: osx
@@ -30,10 +29,8 @@ jobs:
       - make -j3
       - ./Simple-Socket-tester.run
       
-      #
-      # Coverage Phase
-      #
-    - stage: "Coverage"
+      # Coverage
+    - stage:
       - os: linux
         addons:
           apt:
