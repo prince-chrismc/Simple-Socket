@@ -114,8 +114,8 @@ TEST_CASE( "Establish connection to remote host", "[Open][TCP]" )
    SECTION( "Bad Address" )
    {
       CHECK_FALSE( socket.Open( "132.354.134.546", 35345 ) );
-      CAPTURE( int{errno} );
-      CAPTURE( int{h_errno} );
+      auto errnoCapture = int{errno};
+      CAPTURE( errnoCapture );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
    }
 
