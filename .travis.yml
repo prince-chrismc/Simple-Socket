@@ -4,52 +4,21 @@ language: cpp
 
 jobs:
   include:
-    - os: linux
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-7
-          packages:
-          - clang-7
-          - lldb-7
-          - lld-7
-          - libc++-7-dev
-          - libc++abi-7-dev
+    - stage: "Build"
+      script:
+      - echo "Build stage"
+    - stage: "Test"
+      script:
+      - echo "Test stage"
+    - stage: "Coverage"
       env:
-      - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-        
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - lcov
-      env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-        - COVERALL="ON"
-
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-      env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-
-    - os: osx
-      osx_image: xcode10
-      env:
-        - MATRIX_EVAL=""
-
-    - os: osx
-      osx_image: xcode9.4
-      env:
-        - MATRIX_EVAL=""
+      - COVERALL="ON"
+      script:
+      - echo "Coverage stage"
+      after_success:
+      - if [[ "$COVERALL" == "ON" ]]; then
+          echo "privatee coverage...";
+        fi;
         
 before_install:
     - eval "${MATRIX_EVAL}"
@@ -57,20 +26,7 @@ before_install:
 # require the branch name to be master
 if: branch = master
 
-script:
-- mkdir build-travis
-- cd build-travis
-- cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX
-- make -j3
-- cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=Debug -DSIMPLE_SOCKET_TEST=ON
-- make -j3
-- ./Simple-Socket-tester.run
-
 after_success:
 - if [[ "$COVERALL" == "ON" ]]; then
-    echo "Running coverage test...";
-    make Simple-Socket-Coverage;
-    gem install coveralls-lcov;
-    echo "Updating coverall.io";
-    coveralls-lcov Simple-Socket-Coverage.info.cleaned;
+    echo "Running coverage test global...";
   fi;
