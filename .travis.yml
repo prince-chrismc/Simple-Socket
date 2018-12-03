@@ -7,11 +7,20 @@ if: branch = master
 before_install:
 - eval "${MATRIX_EVAL}"
 
+os:
+  - linux
+  - osx
+
 jobs:
   include:
     - stage: "Test"
       osx_image: xcode10
       osx_image: xcode9.4
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
       env:
       - MATRIX_EVAL=""
       script:
