@@ -98,13 +98,14 @@ bool CActiveSocket::PreConnect( const char * pAddr, uint16 nPort )
 #ifdef WIN32
       TranslateSocketError();
 #else
-      if( h_errno == HOST_NOT_FOUND )
+      // http://man7.org/linux/man-pages/man3/getaddrinfo.3.html#return-value
+      if( iErrorCode == EAI_SYSTEM )
       {
-         SetSocketError( SocketInvalidAddress );
+         TranslateSocketError();
       }
       else
       {
-         TranslateSocketError();
+         SetSocketError( SocketInvalidAddress );
       }
 #endif
       bRetVal = false;
