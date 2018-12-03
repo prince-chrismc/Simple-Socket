@@ -2,6 +2,11 @@ dist: trusty
 sudo: false
 language: cpp
 
+if: branch = master
+
+before_install:
+  - eval "${MATRIX_EVAL}"
+
 jobs:
   include:
     - stage: "Build"
@@ -14,8 +19,8 @@ jobs:
     - stage: "Test"
       - os: osx
         osx_image: xcode10
-    - os: osx
-      osx_image: xcode9.4
+      - os: osx
+        osx_image: xcode9.4
       env:
         - MATRIX_EVAL=""
       script:
@@ -47,14 +52,3 @@ jobs:
       after_success:
       - gem install coveralls-lcov
       - coveralls-lcov Simple-Socket-Coverage.info.cleaned
-        
-before_install:
-    - eval "${MATRIX_EVAL}"
-
-# require the branch name to be master
-if: branch = master
-
-after_success:
-- if [[ "$COVERALL" == "ON" ]]; then
-    echo "Running coverage test global...";
-  fi;
