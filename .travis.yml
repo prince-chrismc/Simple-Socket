@@ -83,3 +83,23 @@ jobs:
     - mkdir build-travis
     - cd build-travis
     - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF
+  
+  - stage: "Legacy"
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-trusty-4
+        packages:
+        - clang-4.0
+        - lldb-4.0
+        - lld-4.0
+        - libc++1
+        - libc++1-dev
+    env:
+    - MATRIX_EVAL="CC=clang-4 && CXX=clang++-4"
+    script:
+    - mkdir build-travis
+    - cd build-travis
+    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF
+  
