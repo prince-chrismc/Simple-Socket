@@ -95,7 +95,7 @@ jobs:
         - lld-4.0
         - libc++1
     env:
-    - MATRIX_EVAL="CC=clang-4 && CXX=clang++-4"
+    - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
     script:
     - mkdir build-travis
     - cd build-travis
