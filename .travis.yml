@@ -1,5 +1,4 @@
 dist: trusty
-sudo: false
 language: cpp
 
 if: branch = master
@@ -89,7 +88,7 @@ jobs:
       apt:
         sources:
         - ubuntu-toolchain-r-test
-        - llvm-toolchain-trusty-4
+        - llvm-toolchain-trusty-4.0
         packages:
         - clang-4.0
         - lldb-4.0
