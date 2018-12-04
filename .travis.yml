@@ -94,7 +94,6 @@ jobs:
         - lldb-4.0
         - lld-4.0
         - libc++1
-        - libc++1-dev
     env:
     - MATRIX_EVAL="CC=clang-4 && CXX=clang++-4"
     script:
