@@ -65,7 +65,7 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    m_socketErrno( CSimpleSocket::SocketInvalidSocket ),
    m_sBuffer( 48, '\0' ),
    m_nBufferSize( 0 ),
-   m_nSocketDomain( AF_INET ),
+   m_nSocketDomain( AF_UNSPEC ),
    m_nSocketType( nType ),
    m_nBytesReceived( -1 ),
    m_nBytesSent( -1 ),

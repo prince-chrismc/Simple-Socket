@@ -212,20 +212,17 @@ bool CActiveSocket::Open( const char *pAddr, uint16 nPort )
 
    if( bRetVal )
    {
-      switch( m_nSocketType )
+      if( m_nSocketType == CSimpleSocket::SocketTypeTcp )
       {
-      case CSimpleSocket::SocketTypeTcp:
          bRetVal = ConnectTCP();
-         break;
-      case CSimpleSocket::SocketTypeUdp:
+      }
+      else if( m_nSocketType == CSimpleSocket::SocketTypeUdp )
+      {
          bRetVal = ConnectUDP();
-         break;
-      case CSimpleSocket::SocketTypeRaw:
+      }
+      else if( m_nSocketType == CSimpleSocket::SocketTypeRaw )
+      {
          bRetVal = ConnectRAW();
-         break;
-      default:
-         SetSocketError( CSimpleSocket::SocketProtocolError );
-         break;
       }
    }
 

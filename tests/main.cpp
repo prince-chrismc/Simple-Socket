@@ -59,23 +59,28 @@ TEST_CASE( "Valid sockets are created", "[Initialization]" )
 
    SECTION( "UDP socket instantiation", "[UDP]" )
    {
-      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+      CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
 
       REQUIRE( socket.GetSocketDescriptor() != INVALID_SOCKET );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeUdp );
    }
 
-///#ifdef _LINUX
+//#ifdef _LINUX
 //   SECTION( "RAW socket instantiation", "[RAW][LINUX][!shouldfail]" )
 //   {
-//      CActiveSocket socket( CSimpleSocket::SocketTypeRaw );
+//      CSimpleSocket socket( CSimpleSocket::SocketTypeRaw );
 //
 //     REQUIRE( socket.GetSocketDescriptor() != INVALID_SOCKET );
 //      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 //      REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeRaw );
 //   }
-///#endif
+//#endif
+
+   SECTION( "Invalid socket instantiation", "" )
+   {
+      REQUIRE_THROWS_AS( CSimpleSocket{ CSimpleSocket::SocketTypeInvalid }, std::runtime_error );
+   }
 }
 
 TEST_CASE( "Open socket for communication", "[Open][UDP]" )
