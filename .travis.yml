@@ -73,7 +73,7 @@ jobs:
     script:
     - mkdir build-travis
     - cd build-travis
-    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=Debug -DSIMPLE_SOCKET_COVERAGE=ON
+    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=Debug -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_COVERAGE=ON
     - make coverage
     after_success:
     - gem install coveralls-lcov
