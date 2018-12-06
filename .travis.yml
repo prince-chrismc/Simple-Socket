@@ -77,7 +77,7 @@ jobs:
     - make coverage
     after_success:
     - gem install coveralls-lcov
-    - coveralls-lcov Simple-Socket-Coverage.info.cleaned
+    - coveralls-lcov coverage.info.cleaned
   
   - stage: "Legacy"
     addons:
