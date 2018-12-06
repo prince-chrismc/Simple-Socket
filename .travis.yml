@@ -9,9 +9,9 @@ before_install:
 script:
 - mkdir build-travis
 - cd build-travis
-- cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_TEST=ON
+- cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DUSE_LIBCXX=ON  -DSIMPLE_SOCKET_TEST=ON
 - make -j3
-- ./Simple-Socket-tester.run
+- ./Simple-Socket-Tester.run
       
 jobs:
   include:
@@ -73,11 +73,13 @@ jobs:
     script:
     - mkdir build-travis
     - cd build-travis
-    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=Debug -DSIMPLE_SOCKET_TEST=ON -DSIMPLE_SOCKET_COVERAGE=ON
-    - make Simple-Socket-Coverage
+    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=Debug -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_COVERAGE=ON
+    - make coverage
     after_success:
     - gem install coveralls-lcov
-    - coveralls-lcov Simple-Socket-Coverage.info.cleaned
+    - cat coverage.info.cleaned
+    - cat coverage/src/index.html
+    - coveralls-lcov coverage.info.cleaned
   
   - stage: "Legacy"
     addons:
@@ -109,5 +111,5 @@ jobs:
     script:
     - mkdir build-travis
     - cd build-travis
-    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF
+    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DUSE_LIBCXX=ON -DSIMPLE_SOCKET_EXAMPLES=OFF
   
