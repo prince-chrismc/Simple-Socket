@@ -287,7 +287,7 @@ TEST_CASE( "Receive a huge message", "[!mayfail][TCP]" )
    REQUIRE_THAT( httpResponse, Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) /* && Catch::Contains( "<title>Google</title>" ) */ );
 }
 
-TEST_CASE( "Sockets have remotes information", "[TCP]" )
+TEST_CASE( "Sockets have remotes information", "[!mayfail][TCP]" )
 {
    CActiveSocket socket;
 
@@ -318,6 +318,8 @@ TEST_CASE( "Sockets have remotes information", "[TCP]" )
       CAPTURE( buff );
       CAPTURE( socket.GetServerAddr() );
 
+      // This may fail because the DNS lookup intentionally does bandwidth throttling
+      // and returns different adress
       REQUIRE( googlesAddr == socket.GetServerAddr() );
    }
 
