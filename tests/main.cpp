@@ -133,6 +133,18 @@ TEST_CASE( "Establish connection to remote host", "[Open][TCP]" )
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
    }
 
+   SECTION( "Connection Timeout" )
+   {
+      CHECK_FALSE( socket.Open( "www.google.ca", 34867 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
+   }
+
+   SECTION( "Connection Refused" )
+   {
+      CHECK_FALSE( socket.Open( "127.0.0.1", 34867 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketConnectionRefused );
+   }
+
    SECTION( "To Google" )
    {
       REQUIRE( socket.Open( "www.google.ca", 80 ) );
