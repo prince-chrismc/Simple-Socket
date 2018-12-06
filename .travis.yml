@@ -77,6 +77,8 @@ jobs:
     - make coverage
     after_success:
     - gem install coveralls-lcov
+    - cat coverage.info.cleaned
+    - cat coverage/src/index.html
     - coveralls-lcov coverage.info.cleaned
   
   - stage: "Legacy"
