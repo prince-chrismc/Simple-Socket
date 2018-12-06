@@ -33,9 +33,7 @@ if(UNIX)
 
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_definitions(-D_CLANG)
-        if(USE_LIBCXX)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-        endif()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     endif()
 
     if(APPLE)
@@ -72,7 +70,6 @@ FILE(GLOB HTTP_SOURCE "examples/http/*")
 
 # Project Options
 OPTION(BUILD_SHARED_LIBS "Build Simple-Socket as a shared library." OFF)
-OPTION(USE_LIBCXX "Build using libc++ as the standard library when using clang." OFF)
 OPTION(SIMPLE_SOCKET_EXAMPLES "Build the examples" ON)
 OPTION(SIMPLE_SOCKET_TEST "Build the tester" OFF)
 OPTION(SIMPLE_SOCKET_COVERAGE "Build the tester" OFF)
@@ -115,21 +112,22 @@ endif()
 # Tester
 if(SIMPLE_SOCKET_TEST)
     ENABLE_TESTING()
-    ADD_EXECUTABLE(Simple-Socket-Tester tests/main.cpp)
-    TARGET_LINK_LIBRARIES(Simple-Socket-Tester Simple-Socket ${THREAD_LIB})
-    ADD_TEST(NAME Socket-Tester COMMAND Simple-Socket-Tester)
-endif()
 
-# Coverage
-if( SIMPLE_SOCKET_COVERAGE
-AND CMAKE_COMPILER_IS_GNUCXX
-AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER "7"
-AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "8" )
-    include(CodeCoverage)
-    APPEND_COVERAGE_COMPILER_FLAGS()
-    set(COVERAGE_LCOV_EXCLUDES '*tests/*' '*examples/*' '*7/*')
+    if( SIMPLE_SOCKET_COVERAGE
+    AND CMAKE_COMPILER_IS_GNUCXX AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER "7"
+    AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "8" )
+        include(CodeCoverage)
+        APPEND_COVERAGE_COMPILER_FLAGS()
 
-    ADD_EXECUTABLE(Simple-Socket-Coverage tests/main.cpp ${SIMPLE_SOCKET_SOURCES})
-    TARGET_LINK_LIBRARIES(Simple-Socket-Coverage ${THREAD_LIB} gcov)
-    SETUP_TARGET_FOR_COVERAGE_LCOV(NAME coverage EXECUTABLE Simple-Socket-Coverage)
+        set(COVERAGE_LCOV_EXCLUDES '*tests/*' '*examples/*' '*7/*')
+
+        ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp ${SIMPLE_SOCKET_SOURCES})
+        TARGET_LINK_LIBRARIES(Simple-Socket-tester ${THREAD_LIB} gcov)
+        SETUP_TARGET_FOR_COVERAGE_LCOV(NAME ${PROJECT_NAME}-Coverage EXECUTABLE Simple-Socket-tester)
+    else()
+        ADD_EXECUTABLE(Simple-Socket-tester tests/main.cpp)
+        TARGET_LINK_LIBRARIES(Simple-Socket-tester Simple-Socket ${THREAD_LIB})
+    endif()
+
+    ADD_TEST(NAME Socket-Tester COMMAND Simple-Socket-tester)
 endif()
