@@ -86,12 +86,11 @@ bool CActiveSocket::PreConnect( const char * pAddr, uint16 nPort )
    memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
    m_stServerSockaddr.sin_family = static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain );
 
-   addrinfo hints;
-   memset( &hints, 0, sizeof( hints ) );
+   addrinfo hints{ 0, 0, 0, 0, 0, nullptr, nullptr, nullptr };
    hints.ai_flags = AI_ALL;
    hints.ai_family = AF_INET;
    addrinfo* pResult = nullptr;
-   const int iErrorCode = getaddrinfo( pAddr, NULL, &hints, &pResult ); /// https://codereview.stackexchange.com/a/17866
+   const int iErrorCode = getaddrinfo( pAddr, nullptr, &hints, &pResult ); /// https://codereview.stackexchange.com/a/17866
 
    if( iErrorCode != 0 )
    {
