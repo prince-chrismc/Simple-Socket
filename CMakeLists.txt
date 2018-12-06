@@ -33,7 +33,9 @@ if(UNIX)
 
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_definitions(-D_CLANG)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        if(USE_LIBCXX)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        endif()
     endif()
 
     if(APPLE)
@@ -70,6 +72,7 @@ FILE(GLOB HTTP_SOURCE "examples/http/*")
 
 # Project Options
 OPTION(BUILD_SHARED_LIBS "Build Simple-Socket as a shared library." OFF)
+OPTION(USE_LIBCXX "Build using libc++ as the standard library when using clang." OFF)
 OPTION(SIMPLE_SOCKET_EXAMPLES "Build the examples" ON)
 OPTION(SIMPLE_SOCKET_TEST "Build the tester" OFF)
 OPTION(SIMPLE_SOCKET_COVERAGE "Build the tester" OFF)
