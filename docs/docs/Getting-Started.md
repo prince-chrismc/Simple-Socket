@@ -22,17 +22,13 @@ them with clear, concise set of methods which allow a developer to focus on the 
 The following code will connect to a DAYTIME server on port 13, query for the current time, and close the socket.
 
 ```cpp
-#include <string>
 #include "ActiveSocket.h" // Include header for active socket object definition
 
 constexpr const uint8* operator"" _byte( const char* text, std::size_t ) { return (const uint8 *)text; }
-auto WireToText = []( const uint8* text ) constexpr { return (const char*)text; };
 
 int main( int argc, char** argv )
 {
    CActiveSocket oSocket; // Instantiate active socket object (defaults to TCP).
-   std::string   sTime;
-
    oSocket.Initialize(); // Initialize our socket object
 
    if( oSocket.Open( "time-C.timefreq.bldrdoc.gov", 13 ) ) // Attempt connection to known remote server
@@ -40,9 +36,13 @@ int main( int argc, char** argv )
       if( oSocket.Send( "\n"_byte, 1 ) ) // Send a request the server for the current time.
       {
          if( oSocket.Receive( 48 ) ) // Receive response from the server.
+         {
             std::cout << oSocket.GetData() << std::endl;
+         }
          else
+         {
             std::cout << "Unable to obtain time!" << std::endl;
+         }
       }
    }
 
@@ -52,6 +52,7 @@ int main( int argc, char** argv )
 }
 
 ```
+
 _Note:_ This example requires C++1z to compile for an example which is C++03 compilant see [here](https://github.com/prince-chrismc/Simple-Socket/blob/d7b1c5d3a8436cdbc60793701ffed4f1f504c754/examples/QueryDayTime.cpp)
 
 You can see that the amount of code required to have an object perform network communciation is very small and simple.
@@ -66,7 +67,6 @@ As mentioned previously the passive socket ( `class CPassiveSocket` ) is used to
 For a practical test lets build an echo server. The server will listen on port 6789 an repsond back with what ever has been sent to the server.
 
 ```cpp
-
 #include <future>
 #include <chrono>
 #include "PassiveSocket.h" // Include header for passive socket object definition
@@ -108,6 +108,7 @@ int main( int argc, char** argv )
    return 1;
 }
 ```
+
 _Note:_ This example requires C++1z to compile for an example which is C++03 compilant see [here](https://github.com/prince-chrismc/Simple-Socket/blob/d7b1c5d3a8436cdbc60793701ffed4f1f504c754/examples/EchoServer.cpp)
 
 In this example the code is more involved because the `Accept()` on a blocking socket only returns with a new connection, in order to correctly close
