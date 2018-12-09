@@ -61,11 +61,7 @@ The simple socket library is comprised of two class which can be used to represe
 ## Examples
 When operating on a socket object most methods will return true or false make validation very clean, see [below](#Simple-Active-Socket) of details.
 
-There are two application specific examples provided by this repository:
-- an [HTTP client](https://github.com/prince-chrismc/clsocket/tree/master/examples/http)
-- a [DNS client](https://github.com/prince-chrismc/clsocket/tree/master/examples/dns)
-
-There are also general purpose examples for:
+There is also two optional mode examples
 - a [Multicast Sender/Receiver](https://github.com/prince-chrismc/Simple-Socket/blob/master/examples/Multicast.cpp)
 - an [Asynchronous Client/Server](https://github.com/prince-chrismc/Simple-Socket/blob/master/examples/RecvAsync.cpp)
 
@@ -82,7 +78,6 @@ them with clear, concise set of methods which allow a developer to focus on the 
 The following code will connect to a DAYTIME server on port 13, query for the current time, and close the socket.
 
 ```cpp
-#include <string>
 #include "ActiveSocket.h" // Include header for active socket object definition
 
 int main( int argc, char** argv )
@@ -93,10 +88,14 @@ int main( int argc, char** argv )
    {
       if( oSocket.Send( "\n" ) ) // Send a request the server for the current time.
       {
-         if( oSocket.Receive( 48 ) ) // Receive response from the server.
+         if( oSocket.Receive( 32 ) ) // Receive response from the server.
+         {
             std::cout << oSocket.GetData() << std::endl;
+         }
          else
+         {
             std::cout << "Unable to obtain time!" << std::endl;
+         }
       }
    }
 
