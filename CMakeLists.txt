@@ -67,9 +67,6 @@ FILE(GLOB SIMPLE_SOCKET_HEADERS "src/*.h")
 FILE(GLOB SIMPLE_SOCKET_SOURCES "src/*.cpp")
 LIST(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS}) # append to sources so that dependency checks work on headers
 
-FILE(GLOB DNS_SOURCE "examples/dns/*")
-FILE(GLOB HTTP_SOURCE "examples/http/*")
-
 # Project Options
 OPTION(BUILD_SHARED_LIBS "Build Simple-Socket as a shared library." OFF)
 OPTION(USE_LIBCXX "Build using libc++ as the standard library when using clang." OFF)
@@ -103,13 +100,6 @@ if(SIMPLE_SOCKET_EXAMPLES)
 
     ADD_EXECUTABLE(multicast-example examples/Multicast.cpp)
     TARGET_LINK_LIBRARIES(multicast-example Simple-Socket ${THREAD_LIB})
-
-    ADD_EXECUTABLE(dnsclient-example ${DNS_SOURCE})
-    TARGET_LINK_LIBRARIES(dnsclient-example Simple-Socket)
-
-    ADD_EXECUTABLE(httpclient-example examples/HttpClient.cpp ${HTTP_SOURCE})
-    target_include_directories(httpclient-example PRIVATE examples/http/)
-    TARGET_LINK_LIBRARIES(httpclient-example Simple-Socket)
 endif()
 
 # Tester
