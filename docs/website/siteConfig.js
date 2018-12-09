@@ -40,7 +40,7 @@ const siteConfig = {
   headerLinks: [
     {doc: 'Intro', label: 'Intro'},
     {doc: 'Getting-Started', label: 'Getting Started'},
-    {doc: 'CSimpleSocket', label: 'API'},
+    {doc: 'Core', label: 'API'},
     { href: 'https://github.com/prince-chrismc/Simple-Socket', label: 'GitHub' },
     {page: 'help', label: 'Help'},
     //{blog: true, label: 'Blog'},
