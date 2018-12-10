@@ -31,6 +31,7 @@ SOFTWARE.
 #include "PassiveSocket.h"
 
 #include <string_view>
+#include <future>
 
 #ifdef _WIN32
 #include <Ws2tcpip.h>
@@ -477,10 +478,86 @@ TEST_CASE( "Sockets are assign copyable", "[Socket=][TCP]" )
    REQUIRE_FALSE( beta.IsSocketValid() );
 }
 
-#ifndef _DARWIN
-#include <future>
+TEST_CASE( "Sockets can listen", "[Listen][TCP]" )
+{
+   CPassiveSocket socket;
 
-TEST_CASE( "Sockets can echo", "[Echo][UDP]" )
+   CHECK( socket.GetServerAddr() == "0.0.0.0" );
+   CHECK( socket.GetServerPort() == 0 );
+
+   SECTION( "Bad Address" )
+   {
+      CHECK_FALSE( socket.Listen( "132.354.134.546", 35345 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
+
+      CHECK( socket.GetServerAddr() == "0.0.0.0" );
+      CHECK( socket.GetServerPort() == 0 );
+   }
+
+   SECTION( "Unknow Host name" )
+   {
+      CHECK_FALSE( socket.Listen( "xyz.allphebties.cool", 34867 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
+
+      CHECK( socket.GetServerAddr() == "0.0.0.0" );
+      CHECK( socket.GetServerPort() == 0 );
+   }
+
+   SECTION( "No Handle" )
+   {
+      CHECK( socket.Close() );
+      CHECK_FALSE( socket.IsSocketValid() );
+      CHECK_FALSE( socket.Listen( "127.0.0.1", 80 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+
+      CHECK( socket.GetServerAddr() == "0.0.0.0" );
+      CHECK( socket.GetServerPort() == 0 );
+   }
+
+   SECTION("To Localhost")
+   {
+      REQUIRE( socket.Listen( "127.0.0.1", 35346 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.GetServerAddr() == "127.0.0.1" );
+      CHECK( socket.GetServerPort() == 35346 );
+   }
+
+   SECTION( "To Any Port" )
+   {
+      REQUIRE( socket.Listen( "127.0.0.1", 0 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.GetServerAddr() == "127.0.0.1" );
+      REQUIRE( socket.GetServerPort() > 0 );
+   }
+
+   SECTION( "To any Address" )
+   {
+      REQUIRE( socket.Listen( nullptr, 35345 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.GetServerAddr() == "0.0.0.0" );
+      REQUIRE( socket.GetServerPort() == 35345 );
+   }
+}
+
+TEST_CASE( "Sockets can hear", "[Listen][UDP]" )
+{
+   CPassiveSocket socket( CSimpleSocket::SocketTypeUdp );
+
+   CHECK( socket.GetServerAddr() == "0.0.0.0" );
+   CHECK( socket.GetServerPort() == 0 );
+
+   REQUIRE( socket.Listen( "127.0.0.1", 54683 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   CHECK( socket.GetServerAddr() == "127.0.0.1" );
+   CHECK( socket.GetServerPort() == 54683 );
+}
+
+#ifndef _DARWIN
+TEST_CASE( "Sockets can repeate", "[Listen][Open][UDP]" )
 {
    CPassiveSocket server( CSimpleSocket::SocketTypeUdp );
 
@@ -518,6 +595,9 @@ TEST_CASE( "Sockets can echo", "[Echo][UDP]" )
                                        CHECK( server.GetClientAddr() == socket.GetClientAddr() );
                                        CHECK( server.GetClientPort() == socket.GetClientPort() );
 
+                                       CHECK( server.GetServerAddr() == socket.GetServerAddr() );
+                                       CHECK( server.GetServerPort() == socket.GetServerPort() );
+
                                        REQUIRE( server.Send( buffer, server.GetBytesReceived() ) == TEXT_PACKET_LENGTH );
                                     }
    );
@@ -544,3 +624,79 @@ TEST_CASE( "Sockets can echo", "[Echo][UDP]" )
    REQUIRE_FALSE( socket.IsSocketValid() );
 }
 #endif
+
+TEST_CASE( "Sockets can echo", "[Listen][Open][TCP]" )
+{
+   CPassiveSocket server;
+
+   CHECK( server.GetServerAddr() == "0.0.0.0" );
+   CHECK( server.GetServerPort() == 0 );
+
+   CHECK( server.GetClientAddr() == "0.0.0.0" );
+   CHECK( server.GetClientPort() == 0 );
+
+   REQUIRE( server.Listen( "127.0.0.1", 35346 ) );
+   REQUIRE( server.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   CHECK( server.GetServerAddr() == "127.0.0.1" );
+   CHECK( server.GetServerPort() == 35346 );
+
+   CActiveSocket socket;
+
+   CHECK( socket.GetServerAddr() == "0.0.0.0" );
+   CHECK( socket.GetServerPort() == 0 );
+
+   REQUIRE( socket.Open( "127.0.0.1", 35346 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   CHECK( socket.GetServerAddr() == "127.0.0.1" );
+   CHECK( socket.GetServerPort() == 35346 );
+
+   CAPTURE( socket.GetClientAddr() );
+   CAPTURE( socket.GetClientPort() );
+
+   auto serverRespone = std::async( std::launch::async, [ & ]
+                                    {
+                                       std::unique_ptr<CActiveSocket> connection = server.Accept();
+                                       REQUIRE( connection != nullptr );
+
+                                       REQUIRE( connection->Receive( 1024 ) == TEXT_PACKET_LENGTH );
+
+                                       CHECK( connection->GetClientAddr() == socket.GetClientAddr() );
+                                       CHECK( connection->GetClientPort() == socket.GetClientPort() );
+
+                                       CHECK( connection->GetServerAddr() == server.GetServerAddr() );
+                                       CHECK( connection->GetServerPort() == server.GetServerPort() );
+
+                                       CHECK( server.GetClientAddr() == socket.GetClientAddr() );
+                                       CHECK( server.GetClientPort() == socket.GetClientPort() );
+
+                                       CHECK( server.GetServerAddr() == socket.GetServerAddr() );
+                                       CHECK( server.GetServerPort() == socket.GetServerPort() );
+
+                                       REQUIRE( connection->Send( (uint8*)connection->GetData().c_str(),
+                                                connection->GetBytesReceived() ) == TEXT_PACKET_LENGTH );
+                                    }
+   );
+
+   REQUIRE( socket.Send( TEXT_PACKET, TEXT_PACKET_LENGTH ) == TEXT_PACKET_LENGTH );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   REQUIRE( socket.Receive( 1024 ) == TEXT_PACKET_LENGTH );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   CHECK( socket.GetServerAddr() == "127.0.0.1" );
+   CHECK( socket.GetServerPort() == 35346 );
+
+   const std::string actualResponse = socket.GetData();
+   const std::string expectedResponse( reinterpret_cast<const char*>( TEXT_PACKET ), TEXT_PACKET_LENGTH );
+
+   CAPTURE( actualResponse );
+
+   REQUIRE( actualResponse.length() == TEXT_PACKET_LENGTH );
+   REQUIRE_THAT( actualResponse, Catch::StartsWith( expectedResponse ) );
+
+   REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
+   REQUIRE( socket.Close() );
+   REQUIRE_FALSE( socket.IsSocketValid() );
+}

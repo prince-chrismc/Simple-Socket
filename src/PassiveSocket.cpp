@@ -81,19 +81,15 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 #endif
 
    memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
-   m_stServerSockaddr.sin_family = AF_INET;
-   m_stServerSockaddr.sin_port = htons( nPort );
 
-   //--------------------------------------------------------------------------
-   // If no IP Address (interface ethn) is supplied, then bind to all interface
-   // else bind to specified interface.
-   //--------------------------------------------------------------------------
-   if( ( pAddr == NULL ) || ( !strlen( pAddr ) ) )
+   if( ( pAddr == nullptr ) || ( !strlen( pAddr ) ) )
    {
+      // bind to all interfaces
       m_stServerSockaddr.sin_addr.s_addr = htonl( INADDR_ANY );
    }
    else
    {
+      // lookup specified address
       switch( inet_pton( m_nSocketDomain, pAddr, &m_stServerSockaddr.sin_addr ) )
       {
       case -1: TranslateSocketError();                 return false;
@@ -104,6 +100,9 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
          return false;
       }
    }
+
+   m_stServerSockaddr.sin_family = AF_INET;
+   m_stServerSockaddr.sin_port = htons( nPort );
 
    m_timer.SetStartTime();
 
@@ -132,6 +131,8 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 
    if( !bRetVal )
    {
+      m_stServerSockaddr.sin_port = htons( 0 );
+      m_stServerSockaddr.sin_addr.s_addr = htonl( INADDR_ANY );
       const CSocketError err = GetSocketError();
       Close();
       SetSocketError( err );
@@ -140,7 +141,7 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
    {
       socklen_t nSockAddrLen( SOCKET_ADDR_IN_SIZE );
       memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
-      getsockname( m_socket, ( struct sockaddr * )&m_stServerSockaddr, &nSockAddrLen );
+      GETSOCKNAME( m_socket, &m_stServerSockaddr, &nSockAddrLen );
    }
 
    return bRetVal;
