@@ -7,8 +7,11 @@ platform _and_ protocol independent manner.
 
 ### Table of Contents
 - Active Socket
+   - Open
+- Passive Socket
+   - Listen
+   - Accept
 - Functionality
-   - Open # Active Only
    - Receive
    - Get Data
    - Shutdown
@@ -34,9 +37,7 @@ platform _and_ protocol independent manner.
 class CActiveSocket : public CSimpleSocket
 ```
 
-## Functionality
 ### Open
-> Note: This function is only available on `CActiveSocket`
 ```cpp
 /// Established a connection to the address specified by pAddr.
 /// Connection-based protocol sockets (CSocket::SocketTypeTcp) may
@@ -49,6 +50,56 @@ class CActiveSocket : public CSimpleSocket
 virtual bool Open( const char *pAddr, uint16 nPort );
 ```
 
+## Passive Socket
+```cpp
+/// Provides a platform independent class to create a passive socket.
+/// A passive socket is used to create a "listening" socket.  This type
+/// of object would be used when an application needs to wait for
+/// inbound connections.  Support for CSimpleSocket::SocketTypeTcp,
+/// CSimpleSocket::SocketTypeUdp, and CSimpleSocket::SocketTypeRaw is handled
+/// in a similar fashion.  The big difference is that the method
+/// CPassiveSocket::Accept should not be called on the latter two socket
+/// types.
+class CPassiveSocket : public CSimpleSocket
+```
+
+### Listen
+```cpp
+/// Create a listening socket at local ip address 'x.x.x.x' or 'localhost'
+/// if pAddr is NULL or empty, use ANY_ADDR
+/// if nPort is 0, use any open port.
+/// NOTE: This operation can only be called once!
+///
+///  @param pAddr specifies the IP address on which to listen.
+///  @param nPort specifies the port on which to listen.
+///  @param nConnectionBacklog specifies connection queue backlog (default 30,000)
+///  @return true if a listening socket was created.
+///      If not successful, the false is returned and one of the following error
+///      conditions will be set: CPassiveSocket::SocketAddressInUse, CPassiveSocket::SocketProtocolError,
+///      CPassiveSocket::SocketInvalidSocket.  The following socket errors are for Linux/Unix
+///      derived systems only: CPassiveSocket::SocketInvalidSocketBuffer
+bool Listen( const char *pAddr, uint16 nPort, int32 nConnectionBacklog = 30000 );
+```
+
+### Accept
+```cpp
+/// Extracts the first connection request on the queue of pending
+/// connections and creates a newly connected socket.  Used with
+/// CSocketType CSimpleSocket::SocketTypeTcp.  It is the responsibility of
+/// the caller to delete the returned object when finished.
+///  @template SmartPtr can be either std::shared_ptr or std::unique_ptr
+///  @template SocketBase can be either CSimpleSocket or CActiveSocket
+///  @return if successful a pointer to a newly created CActiveSocket object
+///          will be returned and the internal error condition of the CPassiveSocket
+///          object will be CPassiveSocket::SocketSuccess.  If an error condition was encountered
+///          the nullptr will be returned and one of the following error conditions will be set:
+///    CPassiveSocket::SocketEwouldblock, CPassiveSocket::SocketInvalidSocket,
+///    CPassiveSocket::SocketConnectionAborted, CPassiveSocket::SocketInterrupted
+///    CPassiveSocket::SocketProtocolError, CPassiveSocket::SocketFirewallError
+auto Accept()-> std::unique_ptr<CActiveSocket>;
+```
+
+## Functionality
 ### Receive
 The internal buffer is only valid until the next call to Receive() returns, or until the object goes out of scope.
 ```cpp
