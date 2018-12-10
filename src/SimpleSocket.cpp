@@ -1151,6 +1151,8 @@ void CSimpleSocket::TranslateSocketError( void )
       SetSocketError( CSimpleSocket::SocketConnectionAborted );
       break;
    case EINVAL:
+      SetSocketError( SocketInvalidOperation );
+      break;
    case EPROTO:
       SetSocketError( CSimpleSocket::SocketProtocolError );
       break;
@@ -1183,9 +1185,11 @@ void CSimpleSocket::TranslateSocketError( void )
    case WSAEINTR:
       SetSocketError( CSimpleSocket::SocketInterrupted );
       break;
+   case WSAEINVAL:
+      SetSocketError( SocketInvalidOperation );
+      break;
    case WSAEACCES:
    case WSAEAFNOSUPPORT:
-   case WSAEINVAL:
    case WSAEMFILE:
    case WSAENOBUFS:
    case WSAEPROTONOSUPPORT:
@@ -1274,6 +1278,8 @@ std::string CSimpleSocket::DescribeError( CSocketError err )
       return "Address already in use.";
    case CSimpleSocket::SocketInvalidPointer:
       return "Pointer type supplied as argument is invalid.";
+   case CSimpleSocket::SocketInvalidOperation:
+      return "An invalid argument was provide for the requested action.";
    case CSimpleSocket::SocketEunknown:
       return "Unknown error";
    default:

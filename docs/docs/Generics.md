@@ -6,18 +6,14 @@ General Defitions for the usage of and interaction with sockets.
 
 ### Table of Contents
 - Functions
-   - 
+   - length
+   - DescribeError
 - Enums
    - CShutdownMode
    - CSocketType
    - CSocketError
 
 ## Functions
-```cpp
-// Easily express C string in the data type for Send
-inline auto operator"" _bytes( const char* text, std::size_t ) { return reinterpret_cast<const uint8 *>(text); }
-```
-
 ```cpp
 // Calculates the length of a C string at compilation
 auto constexpr length( const char* str )->long { return *str ? 1 + length( str + 1 ) : 0; }
@@ -74,4 +70,5 @@ SocketInvalidSocketBuffer | The receive buffer point outside the process's addre
 SocketConnectionReset     | Connection was forcibly closed by the remote host.
 SocketAddressInUse        | Address already in use.
 SocketInvalidPointer      | Pointer type supplied as argument is invalid.
+SocketInvalidOperation    | An invalid argument was provide for the requested action.
 SocketEunknown            | Unknown error please report to prince.chrismc@gmail.com

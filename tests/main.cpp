@@ -567,7 +567,7 @@ TEST_CASE( "Sockets can hear", "[Listen][UDP]" )
       CHECK( socket.GetServerPort() == 54683 );
 
       CHECK_FALSE( socket.Listen( nullptr, 45673 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidOperation );
 
       CHECK( socket.GetServerAddr() == "0.0.0.0" );
       CHECK( socket.GetServerPort() == 0 );
