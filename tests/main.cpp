@@ -697,6 +697,9 @@ TEST_CASE( "Sockets can echo", "[Listen][Open][TCP]" )
    REQUIRE_THAT( actualResponse, Catch::StartsWith( expectedResponse ) );
 
    REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
+   CAPTURE( socket.DescribeError() );
+   int error = int{errno};
+   CAPTURE( error );
    REQUIRE( socket.Close() );
    REQUIRE_FALSE( socket.IsSocketValid() );
 }
