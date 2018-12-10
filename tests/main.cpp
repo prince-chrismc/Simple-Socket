@@ -696,10 +696,11 @@ TEST_CASE( "Sockets can echo", "[Listen][Open][TCP]" )
    REQUIRE( actualResponse.length() == TEXT_PACKET_LENGTH );
    REQUIRE_THAT( actualResponse, Catch::StartsWith( expectedResponse ) );
 
-   CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+   bool retval = socket.Shutdown( CSimpleSocket::Both );
    CAPTURE( socket.DescribeError() );
    int error = int{errno};
    CAPTURE( error );
+   CHECK( retval );
    REQUIRE( socket.Close() );
    REQUIRE_FALSE( socket.IsSocketValid() );
 }
