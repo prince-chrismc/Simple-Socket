@@ -659,7 +659,11 @@ bool CSimpleSocket::Shutdown( CShutdownMode nShutdown )
    if( shutdown( m_socket, nShutdown ) == SocketError )
    {
       TranslateSocketError();
-      return false;
+
+      // Shutdown failed because there was no connection.
+      // This is typically cause by a the remote sending FIN
+      // before the local side has finished.
+      return ( m_socketErrno == SocketNotconnected );
    }
 
    return true;
