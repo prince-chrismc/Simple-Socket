@@ -549,11 +549,35 @@ TEST_CASE( "Sockets can hear", "[Listen][UDP]" )
    CHECK( socket.GetServerAddr() == "0.0.0.0" );
    CHECK( socket.GetServerPort() == 0 );
 
-   REQUIRE( socket.Listen( "127.0.0.1", 54683 ) );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   SECTION("Listen on port")
+   {
+      REQUIRE( socket.Listen( "127.0.0.1", 54683 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   CHECK( socket.GetServerAddr() == "127.0.0.1" );
-   CHECK( socket.GetServerPort() == 54683 );
+      CHECK( socket.GetServerAddr() == "127.0.0.1" );
+      CHECK( socket.GetServerPort() == 54683 );
+   }
+
+   SECTION( "Double Listen" )
+   {
+      REQUIRE( socket.Listen( "127.0.0.1", 54683 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.GetServerAddr() == "127.0.0.1" );
+      CHECK( socket.GetServerPort() == 54683 );
+
+      CHECK_FALSE( socket.Listen( nullptr, 45673 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+
+      CHECK( socket.GetServerAddr() == "0.0.0.0" );
+      CHECK( socket.GetServerPort() == 0 );
+   }
+
+   SECTION("Can not accept")
+   {
+      REQUIRE( socket.Accept() == nullptr );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+   }
 }
 
 #ifndef _DARWIN
@@ -625,7 +649,7 @@ TEST_CASE( "Sockets can repeate", "[Listen][Open][UDP]" )
 }
 #endif
 
-TEST_CASE( "Sockets can echo", "[Listen][Open][TCP]" )
+TEST_CASE( "Sockets can echo", "[Listen][Open][Accept][TCP]" )
 {
    CPassiveSocket server;
 

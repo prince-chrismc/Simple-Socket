@@ -85,7 +85,8 @@ using int64  = long long;
    #define SHUT_RD                0
    #define SHUT_WR                1
    #define SHUT_RDWR              2
-   #define ACCEPT(a,b,c)          accept(a,b,c)
+   #define ACCEPT(a,b,c)          accept(a,(sockaddr *)b,c)
+   #define BIND(a,b,c)            bind(a,(sockaddr *)b,c)
    #define CONNECT(a,b,c)         connect(a,(sockaddr *)b,c)
    #define CLOSE(a)               closesocket(a)
    #define READ(a,b,c)            _read(a,b,c)
@@ -110,7 +111,8 @@ using int64  = long long;
 
 #elif defined(_LINUX) || defined(_DARWIN)
 
-   #define ACCEPT(a,b,c)          accept(a,b,c)
+   #define ACCEPT(a,b,c)          accept(a,(sockaddr *)b,c)
+   #define BIND(a,b,c)            bind(a,(sockaddr *)b,c)
    #define CONNECT(a,b,c)         connect(a,(sockaddr *)b,c)
    #define CLOSE(a)               close(a)
    #define READ(a,b,c)            pread(a,b,c,0)

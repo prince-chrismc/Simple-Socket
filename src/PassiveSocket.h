@@ -76,7 +76,9 @@ public:
    auto Accept()-> std::unique_ptr<CActiveSocket>;
 
    /// Create a listening socket at local ip address 'x.x.x.x' or 'localhost'
-   /// if pAddr is NULL on port nPort.
+   /// if pAddr is NULL or empty, use ANY_ADDR
+   /// if nPort is 0, use any open port.
+   /// NOTE: This operation can only be called once!
    ///
    ///  @param pAddr specifies the IP address on which to listen.
    ///  @param nPort specifies the port on which to listen.

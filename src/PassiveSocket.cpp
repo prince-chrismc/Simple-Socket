@@ -74,15 +74,13 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
    // of setting in a TIMED_WAIT state.
    //--------------------------------------------------------------------------
    SETSOCKOPT( m_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&nReuse, sizeof( int32 ) );
-   if(m_nSocketType == SocketTypeTcp)
+   if( m_nSocketType == SocketTypeTcp )
    {
       SETSOCKOPT( m_socket, IPPROTO_TCP, IP_TOS, &nReuse, sizeof( int32 ) );
    }
 #endif
 
-   memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
-
-   if( ( pAddr == nullptr ) || ( !strlen( pAddr ) ) )
+   if( ( pAddr == nullptr ) || ( strlen( pAddr ) == 0 ) )
    {
       // bind to all interfaces
       m_stServerSockaddr.sin_addr.s_addr = htonl( INADDR_ANY );
@@ -94,10 +92,7 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
       {
       case -1: TranslateSocketError();                 return false;
       case 0:  SetSocketError( SocketInvalidAddress ); return false;
-      case 1:  break; // Success
-      default:
-         SetSocketError( SocketEunknown );
-         return false;
+      default: break; // Otherwise Success
       }
    }
 
@@ -106,10 +101,8 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 
    m_timer.SetStartTime();
 
-   //--------------------------------------------------------------------------
-   // Bind to the specified port
-   //--------------------------------------------------------------------------
-   if( bind( m_socket, ( struct sockaddr * )&m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) != CSimpleSocket::SocketError )
+   // Bind to the specified addr and port
+   if( BIND( m_socket, &m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) != CSimpleSocket::SocketError )
    {
       if( m_nSocketType == CSimpleSocket::SocketTypeTcp )
       {
@@ -123,12 +116,9 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 
    m_timer.SetEndTime();
 
-   //--------------------------------------------------------------------------
-   // If there was a socket error then close the socket to clean out the
-   // connection in the backlog.
-   //--------------------------------------------------------------------------
    TranslateSocketError();
 
+   // If there was a socket error then close the socket to clean out the connection in the backlog.
    if( !bRetVal )
    {
       m_stServerSockaddr.sin_port = htons( 0 );
@@ -161,46 +151,42 @@ auto CPassiveSocket::Accept() -> std::unique_ptr<CActiveSocket>
    }
 
    auto pClientSocket = std::make_unique<CActiveSocket>();
+   CSocketError socketErrno;
 
-   if( pClientSocket != nullptr )
+   m_timer.SetStartTime();
+
+   do
    {
-      CSocketError socketErrno = SocketSuccess;
+      errno = 0;
+      socklen_t nSockAddrLen( SOCKET_ADDR_IN_SIZE );
+      const SOCKET socket = ACCEPT( m_socket, &m_stClientSockaddr, &nSockAddrLen ); // Wait for incoming connection.
 
-      m_timer.SetStartTime();
-
-      do
+      if( socket != INVALID_SOCKET )
       {
-         errno = 0;
-         socklen_t nSockAddrLen( SOCKET_ADDR_IN_SIZE );
-         const SOCKET socket = accept( m_socket, ( struct sockaddr * )&m_stClientSockaddr, &nSockAddrLen ); // Wait for incoming connection.
+         pClientSocket->SetSocketHandle( socket );
+         pClientSocket->TranslateSocketError();
+         socketErrno = pClientSocket->GetSocketError();
 
-         if( socket != INVALID_SOCKET )
-         {
-            pClientSocket->SetSocketHandle( socket );
-            pClientSocket->TranslateSocketError();
-            socketErrno = pClientSocket->GetSocketError();
+         // Store client and server IP and port information for this connection.
+         GETPEERNAME( m_socket, &pClientSocket->m_stClientSockaddr, &nSockAddrLen );
+         memcpy( &pClientSocket->m_stClientSockaddr, &m_stClientSockaddr, SOCKET_ADDR_IN_SIZE );
 
-            // Store client and server IP and port information for this connection.
-            getpeername( m_socket, ( struct sockaddr * )&pClientSocket->m_stClientSockaddr, &nSockAddrLen );
-            memcpy( &pClientSocket->m_stClientSockaddr, &m_stClientSockaddr, SOCKET_ADDR_IN_SIZE );
-
-            memset( &pClientSocket->m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
-            getsockname( m_socket, ( struct sockaddr * )&pClientSocket->m_stServerSockaddr, &nSockAddrLen );
-         }
-         else
-         {
-            TranslateSocketError();
-            socketErrno = GetSocketError();
-         }
-
-      } while( socketErrno == CSimpleSocket::SocketInterrupted );
-
-      m_timer.SetEndTime();
-
-      if( socketErrno != CSimpleSocket::SocketSuccess )
-      {
-         pClientSocket = nullptr;
+         GETSOCKNAME( m_socket, &pClientSocket->m_stServerSockaddr, &nSockAddrLen );
       }
+      else
+      {
+         TranslateSocketError();
+         socketErrno = GetSocketError();
+      }
+
+   } while( socketErrno == CSimpleSocket::SocketInterrupted );
+
+   m_timer.SetEndTime();
+
+   if( socketErrno != CSimpleSocket::SocketSuccess )
+   {
+      pClientSocket = nullptr;
    }
+
    return pClientSocket;
 }
