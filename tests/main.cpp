@@ -296,7 +296,7 @@ TEST_CASE( "Receive a huge message", "[!mayfail][TCP]" )
 
    // This list of values are ones I've seen and make sence based on the OS
    // And network enviroment... DISCLAIMER: It's very subjective!
-   const auto accpetedValues = {
+   auto accpetedValues = {
       8420, // MAX
       1418, 2836, // UBUNTU
       1368, 2736, // MAC
