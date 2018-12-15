@@ -722,4 +722,8 @@ TEST_CASE( "Sockets can echo", "[Listen][Open][Accept][TCP]" )
    REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
    REQUIRE( socket.Close() );
    REQUIRE_FALSE( socket.IsSocketValid() );
+
+   REQUIRE( server.Shutdown( CSimpleSocket::Both ) );
+   REQUIRE( server.Close() );
+   REQUIRE_FALSE( server.IsSocketValid() );
 }
