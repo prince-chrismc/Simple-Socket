@@ -78,6 +78,7 @@ jobs:
     after_success:
     - gem install coveralls-lcov
     - coveralls-lcov coverage.info.cleaned
+    - curl -X PURGE https://camo.githubusercontent.com/17f413e2bbe682cd351ce70ca2f36765393e99f5/68747470733a2f2f636f766572616c6c732e696f2f7265706f732f6769746875622f7072696e63652d63687269736d632f53696d706c652d536f636b65742f62616467652e7376673f6272616e63683d6d6173746572
   
   - stage: "Legacy"
     addons:
