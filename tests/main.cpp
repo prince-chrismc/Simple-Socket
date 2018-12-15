@@ -539,6 +539,57 @@ TEST_CASE( "Sockets can listen", "[Listen][TCP]" )
       REQUIRE( socket.GetServerAddr() == "0.0.0.0" );
       REQUIRE( socket.GetServerPort() == 35345 );
    }
+
+   SECTION( "Double Listen from same socket" )
+   {
+      REQUIRE( socket.Listen( "127.0.0.1", 54683 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.GetServerAddr() == "127.0.0.1" );
+      CHECK( socket.GetServerPort() == 54683 );
+
+      CHECK_FALSE( socket.Listen( nullptr, 45673 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidOperation );
+
+      CHECK( socket.GetServerAddr() == "0.0.0.0" );
+      CHECK( socket.GetServerPort() == 0 );
+   }
+
+   SECTION( "Second Listen one the same ip and port after close" )
+   {
+      REQUIRE( socket.Listen( "127.0.0.1", 54683 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.GetServerAddr() == "127.0.0.1" );
+      CHECK( socket.GetServerPort() == 54683 );
+
+      REQUIRE( socket.Close() );
+
+      CPassiveSocket secondSocket;
+
+      CHECK( secondSocket.Listen( "127.0.0.1", 54683 ) );
+      CHECK( secondSocket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( secondSocket.GetServerAddr() == "127.0.0.1" );
+      CHECK( secondSocket.GetServerPort() == 54683 );
+   }
+
+   SECTION( "Double Listen one the same ip and port" )
+   {
+      REQUIRE( socket.Listen( "127.0.0.1", 54683 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.GetServerAddr() == "127.0.0.1" );
+      CHECK( socket.GetServerPort() == 54683 );
+
+      CPassiveSocket duplicateSocket;
+
+      CHECK_FALSE( duplicateSocket.Listen( "127.0.0.1", 54683 ) );
+      CHECK( duplicateSocket.GetSocketError() == CSimpleSocket::SocketAddressInUse );
+
+      CHECK( duplicateSocket.GetServerAddr() == "0.0.0.0" );
+      CHECK( duplicateSocket.GetServerPort() == 0 );
+   }
 }
 
 TEST_CASE( "Sockets can hear", "[Listen][UDP]" )
@@ -557,7 +608,7 @@ TEST_CASE( "Sockets can hear", "[Listen][UDP]" )
       CHECK( socket.GetServerPort() == 54683 );
    }
 
-   SECTION( "Double Listen" )
+   SECTION( "Double Listen from same socket" )
    {
       REQUIRE( socket.Listen( "127.0.0.1", 54683 ) );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -572,7 +623,43 @@ TEST_CASE( "Sockets can hear", "[Listen][UDP]" )
       CHECK( socket.GetServerPort() == 0 );
    }
 
-   SECTION("Can not accept")
+   SECTION( "Second Listen one the same ip and port after close" )
+   {
+      REQUIRE( socket.Listen( "127.0.0.1", 54683 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.GetServerAddr() == "127.0.0.1" );
+      CHECK( socket.GetServerPort() == 54683 );
+
+      REQUIRE( socket.Close() );
+
+      CPassiveSocket secondSocket;
+
+      CHECK( secondSocket.Listen( "127.0.0.1", 54683 ) );
+      CHECK( secondSocket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( secondSocket.GetServerAddr() == "127.0.0.1" );
+      CHECK( secondSocket.GetServerPort() == 54683 );
+   }
+
+   SECTION( "Double Listen one the same ip and port" )
+   {
+      REQUIRE( socket.Listen( "127.0.0.1", 54683 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.GetServerAddr() == "127.0.0.1" );
+      CHECK( socket.GetServerPort() == 54683 );
+
+      CPassiveSocket duplicateSocket;
+
+      CHECK( duplicateSocket.Listen( "127.0.0.1", 54683 ) );
+      CHECK( duplicateSocket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( duplicateSocket.GetServerAddr() == "127.0.0.1" );
+      CHECK( duplicateSocket.GetServerPort() == 54683 );
+   }
+
+   SECTION("Can not accept cause it's UDP")
    {
       REQUIRE( socket.Accept() == nullptr );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
