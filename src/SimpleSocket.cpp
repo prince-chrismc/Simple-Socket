@@ -818,11 +818,7 @@ bool CSimpleSocket::SetSendTimeout( int32 nSendTimeoutSec, int32 nSendTimeoutUse
    m_stSendTimeout.tv_sec = nSendTimeoutSec;
    m_stSendTimeout.tv_usec = nSendTimeoutUsec;
 
-   //--------------------------------------------------------------------------
-   // Sanity check to make sure the options are supported!
-   //--------------------------------------------------------------------------
-   if( SETSOCKOPT( m_socket, SOL_SOCKET, SO_SNDTIMEO, &m_stSendTimeout,
-       sizeof( struct timeval ) ) == CSimpleSocket::SocketError )
+   if( SETSOCKOPT( m_socket, SOL_SOCKET, SO_SNDTIMEO, &m_stSendTimeout, sizeof( struct timeval ) ) == CSimpleSocket::SocketError )
    {
       bRetVal = false;
       TranslateSocketError();
@@ -840,7 +836,11 @@ bool CSimpleSocket::SetSendTimeout( int32 nSendTimeoutSec, int32 nSendTimeoutUse
 bool CSimpleSocket::SetOptionReuseAddr()
 {
    int32 nReuse = IPTOS_LOWDELAY;
-   const bool bRetVal = ( SETSOCKOPT( m_socket, SOL_SOCKET, SO_REUSEADDR, &nReuse, sizeof( int32 ) ) == SocketSuccess );
+   bool bRetVal = ( SETSOCKOPT( m_socket, SOL_SOCKET, SO_REUSEADDR, &nReuse, sizeof( int32 ) ) == SocketSuccess );
+   if( bRetVal && m_nSocketType == SocketTypeTcp )
+   {
+      bRetVal = ( SETSOCKOPT( m_socket, IPPROTO_TCP, IP_TOS, &nReuse, sizeof( int32 ) ) == SocketSuccess );
+   }
    TranslateSocketError();
 
    return bRetVal;

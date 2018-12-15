@@ -55,28 +55,19 @@ CPassiveSocket::CPassiveSocket( CSocketType nType ) : CSimpleSocket( nType )
 {
 }
 
-//------------------------------------------------------------------------------
-//
-// Listen() -
-//
-//------------------------------------------------------------------------------
 bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionBacklog )
 {
    bool           bRetVal = false;
 
 #ifdef _LINUX
-   int32          nReuse;
-   nReuse = IPTOS_LOWDELAY;
-
    //--------------------------------------------------------------------------
-   // Set the following socket option SO_REUSEADDR.  This will allow the file
+   // Set the following socket option SO_REUSEADDR. This will allow the file
    // descriptor to be reused immediately after the socket is closed instead
    // of setting in a TIMED_WAIT state.
    //--------------------------------------------------------------------------
-   SETSOCKOPT( m_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&nReuse, sizeof( int32 ) );
-   if( m_nSocketType == SocketTypeTcp )
+   if( ! SetOptionReuseAddr() )
    {
-      SETSOCKOPT( m_socket, IPPROTO_TCP, IP_TOS, &nReuse, sizeof( int32 ) );
+      return false;
    }
 #endif
 
@@ -137,11 +128,6 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
    return bRetVal;
 }
 
-//------------------------------------------------------------------------------
-//
-// Accept() -
-//
-//------------------------------------------------------------------------------
 auto CPassiveSocket::Accept() -> std::unique_ptr<CActiveSocket>
 {
    if( m_nSocketType != CSimpleSocket::SocketTypeTcp )
