@@ -874,7 +874,7 @@ bool CSimpleSocket::SetOptionLinger( bool bEnable, uint16 nTime )
 {
    bool bRetVal = false;
 
-   m_stLinger.l_onoff = ( bEnable == true ) ? 1 : 0;
+   m_stLinger.l_onoff = ( bEnable ) ? 1 : 0;
    m_stLinger.l_linger = nTime;
 
    if( SETSOCKOPT( m_socket, SOL_SOCKET, SO_LINGER, &m_stLinger, sizeof( m_stLinger ) ) == 0 )
@@ -1165,6 +1165,9 @@ void CSimpleSocket::TranslateSocketError( void )
    case ECONNRESET:
    case ENOPROTOOPT:
       SetSocketError( CSimpleSocket::SocketConnectionReset );
+      break;
+   case EADDRINUSE:
+      SetSocketError( CSimpleSocket::SocketAddressInUse );
       break;
    default:
       SetSocketError( CSimpleSocket::SocketEunknown );

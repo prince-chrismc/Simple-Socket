@@ -292,7 +292,7 @@ TEST_CASE( "Receive a huge message", "[!mayfail][TCP]" )
    auto accpetedValues = { 8420,       // MAX
                            1418, 2836, // UBUNTU
                            1368, 2736, // MAC
-                           7090        // TRAVIS_CI
+                           7040, 7090  // TRAVIS_CI
                          };
    CHECK_THAT( accpetedValues, Catch::VectorContains( socket.GetBytesReceived() ) );
 
