@@ -25,7 +25,7 @@ This library supports:
 * Multiple IO modes
    * sychronious
    * asychronious
-* Supports TCP Streams, UDP Datagrams, Raw Sockets
+* Supports TCP Streams, UDP Datagrams, ~~Raw Sockets~~
 * Thread Safe and Signal Safe
 
 The library's original release notes can be found [here](https://github.com/DFHack/clsocket/blob/master/ReleaseNotes) for more details.
