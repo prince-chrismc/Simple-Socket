@@ -42,20 +42,18 @@
  *----------------------------------------------------------------------------*/
 
 #include "PassiveSocket.h"
+
 #include <memory>
 
 #ifdef _WIN32
 #include <Ws2tcpip.h>
-#elif defined(_LINUX) || defined (_DARWIN)
+#elif defined( _LINUX ) || defined( _DARWIN )
 #include <netinet/ip.h>
 #endif
 
+CPassiveSocket::CPassiveSocket( CSocketType nType ) : CSimpleSocket( nType ) {}
 
-CPassiveSocket::CPassiveSocket( CSocketType nType ) : CSimpleSocket( nType )
-{
-}
-
-bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionBacklog )
+bool CPassiveSocket::Listen( const char* pAddr, uint16 nPort, int32 nConnectionBacklog )
 {
 #ifdef _LINUX
    //--------------------------------------------------------------------------
@@ -63,13 +61,13 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
    // descriptor to be reused immediately after the socket is closed instead
    // of setting in a TIMED_WAIT state.
    //--------------------------------------------------------------------------
-   if( ! SetOptionReuseAddr() )
+   if ( !SetOptionReuseAddr() )
    {
       return false;
    }
 #endif
 
-   if( ( pAddr == nullptr ) || ( strlen( pAddr ) == 0 ) )
+   if ( ( pAddr == nullptr ) || ( strlen( pAddr ) == 0 ) )
    {
       // bind to all interfaces
       m_stServerSockaddr.sin_addr.s_addr = htonl( INADDR_ANY );
@@ -77,7 +75,7 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
    else
    {
       // lookup specified address
-      switch( inet_pton( m_nSocketDomain, pAddr, &m_stServerSockaddr.sin_addr ) )
+      switch ( inet_pton( m_nSocketDomain, pAddr, &m_stServerSockaddr.sin_addr ) )
       {
       case SocketError:
          TranslateSocketError();
@@ -109,7 +107,7 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
    TranslateSocketError();
 
    // If there was a socket error then close the socket to clean out the connection in the backlog.
-   if( !bRetVal )
+   if ( !bRetVal )
    {
       m_stServerSockaddr.sin_port = htons( 0 );
       m_stServerSockaddr.sin_addr.s_addr = htonl( INADDR_ANY );
@@ -129,7 +127,7 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
 
 auto CPassiveSocket::Accept() -> std::unique_ptr<CActiveSocket>
 {
-   if( m_nSocketType != CSimpleSocket::SocketTypeTcp )
+   if ( m_nSocketType != CSimpleSocket::SocketTypeTcp )
    {
       SetSocketError( CSimpleSocket::SocketProtocolError );
       return nullptr;
@@ -144,9 +142,9 @@ auto CPassiveSocket::Accept() -> std::unique_ptr<CActiveSocket>
    {
       errno = 0;
       socklen_t nSockAddrLen( SOCKET_ADDR_IN_SIZE );
-      const SOCKET socket = ACCEPT( m_socket, &m_stClientSockaddr, &nSockAddrLen ); // Wait for incoming connection.
+      const SOCKET socket = ACCEPT( m_socket, &m_stClientSockaddr, &nSockAddrLen );   // Wait for incoming connection.
 
-      if( socket != INVALID_SOCKET )
+      if ( socket != INVALID_SOCKET )
       {
          pClientSocket->SetSocketHandle( socket );
          pClientSocket->TranslateSocketError();
@@ -164,11 +162,11 @@ auto CPassiveSocket::Accept() -> std::unique_ptr<CActiveSocket>
          socketErrno = GetSocketError();
       }
 
-   } while( socketErrno == CSimpleSocket::SocketInterrupted );
+   } while ( socketErrno == CSimpleSocket::SocketInterrupted );
 
    m_timer.SetEndTime();
 
-   if( socketErrno != CSimpleSocket::SocketSuccess )
+   if ( socketErrno != CSimpleSocket::SocketSuccess )
    {
       pClientSocket = nullptr;
    }

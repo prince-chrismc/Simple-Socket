@@ -27,23 +27,27 @@ SOFTWARE.
 #pragma once
 #include <chrono>
 
+using std::chrono::duration_cast;
+using std::chrono::high_resolution_clock;
+
 class CStatTimer
 {
-   using TimePoint = decltype( std::chrono::high_resolution_clock::now() );
+   using TimePoint = decltype( high_resolution_clock::now() );
+
 public:
    CStatTimer() = default;
 
    TimePoint GetStartTime() const { return m_startTime; }
    void SetStartTime() { m_startTime = GetTimeNow(); }
 
-   TimePoint GetEndTime() const { return m_endTime; };
+   TimePoint GetEndTime() const { return m_endTime; }
    void SetEndTime() { m_endTime = GetTimeNow(); }
 
-   auto GetMilliSeconds() const { return std::chrono::duration_cast<std::chrono::milliseconds>( m_startTime - m_endTime ).count(); }
-   auto GetMicroSeconds() const { return std::chrono::duration_cast<std::chrono::microseconds>( m_startTime - m_endTime ).count(); }
-   auto GetSeconds() const { return std::chrono::duration_cast<std::chrono::seconds>( m_startTime - m_endTime ).count(); }
+   auto GetMilliSeconds() const { return duration_cast<std::chrono::milliseconds>( m_startTime - m_endTime ).count(); }
+   auto GetMicroSeconds() const { return duration_cast<std::chrono::microseconds>( m_startTime - m_endTime ).count(); }
+   auto GetSeconds() const { return duration_cast<std::chrono::seconds>( m_startTime - m_endTime ).count(); }
 
-   static TimePoint GetTimeNow() { return std::chrono::high_resolution_clock::now(); }
+   static TimePoint GetTimeNow() { return high_resolution_clock::now(); }
 
 private:
    TimePoint m_startTime;

@@ -44,6 +44,7 @@
 #define __PASSIVESOCKET_H__
 
 #include "ActiveSocket.h"
+
 #include <memory>
 
 class CPassiveSocket : public CSimpleSocket
@@ -51,8 +52,8 @@ class CPassiveSocket : public CSimpleSocket
 public:
    CPassiveSocket( CSocketType type = SocketTypeTcp );
 
-   auto Accept()-> std::unique_ptr<CActiveSocket>;
-   bool Listen( const char *pAddr, uint16 nPort, int32 nConnectionBacklog = 30000 );
+   auto Accept() -> std::unique_ptr<CActiveSocket>;
+   bool Listen( const char* pAddr, uint16 nPort, int32 nConnectionBacklog = 30000 );
 };
 
-#endif // __PASSIVESOCKET_H__
+#endif   // __PASSIVESOCKET_H__

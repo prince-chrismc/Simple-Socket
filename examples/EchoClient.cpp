@@ -24,24 +24,24 @@ SOFTWARE.
 
 */
 
-#include "ActiveSocket.h"       // Include header for active socket object definition
+#include "ActiveSocket.h"   // Include header for active socket object definition
 
-static constexpr const auto MAX_PACKET = 4096;
-static constexpr const auto TEST_PACKET = "Test Packet";
+static constexpr auto MAX_PACKET = 4096;
+static constexpr uint8 TEST_PACKET[] = { 'T', 'e', 's', 't', ' ', 'P', 'a', 'c', 'k', 'e', 't' };
 
-static constexpr unsigned int SIZEOF_TEST_PACKET = length( TEST_PACKET );
+static constexpr int SIZEOF_TEST_PACKET = ( sizeof( TEST_PACKET ) / sizeof( TEST_PACKET[ 0 ] ) );
 static_assert( SIZEOF_TEST_PACKET == 11, "Failed to compute SIZEOF_TEST_PACKET" );
 
-int main( int argc, char **argv )
+int main( int argc, char** argv )
 {
    CActiveSocket client;
 
-   if( client.Open( "127.0.0.1", 6789 ) ) // Connect to echo server
+   if ( client.Open( "127.0.0.1", 6789 ) )   // Connect to echo server
    {
-      if( client.Send( (const uint8*)TEST_PACKET, SIZEOF_TEST_PACKET ) == SIZEOF_TEST_PACKET )
+      if ( client.Send( TEST_PACKET, SIZEOF_TEST_PACKET ) == SIZEOF_TEST_PACKET )
       {
          auto numBytes = 0;
-         if( ( numBytes = client.Receive( MAX_PACKET ) ) > 0 )
+         if ( ( numBytes = client.Receive( MAX_PACKET ) ) > 0 )
          {
             printf( "received %d bytes: '%s'\n", numBytes, client.GetData().c_str() );
          }

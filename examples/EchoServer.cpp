@@ -24,9 +24,10 @@ SOFTWARE.
 
 */
 
-#include "PassiveSocket.h" // Include header for passive socket object definition
-#include <future>
+#include "PassiveSocket.h"   // Include header for passive socket object definition
+
 #include <chrono>
+#include <future>
 
 using namespace std::chrono_literals;
 
@@ -37,16 +38,15 @@ int main( int argc, char** argv )
    CPassiveSocket oSocket;
    std::promise<void> oExitSignal;
 
-   oSocket.Listen( "127.0.0.1", 6789 ); // Bind to local host on port 6789 to wait for incomming connections
+   oSocket.Listen( "127.0.0.1", 6789 );   // Bind to local host on port 6789 to wait for incomming connections
 
-   auto oRetval = std::async( std::launch::async, [ &oSocket, oExitEvent = oExitSignal.get_future() ]()
-   {
-      while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
+   auto oRetval = std::async( std::launch::async, [&oSocket, oExitEvent = oExitSignal.get_future()]() {
+      while ( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
       {
          std::unique_ptr<CActiveSocket> pClient;
-         if( ( pClient = oSocket.Accept() ) != nullptr ) // Wait for an incomming connection
+         if ( ( pClient = oSocket.Accept() ) != nullptr )   // Wait for an incomming connection
          {
-            if( pClient->Receive( MAX_PACKET ) > 0 ) // Receive request from the client
+            if ( pClient->Receive( MAX_PACKET ) > 0 )   // Receive request from the client
             {
                // Send response to client
                pClient->Send( reinterpret_cast<const uint8*>( pClient->GetData().c_str() ),

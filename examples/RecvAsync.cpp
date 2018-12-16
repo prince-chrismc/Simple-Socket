@@ -24,9 +24,10 @@ SOFTWARE.
 
 */
 
-#include <string>
+#include "PassiveSocket.h"   // Include header for both passive and active socket object definition
+
 #include <future>
-#include "PassiveSocket.h" // Include header for both passive and active socket object definition
+#include <string>
 
 using namespace std::chrono_literals;
 
@@ -40,6 +41,7 @@ static constexpr const char* LOCAL_HOST = "127.0.0.1";
 class AsyncMessage final
 {
    friend class AsyncMessageBuilder;
+
 public:
    AsyncMessage( const std::string& sMessage ) : m_sMessage( std::to_string( sMessage.size() ) + "\n" + sMessage ) {}
    AsyncMessage( const AsyncMessage& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; }
@@ -47,11 +49,15 @@ public:
    ~AsyncMessage() = default;
 
    AsyncMessage& operator=( const AsyncMessage& oNewMessage ) = default;
-   AsyncMessage& operator=( AsyncMessage&& oNewMessage ) noexcept { std::swap( m_sMessage, oNewMessage.m_sMessage ); return *this; }
+   AsyncMessage& operator=( AsyncMessage&& oNewMessage ) noexcept
+   {
+      std::swap( m_sMessage, oNewMessage.m_sMessage );
+      return *this;
+   }
 
    constexpr const std::string& ToString() const { return m_sMessage; }
 
-   const uint8* GetWireFormat() const { return (const uint8*)m_sMessage.c_str(); }
+   const uint8* GetWireFormat() const { return reinterpret_cast<const uint8*>( m_sMessage.c_str() ); }
    size_t GetWireFormatSize() const { return m_sMessage.size(); }
 
 private:
@@ -62,7 +68,10 @@ class AsyncMessageBuilder final
 {
 public:
    AsyncMessageBuilder() : m_oMessage( "" ), m_iExpectedSize( incomplete ) { m_oMessage.m_sMessage.clear(); }
-   explicit AsyncMessageBuilder( const AsyncMessage& oMessage ) : m_oMessage( oMessage ), m_iExpectedSize( incomplete ) { _ParseMessage(); }
+   explicit AsyncMessageBuilder( const AsyncMessage& oMessage ) : m_oMessage( oMessage ), m_iExpectedSize( incomplete )
+   {
+      _ParseMessage();
+   }
    AsyncMessageBuilder( const AsyncMessageBuilder& ) = delete;
    AsyncMessageBuilder( const AsyncMessageBuilder&& ) = delete;
    ~AsyncMessageBuilder() = default;
@@ -72,15 +81,12 @@ public:
 
    static constexpr size_t incomplete = -1;
 
-   bool IsComplete() const
-   {
-      return m_iExpectedSize == m_oMessage.m_sMessage.length();
-   }
+   bool IsComplete() const { return m_iExpectedSize == m_oMessage.m_sMessage.length(); }
 
    size_t Append( const std::string& sData )
    {
       m_oMessage.m_sMessage += sData;
-      if( !IsComplete() ) _ParseMessage();
+      if ( !IsComplete() ) _ParseMessage();
       return m_iExpectedSize;
    }
 
@@ -98,14 +104,13 @@ private:
    void _ParseMessage()
    {
       const size_t iNewLineIndex = m_oMessage.m_sMessage.find_first_of( '\n' );
-      if( iNewLineIndex != std::string::npos )
+      if ( iNewLineIndex != std::string::npos )
       {
          m_iExpectedSize = std::stoull( m_oMessage.m_sMessage.substr( 0, iNewLineIndex ) );
          m_oMessage.m_sMessage = m_oMessage.m_sMessage.substr( iNewLineIndex + 1 );
       }
    }
 };
-
 
 int main( int argc, char** argv )
 {
@@ -117,36 +122,37 @@ int main( int argc, char** argv )
    // ---------------------------------------------------------------------------------------------
    // Server Code
    // ---------------------------------------------------------------------------------------------
-   auto oRetval = std::async( std::launch::async, [ oExitEvent = oExitSignal.get_future(), &oPortEvent ]() {
+   auto oRetval = std::async( std::launch::async, [oExitEvent = oExitSignal.get_future(), &oPortEvent]() {
       CPassiveSocket oSocket;
 
-      oSocket.SetNonblocking(); // Configure this socket to be non-blocking
-      oSocket.Listen( LOCAL_HOST, 0 ); // Bind to local host on port any port
+      oSocket.SetNonblocking();          // Configure this socket to be non-blocking
+      oSocket.Listen( LOCAL_HOST, 0 );   // Bind to local host on port any port
 
       oPortEvent.set_value( oSocket.GetServerPort() );
 
-      while( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
+      while ( oExitEvent.wait_for( 10ms ) == std::future_status::timeout )
       {
          std::unique_ptr<CActiveSocket> pClient = nullptr;
-         if( ( pClient = oSocket.Accept() ) != nullptr ) // Wait for an incomming connection
+         if ( ( pClient = oSocket.Accept() ) != nullptr )   // Wait for an incomming connection
          {
-            pClient->SetNonblocking(); // Configure new client connection to be non-blocking
+            pClient->SetNonblocking();   // Configure new client connection to be non-blocking
 
             AsyncMessageBuilder oBuilder;
 
             do
             {
-               pClient->Receive( NEXT_BYTE * 3 ); // Receive next bytes of request from the client.
-               oBuilder.Append( pClient->GetData() ); // Gather Message in a buffer
-            } while( !oBuilder.IsComplete() );
+               pClient->Receive( NEXT_BYTE * 3 );       // Receive next bytes of request from the client.
+               oBuilder.Append( pClient->GetData() );   // Gather Message in a buffer
+            } while ( !oBuilder.IsComplete() );
 
             AsyncMessage oEchoMessage( oBuilder.ExtractMessage() );
-            pClient->Send( oEchoMessage.GetWireFormat(), oEchoMessage.GetWireFormatSize() ); // Send response to client and close connection to the client.
-            pClient.reset(); // Close socket since we have completed transmission
+            pClient->Send(
+                oEchoMessage.GetWireFormat(),
+                oEchoMessage.GetWireFormatSize() );   // Send response to client and close connection to the client.
+            pClient.reset();                          // Close socket since we have completed transmission
          }
       }
-   }
-   );
+   } );
 
    const uint16 nPort = oPortRetval.get();
 
@@ -155,21 +161,21 @@ int main( int argc, char** argv )
    // ---------------------------------------------------------------------------------------------
    CActiveSocket oClient;
 
-   oClient.SetNonblocking(); // Configure this socket to be non-blocking
+   oClient.SetNonblocking();   // Configure this socket to be non-blocking
 
-   if( oClient.Open( LOCAL_HOST, nPort ) ) // Attempt connection to local server and reported port
+   if ( oClient.Open( LOCAL_HOST, nPort ) )   // Attempt connection to local server and reported port
    {
       AsyncMessage oMessage( TEST_PACKET );
-      if( oClient.Send( oMessage.GetWireFormat(), oMessage.GetWireFormatSize() ) ) // Send a message the server
+      if ( oClient.Send( oMessage.GetWireFormat(), oMessage.GetWireFormatSize() ) )   // Send a message the server
       {
          oClient.Select();
 
          size_t iTotalBytes = 0;
-         while( iTotalBytes != oMessage.GetWireFormatSize() )
+         while ( iTotalBytes != oMessage.GetWireFormatSize() )
          {
-            const int iBytesReceived = oClient.Receive( NEXT_BYTE ); // Receive one byte of response from the server.
+            const int iBytesReceived = oClient.Receive( NEXT_BYTE );   // Receive one byte of response from the server.
 
-            if( iBytesReceived > 0 )
+            if ( iBytesReceived > 0 )
             {
                iTotalBytes += iBytesReceived;
                std::string sResult = oClient.GetData();

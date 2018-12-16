@@ -52,11 +52,11 @@ public:
 
    CActiveSocket( CSocketType type = SocketTypeTcp );
 
-   virtual bool Open( const char *pAddr, uint16 nPort );
+   virtual bool Open( const char* pAddr, uint16 nPort );
 
 private:
-   bool Validate( const char *pAddr, uint16 nPort );
-   bool PreConnect( const char *pAddr, uint16 nPort ); // Convert and Save params for OS layer
+   bool Validate( const char* pAddr, uint16 nPort );
+   bool PreConnect( const char* pAddr, uint16 nPort );   // Convert and Save params for OS layer
    bool ConnectTCP();
    bool ConnectUDP();
    bool ConnectRAW();
@@ -66,4 +66,3 @@ private:
 };
 
 #endif /*  __ACTIVESOCKET_H__  */
-

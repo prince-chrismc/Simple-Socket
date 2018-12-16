@@ -24,18 +24,19 @@ SOFTWARE.
 
 */
 
-#include "ActiveSocket.h" // Include header for active socket object definition
+#include "ActiveSocket.h"   // Include header for active socket object definition
+
 #include <iostream>
 
 int main( int argc, char** argv )
 {
-   CActiveSocket oSocket; // Instantiate active socket object (defaults to TCP).
+   CActiveSocket oSocket;   // Instantiate active socket object (defaults to TCP).
 
-   if( oSocket.Open( "time-C.timefreq.bldrdoc.gov", 13 ) ) // Attempt connection to known remote server
+   if ( oSocket.Open( "time-C.timefreq.bldrdoc.gov", 13 ) )   // Attempt connection to known remote server
    {
-      if( oSocket.Send( "\n" ) ) // Send a request the server for the current time.
+      if ( oSocket.Send( "\n" ) )   // Send a request the server for the current time.
       {
-         if( oSocket.Receive( 48 ) ) // Receive response from the server.
+         if ( oSocket.Receive( 48 ) )   // Receive response from the server.
             std::cout << oSocket.GetData() << std::endl;
          else
             std::cout << "Unable to obtain time!" << std::endl;

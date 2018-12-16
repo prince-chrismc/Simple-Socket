@@ -24,17 +24,16 @@ SOFTWARE.
 
 */
 
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#define CATCH_CONFIG_MAIN   // This tells Catch to provide a main() - only do this in one cpp file
+#include "PassiveSocket.h"
 #include "catch2/catch.hpp"
 
-#include "PassiveSocket.h"
-
-#include <string_view>
 #include <future>
+#include <string_view>
 
 #ifdef _WIN32
 #include <Ws2tcpip.h>
-#elif defined(_LINUX) || defined (_DARWIN)
+#elif defined( _LINUX ) || defined( _DARWIN )
 #include <netdb.h>
 #endif
 
@@ -42,11 +41,9 @@ using namespace std::string_literals;
 using namespace std::string_view_literals;
 
 static constexpr auto HTTP_GET_ROOT_REQUEST = "GET / HTTP/1.0\r\n\r\n"sv;
-static constexpr uint8 DNS_QUERY[] = {
-   '\x12', '\x34', '\x01', '\x00', '\x00', '\x01', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x07', '\x65',
-   '\x78', '\x61', '\x6d', '\x70', '\x6c', '\x65', '\x03', '\x63', '\x6f', '\x6d', '\x00', '\x00', '\x01', '\x00',
-   '\x01'
-};
+static constexpr uint8 DNS_QUERY[] = { '\x12', '\x34', '\x01', '\x00', '\x00', '\x01', '\x00', '\x00', '\x00', '\x00',
+                                       '\x00', '\x00', '\x07', '\x65', '\x78', '\x61', '\x6d', '\x70', '\x6c', '\x65',
+                                       '\x03', '\x63', '\x6f', '\x6d', '\x00', '\x00', '\x01', '\x00', '\x01' };
 static constexpr auto DNS_QUERY_LENGTH = ( sizeof( DNS_QUERY ) / sizeof( DNS_QUERY[ 0 ] ) );
 static constexpr uint8 TEXT_PACKET[] = { 'T', 'e', 's', 't', ' ', 'P', 'a', 'c', 'k', 'e', 't' };
 static constexpr auto TEXT_PACKET_LENGTH = ( sizeof( TEXT_PACKET ) / sizeof( TEXT_PACKET[ 0 ] ) );
@@ -206,10 +203,10 @@ TEST_CASE( "Sockets can read", "[Receive][UDP]" )
    const std::string dnsResponse = socket.GetData();
 
    REQUIRE( dnsResponse.length() == 45 );
-   REQUIRE_THAT( dnsResponse, Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
-                 "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
-                 "\x01\x00\x01\x00\x00"s )
-   );
+   REQUIRE_THAT( dnsResponse,
+                 Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
+                                    "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
+                                    "\x01\x00\x01\x00\x00"s ) );
    REQUIRE_THAT( dnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
 }
 #endif
@@ -251,8 +248,8 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
       const std::string httpResponse = socket.GetData();
 
       REQUIRE( httpResponse.length() > 0 );
-      REQUIRE_THAT( httpResponse, Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains(
-         "\r\n\r\n<!doctype html>" ) /* && Catch::Contains( "<title>Google</title>" ) */ );
+      REQUIRE_THAT( httpResponse,
+                    Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) );
    }
 
    SECTION( "Using external buffer" )
@@ -265,16 +262,16 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
       const std::string httpResponse( reinterpret_cast<const char*>( buffer ), socket.GetBytesReceived() );
 
       REQUIRE( httpResponse.length() > 0 );
-      REQUIRE_THAT( httpResponse, Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains(
-         "\r\n\r\n<!doctype html>" ) /* && Catch::Contains( "<title>Google</title>" ) */ );
+      REQUIRE_THAT( httpResponse,
+                    Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) );
    }
 
    SECTION( "external buffer is too small" )
    {
       // sadly this test is not valid https://github.com/catchorg/Catch2/issues/553
-      //uint8 buffer[ 512 ];
-      //CHECK( socket.Receive( 1024, buffer ) == CSimpleSocket::SocketError );
-      //CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidPointer );
+      // uint8 buffer[ 512 ];
+      // CHECK( socket.Receive( 1024, buffer ) == CSimpleSocket::SocketError );
+      // CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidPointer );
    }
 }
 
@@ -297,10 +294,10 @@ TEST_CASE( "Receive a huge message", "[!mayfail][TCP]" )
    // This list of values are ones I've seen and make sence based on the OS
    // And network enviroment... DISCLAIMER: It's very subjective!
    auto accpetedValues = {
-      8420, // MAX
-      1418, 2836, // UBUNTU
-      1368, 2736, // MAC
-      7040, 7090 // TRAVIS_CI
+      8420,         // MAX
+      1418, 2836,   // UBUNTU
+      1368, 2736,   // MAC
+      7040, 7090    // TRAVIS_CI
    };
    CHECK_THAT( accpetedValues, Catch::VectorContains( socket.GetBytesReceived() ) );
 
@@ -309,8 +306,8 @@ TEST_CASE( "Receive a huge message", "[!mayfail][TCP]" )
    const std::string httpResponse = socket.GetData();
 
    REQUIRE( httpResponse.length() > 0 );
-   REQUIRE_THAT( httpResponse, Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>"
-   ) /* && Catch::Contains( "<title>Google</title>" ) */ );
+   REQUIRE_THAT( httpResponse,
+                 Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) );
 }
 
 TEST_CASE( "Sockets have remotes information", "[!mayfail][TCP]" )
@@ -335,8 +332,8 @@ TEST_CASE( "Sockets have remotes information", "[!mayfail][TCP]" )
       REQUIRE( iErrorCode == 0 );
 
       char buff[ 16 ];
-      std::string googlesAddr = inet_ntop( AF_INET, &reinterpret_cast<sockaddr_in*>( pResult->ai_addr )->sin_addr, buff,
-                                           16 );
+      std::string googlesAddr =
+          inet_ntop( AF_INET, &reinterpret_cast<sockaddr_in*>( pResult->ai_addr )->sin_addr, buff, 16 );
 
       CAPTURE( buff );
       CAPTURE( socket.GetServerAddr() );
@@ -346,10 +343,7 @@ TEST_CASE( "Sockets have remotes information", "[!mayfail][TCP]" )
       REQUIRE( googlesAddr == socket.GetServerAddr() );
    }
 
-   SECTION( "Socket.GetServerPort" )
-   {
-      REQUIRE( socket.GetServerPort() == 80 );
-   }
+   SECTION( "Socket.GetServerPort" ) { REQUIRE( socket.GetServerPort() == 80 ); }
 }
 
 TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
@@ -394,10 +388,10 @@ TEST_CASE( "Sockets can close", "[Close][UDP]" )
    const std::string dnsResponse = socket.GetData();
 
    CHECK( dnsResponse.length() == 45 );
-   CHECK_THAT( dnsResponse, Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
-               "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
-               "\x01\x00\x01\x00\x00"s )
-   );
+   CHECK_THAT( dnsResponse,
+               Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
+                                  "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
+                                  "\x01\x00\x01\x00\x00"s ) );
    CHECK_THAT( dnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
 
    REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
@@ -451,8 +445,8 @@ TEST_CASE( "Sockets are assign copyable", "[Socket=][TCP]" )
 
    REQUIRE( alpha.Open( "www.google.ca", 80 ) );
 
-   REQUIRE( alpha.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ), HTTP_GET_ROOT_REQUEST.length() )
-            == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( alpha.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ),
+                        HTTP_GET_ROOT_REQUEST.length() ) == HTTP_GET_ROOT_REQUEST.length() );
 
    REQUIRE( alpha.Receive( 17 ) == 17 );
    REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -703,20 +697,18 @@ TEST_CASE( "Sockets can repeate", "[Listen][Open][UDP]" )
    CAPTURE( socket.GetClientAddr() );
    CAPTURE( socket.GetClientPort() );
 
-   auto serverRespone = std::async( std::launch::async, [ & ]
-                                    {
-                                       uint8 buffer[ TEXT_PACKET_LENGTH + 1 ];
-                                       REQUIRE( server.Receive( 1024, buffer ) == TEXT_PACKET_LENGTH );
+   auto serverRespone = std::async( std::launch::async, [&] {
+      uint8 buffer[ TEXT_PACKET_LENGTH + 1 ];
+      REQUIRE( server.Receive( 1024, buffer ) == TEXT_PACKET_LENGTH );
 
-                                       CHECK( server.GetClientAddr() == socket.GetClientAddr() );
-                                       CHECK( server.GetClientPort() == socket.GetClientPort() );
+      CHECK( server.GetClientAddr() == socket.GetClientAddr() );
+      CHECK( server.GetClientPort() == socket.GetClientPort() );
 
-                                       CHECK( server.GetServerAddr() == socket.GetServerAddr() );
-                                       CHECK( server.GetServerPort() == socket.GetServerPort() );
+      CHECK( server.GetServerAddr() == socket.GetServerAddr() );
+      CHECK( server.GetServerPort() == socket.GetServerPort() );
 
-                                       REQUIRE( server.Send( buffer, server.GetBytesReceived() ) == TEXT_PACKET_LENGTH );
-                                    }
-   );
+      REQUIRE( server.Send( buffer, server.GetBytesReceived() ) == TEXT_PACKET_LENGTH );
+   } );
 
    REQUIRE( socket.Send( TEXT_PACKET, TEXT_PACKET_LENGTH ) == TEXT_PACKET_LENGTH );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -771,29 +763,27 @@ TEST_CASE( "Sockets can echo", "[Listen][Open][Accept][TCP]" )
    CAPTURE( socket.GetClientAddr() );
    CAPTURE( socket.GetClientPort() );
 
-   auto serverRespone = std::async( std::launch::async, [ & ]
-                                    {
-                                       std::unique_ptr<CActiveSocket> connection = server.Accept();
-                                       REQUIRE( connection != nullptr );
+   auto serverRespone = std::async( std::launch::async, [&] {
+      std::unique_ptr<CActiveSocket> connection = server.Accept();
+      REQUIRE( connection != nullptr );
 
-                                       REQUIRE( connection->Receive( 1024 ) == TEXT_PACKET_LENGTH );
+      REQUIRE( connection->Receive( 1024 ) == TEXT_PACKET_LENGTH );
 
-                                       CHECK( connection->GetClientAddr() == socket.GetClientAddr() );
-                                       CHECK( connection->GetClientPort() == socket.GetClientPort() );
+      CHECK( connection->GetClientAddr() == socket.GetClientAddr() );
+      CHECK( connection->GetClientPort() == socket.GetClientPort() );
 
-                                       CHECK( connection->GetServerAddr() == server.GetServerAddr() );
-                                       CHECK( connection->GetServerPort() == server.GetServerPort() );
+      CHECK( connection->GetServerAddr() == server.GetServerAddr() );
+      CHECK( connection->GetServerPort() == server.GetServerPort() );
 
-                                       CHECK( server.GetClientAddr() == socket.GetClientAddr() );
-                                       CHECK( server.GetClientPort() == socket.GetClientPort() );
+      CHECK( server.GetClientAddr() == socket.GetClientAddr() );
+      CHECK( server.GetClientPort() == socket.GetClientPort() );
 
-                                       CHECK( server.GetServerAddr() == socket.GetServerAddr() );
-                                       CHECK( server.GetServerPort() == socket.GetServerPort() );
+      CHECK( server.GetServerAddr() == socket.GetServerAddr() );
+      CHECK( server.GetServerPort() == socket.GetServerPort() );
 
-                                       REQUIRE( connection->Send( (uint8*)connection->GetData().c_str(),
-                                                connection->GetBytesReceived() ) == TEXT_PACKET_LENGTH );
-                                    }
-   );
+      REQUIRE( connection->Send( (uint8*)connection->GetData().c_str(), connection->GetBytesReceived() ) ==
+               TEXT_PACKET_LENGTH );
+   } );
 
    REQUIRE( socket.Send( TEXT_PACKET, TEXT_PACKET_LENGTH ) == TEXT_PACKET_LENGTH );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );

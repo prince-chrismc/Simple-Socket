@@ -45,31 +45,29 @@
 
 #ifdef _WIN32
 #include <Ws2tcpip.h>
-#elif defined(_LINUX) || defined (_DARWIN)
+#elif defined( _LINUX ) || defined( _DARWIN )
 #include <netdb.h>
 #endif
 
 //------------------------------------------------------------------------------
-CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType )
-{
-}
+CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType ) {}
 
 //------------------------------------------------------------------------------
-bool CActiveSocket::Validate( const char *pAddr, uint16 nPort )
+bool CActiveSocket::Validate( const char* pAddr, uint16 nPort )
 {
-   if( !IsSocketValid() )
+   if ( !IsSocketValid() )
    {
       SetSocketError( CSimpleSocket::SocketInvalidSocket );
       return false;
    }
 
-   if( pAddr == nullptr )
+   if ( pAddr == nullptr )
    {
       SetSocketError( CSimpleSocket::SocketInvalidAddress );
       return false;
    }
 
-   if( nPort == 0 )
+   if ( nPort == 0 )
    {
       SetSocketError( CSimpleSocket::SocketInvalidPort );
       return false;
@@ -79,7 +77,7 @@ bool CActiveSocket::Validate( const char *pAddr, uint16 nPort )
 }
 
 //------------------------------------------------------------------------------
-bool CActiveSocket::PreConnect( const char * pAddr, uint16 nPort )
+bool CActiveSocket::PreConnect( const char* pAddr, uint16 nPort )
 {
    bool bRetVal = true;
 
@@ -88,15 +86,16 @@ bool CActiveSocket::PreConnect( const char * pAddr, uint16 nPort )
 
    addrinfo hints{ AI_ALL, AF_INET, 0, 0, 0, nullptr, nullptr, nullptr };
    addrinfo* pResult = nullptr;
-   const int iErrorCode = getaddrinfo( pAddr, nullptr, &hints, &pResult ); /// https://codereview.stackexchange.com/a/17866
+   const int iErrorCode =
+       getaddrinfo( pAddr, nullptr, &hints, &pResult );   /// https://codereview.stackexchange.com/a/17866
 
-   if( iErrorCode != 0 )
+   if ( iErrorCode != 0 )
    {
 #ifdef WIN32
       TranslateSocketError();
 #else
       // http://man7.org/linux/man-pages/man3/getaddrinfo.3.html#return-value
-      if( iErrorCode == EAI_SYSTEM )
+      if ( iErrorCode == EAI_SYSTEM )
       {
          TranslateSocketError();
       }
@@ -128,10 +127,10 @@ bool CActiveSocket::ConnectTCP()
 
    m_timer.SetStartTime();
 
-    // Connect to address "xxx.xxx.xxx.xxx"    (IPv4) address only.
-   if( CONNECT( m_socket, &m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) == CSimpleSocket::SocketError )
+   // Connect to address "xxx.xxx.xxx.xxx"    (IPv4) address only.
+   if ( CONNECT( m_socket, &m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) == CSimpleSocket::SocketError )
    {
-       // Get error value this might be a non-blocking socket so we  must first check.
+      // Get error value this might be a non-blocking socket so we  must first check.
       TranslateSocketError();
 
       //--------------------------------------------------------------
@@ -140,9 +139,8 @@ bool CActiveSocket::ConnectTCP()
       // with select for designated timeout period.
       // Linux returns EINPROGRESS and Windows returns WSAEWOULDBLOCK.
       //--------------------------------------------------------------
-      if( ( IsNonblocking() ) &&
-         ( ( GetSocketError() == CSimpleSocket::SocketEwouldblock ) ||
-          ( GetSocketError() == CSimpleSocket::SocketEinprogress ) ) )
+      if ( ( IsNonblocking() ) && ( ( GetSocketError() == CSimpleSocket::SocketEwouldblock ) ||
+                                    ( GetSocketError() == CSimpleSocket::SocketEinprogress ) ) )
       {
          bRetVal = Select( GetConnectTimeoutSec(), GetConnectTimeoutUSec() );
       }
@@ -165,10 +163,8 @@ bool CActiveSocket::ConnectTCP()
 //------------------------------------------------------------------------------
 bool CActiveSocket::ConnectUDP()
 {
-   // Connect to address "xxx.xxx.xxx.xxx"    (IPv4) address only.
-
    m_timer.SetStartTime();
-   const bool bRetVal = ( CONNECT( m_socket, &m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) == CSimpleSocket::SocketSuccess );
+   const bool bRetVal = ( CONNECT( m_socket, &m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
    m_timer.SetEndTime();
 
    TranslateSocketError();
@@ -183,10 +179,8 @@ bool CActiveSocket::ConnectUDP()
 //------------------------------------------------------------------------------
 bool CActiveSocket::ConnectRAW()
 {
-   // Connect to address "xxx.xxx.xxx.xxx"    (IPv4) address only.
-
    m_timer.SetStartTime();
-   const bool bRetVal = ( CONNECT( m_socket, &m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) == CSimpleSocket::SocketSuccess );
+   const bool bRetVal = ( CONNECT( m_socket, &m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
    m_timer.SetEndTime();
 
    TranslateSocketError();
@@ -194,40 +188,39 @@ bool CActiveSocket::ConnectRAW()
    return bRetVal;
 }
 
-
 //------------------------------------------------------------------------------
 //
 // Open() - Create a connection to a specified address on a specified port
 //
 //------------------------------------------------------------------------------
-bool CActiveSocket::Open( const char *pAddr, uint16 nPort )
+bool CActiveSocket::Open( const char* pAddr, uint16 nPort )
 {
    bool bRetVal = Validate( pAddr, nPort );
 
    // Preconnection setup that must be preformed
-   if( bRetVal )
+   if ( bRetVal )
    {
       bRetVal = PreConnect( pAddr, nPort );
    }
 
-   if( bRetVal )
+   if ( bRetVal )
    {
-      if( m_nSocketType == CSimpleSocket::SocketTypeTcp )
+      if ( m_nSocketType == CSimpleSocket::SocketTypeTcp )
       {
          bRetVal = ConnectTCP();
       }
-      else if( m_nSocketType == CSimpleSocket::SocketTypeUdp )
+      else if ( m_nSocketType == CSimpleSocket::SocketTypeUdp )
       {
          bRetVal = ConnectUDP();
       }
-      else if( m_nSocketType == CSimpleSocket::SocketTypeRaw )
+      else if ( m_nSocketType == CSimpleSocket::SocketTypeRaw )
       {
          bRetVal = ConnectRAW();
       }
    }
 
    // If successful then get a local copy of the address and port
-   if( bRetVal )
+   if ( bRetVal )
    {
       socklen_t nSockLen = SOCKET_ADDR_IN_SIZE;
 
