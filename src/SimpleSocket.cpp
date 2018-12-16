@@ -104,7 +104,7 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
 
    if( !Initialize() )
    {
-      throw std::runtime_error( "Failed to create socket!" + DescribeError() );
+      throw std::runtime_error( "Failed to create socket! " + DescribeError() );
    }
 }
 
@@ -178,7 +178,7 @@ void swap( CSimpleSocket& lhs, CSimpleSocket& rhs ) noexcept
    swap( lhs.m_stSendTimeout.tv_sec, rhs.m_stSendTimeout.tv_sec );
    swap( lhs.m_stSendTimeout.tv_usec, rhs.m_stSendTimeout.tv_usec );
 
-   swap( lhs.m_stLinger.l_linger, rhs.m_stLinger.l_linger );
+   swap( lhs.m_stLinger.l_onoff, rhs.m_stLinger.l_onoff );
    swap( lhs.m_stLinger.l_linger, rhs.m_stLinger.l_linger );
 
    swap( lhs.m_stClientSockaddr, rhs.m_stClientSockaddr );
@@ -196,9 +196,7 @@ bool CSimpleSocket::Initialize()
    errno = CSimpleSocket::SocketSuccess;
 
 #ifdef WIN32
-   //-------------------------------------------------------------------------
    // Data structure containing general Windows Sockets Info
-   //-------------------------------------------------------------------------
    memset( &m_hWSAData, 0, sizeof( m_hWSAData ) );
    WSAStartup( MAKEWORD( 2, 2 ), &m_hWSAData );
 #endif
@@ -251,14 +249,8 @@ bool CSimpleSocket::BindInterface( const char *pInterface )
          stInterfaceAddr.sin_port = 0;
 
          // Bind the socket using the such that it only use a specified interface
-         if( bind( m_socket, (sockaddr*)&stInterfaceAddr, SOCKET_ADDR_IN_SIZE ) == SocketError )
-         {
-            TranslateSocketError();
-         }
-         else
-         {
-            bRetVal = true;
-         }
+         bRetVal = ( BIND( m_socket, &stInterfaceAddr, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
+         TranslateSocketError();
       }
    }
 
@@ -277,15 +269,8 @@ bool CSimpleSocket::SetMulticast( bool bEnable, uint8 multicastTTL )
    if( GetSocketType() == CSimpleSocket::SocketTypeUdp )
    {
       m_bIsMulticast = bEnable;
-      if( SETSOCKOPT( m_socket, IPPROTO_IP, IP_MULTICAST_TTL, (void *)&multicastTTL, sizeof( multicastTTL ) ) == SocketError )
-      {
-         TranslateSocketError();
-         bRetVal = false;
-      }
-      else
-      {
-         bRetVal = true;
-      }
+      bRetVal = ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_MULTICAST_TTL, &multicastTTL, sizeof( multicastTTL ) ) == SocketSuccess );
+      TranslateSocketError();
    }
    else
    {
