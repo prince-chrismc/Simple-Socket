@@ -307,30 +307,25 @@ bool CSimpleSocket::JoinMulticast( const char* pGroup, uint16 nPort )
       m_stMulticastGroup.sin_addr.s_addr = htonl( INADDR_ANY );
       m_stMulticastGroup.sin_port = htons( nPort );
 
-      //--------------------------------------------------------------------------
       // Bind to the specified port
-      //--------------------------------------------------------------------------
-      bRetVal = ( bind( m_socket, ( struct sockaddr * )&m_stMulticastGroup,
-                  sizeof( m_stMulticastGroup ) ) == CSimpleSocket::SocketSuccess );
+      bRetVal = ( BIND( m_socket, &m_stMulticastGroup, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
    }
 
    if( bRetVal )
    {
-      struct ip_mreq stMulticastRequest;
+      ip_mreq stMulticastRequest;
 
       inet_pton( m_nSocketDomain, pGroup, &stMulticastRequest.imr_multiaddr.s_addr );
       stMulticastRequest.imr_interface.s_addr = htonl( INADDR_ANY );
 
-      //----------------------------------------------------------------------
       // Join the multicast group
-      //----------------------------------------------------------------------
       bRetVal = ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &stMulticastRequest,
                   sizeof( stMulticastRequest ) ) == SocketSuccess );
    }
 
    if( bRetVal )
    {
-       // save group address ( for sending ... rcv TBA )
+       // Save group address ( for sending ... rcv TBA )
       inet_pton( m_nSocketDomain, pGroup, &m_stMulticastGroup.sin_addr.s_addr );
    }
 
