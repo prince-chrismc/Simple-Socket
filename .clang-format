@@ -31,7 +31,7 @@ KeepEmptyLinesAtTheStartOfBlocks: 'false'
 MaxEmptyLinesToKeep: '1'
 NamespaceIndentation: All
 PointerAlignment: Left
-SortIncludes: 'true'
+SortIncludes: 'false'
 SortUsingDeclarations: 'true'
 SpaceAfterCStyleCast: 'false'
 SpaceAfterTemplateKeyword: 'false'
