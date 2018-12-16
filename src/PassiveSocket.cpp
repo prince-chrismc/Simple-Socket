@@ -57,8 +57,6 @@ CPassiveSocket::CPassiveSocket( CSocketType nType ) : CSimpleSocket( nType )
 
 bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionBacklog )
 {
-   bool           bRetVal = false;
-
 #ifdef _LINUX
    //--------------------------------------------------------------------------
    // Set the following socket option SO_REUSEADDR. This will allow the file
@@ -81,9 +79,15 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
       // lookup specified address
       switch( inet_pton( m_nSocketDomain, pAddr, &m_stServerSockaddr.sin_addr ) )
       {
-      case -1: TranslateSocketError();                 return false;
-      case 0:  SetSocketError( SocketInvalidAddress ); return false;
-      default: break; // Otherwise Success
+      case SocketError:
+         TranslateSocketError();
+         return false;
+      case 0:
+         SetSocketError( SocketInvalidAddress );
+         return false;
+      default:
+         // Otherwise Success
+         break;
       }
    }
 
@@ -93,16 +97,11 @@ bool CPassiveSocket::Listen( const char *pAddr, uint16 nPort, int32 nConnectionB
    m_timer.SetStartTime();
 
    // Bind to the specified addr and port
-   if( BIND( m_socket, &m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) != CSimpleSocket::SocketError )
+   bool bRetVal = ( BIND( m_socket, &m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) == CSimpleSocket::SocketSuccess );
+
+   if ( bRetVal && m_nSocketType == CSimpleSocket::SocketTypeTcp )
    {
-      if( m_nSocketType == CSimpleSocket::SocketTypeTcp )
-      {
-         bRetVal = ( listen( m_socket, nConnectionBacklog ) != CSimpleSocket::SocketError );
-      }
-      else
-      {
-         bRetVal = true;
-      }
+      bRetVal = ( listen( m_socket, nConnectionBacklog ) != CSimpleSocket::SocketError );
    }
 
    m_timer.SetEndTime();
