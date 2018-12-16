@@ -70,10 +70,7 @@
 #define INVALID_SOCKET ~( 0 )
 #endif
 
-auto constexpr length( const char* str ) -> long
-{
-   return *str ? 1 + length( str + 1 ) : 0;
-}
+auto constexpr length( const char* str ) -> long { return *str ? 1 + length( str + 1 ) : 0; }
 
 class CSimpleSocket
 {
@@ -89,12 +86,13 @@ public:
    /// Defines the socket types defined by CSimpleSocket class.
    enum CSocketType
    {
-      SocketTypeInvalid,   ///< Invalid socket type.
-      SocketTypeTcp,       ///< Defines socket as TCP socket.
-      SocketTypeUdp,       ///< Defines socket as UDP socket.
-      SocketTypeTcp6,      ///< Defines socket as IPv6 TCP socket.
-      SocketTypeUdp6,      ///< Defines socket as IPv6 UDP socket.
-      SocketTypeRaw        ///< Provides raw network protocol access.
+      SocketTypeInvalid,             ///< Invalid socket type.
+      SocketTypeTcp = SOCK_STREAM,   ///< Defines socket as TCP socket.
+      SocketTypeUdp = SOCK_DGRAM,    ///< Defines socket as UDP socket.
+      // SocketTypeTcp6,      ///< Defines socket as IPv6 TCP socket.
+      // SocketTypeUdp6,      ///< Defines socket as IPv6 UDP socket.
+      // SocketTypeRaw = SOCK_RAW   ///< Provides raw network protocol access.
+      // SocketTypeRaw6   ///< Provides raw network protocol access.
    };
 
    /// Defines all error codes handled by the CSimpleSocket class.

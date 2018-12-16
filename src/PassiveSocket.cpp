@@ -77,9 +77,10 @@ bool CPassiveSocket::Listen( const char* pAddr, uint16 nPort, int32 nConnectionB
       // lookup specified address
       switch ( inet_pton( m_nSocketDomain, pAddr, &m_stServerSockaddr.sin_addr ) )
       {
-      case SocketError:
-         TranslateSocketError();
-         return false;
+      // Only possible with bad socket domain
+      // case SocketError:
+      //   TranslateSocketError();
+      //   return false;
       case 0:
          SetSocketError( SocketInvalidAddress );
          return false;
@@ -89,7 +90,7 @@ bool CPassiveSocket::Listen( const char* pAddr, uint16 nPort, int32 nConnectionB
       }
    }
 
-   m_stServerSockaddr.sin_family = AF_INET;
+   m_stServerSockaddr.sin_family = m_nSocketDomain;
    m_stServerSockaddr.sin_port = htons( nPort );
 
    m_timer.SetStartTime();

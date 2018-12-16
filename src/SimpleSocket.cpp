@@ -87,16 +87,26 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    case CSimpleSocket::SocketTypeUdp:
       m_nSocketDomain = AF_INET;
       break;
-   case CSimpleSocket::SocketTypeTcp6:
-   case CSimpleSocket::SocketTypeUdp6:
-      m_nSocketDomain = AF_INET6;
-      break;
-#if defined( _LINUX ) && !defined( _DARWIN )
-   // Declare socket type raw Ethernet - Ethernet
-   case CSimpleSocket::SocketTypeRaw:
-      m_nSocketDomain = AF_PACKET;
-      break;
-#endif
+      // case CSimpleSocket::SocketTypeTcp6:
+      // case CSimpleSocket::SocketTypeUdp6:
+      //   m_nSocketDomain = AF_INET6;
+      //   break;
+
+      // Declare socket type raw Ethernet - Ethernet
+      //#if defined( _LINUX ) || defined( _DARWIN )
+      //   case CSimpleSocket::SocketTypeRaw:
+      //      // case CSimpleSocket::SocketTypeRaw6:
+      //      m_nSocketDomain = AF_PACKET;
+      //      break;
+      //#else
+      //   case CSimpleSocket::SocketTypeRaw:
+      //      m_nSocketDomain = AF_INET;
+      //      break;
+      //      // case CSimpleSocket::SocketTypeRaw6:
+      //      //   m_nSocketDomain = AF_INET6;
+      //      //   break;
+      //#endif
+
    default:
       m_nSocketType = CSimpleSocket::SocketTypeInvalid;
       break;
@@ -131,10 +141,7 @@ CSimpleSocket::CSimpleSocket( const CSimpleSocket& socket )
    memcpy( &m_stMulticastGroup, &socket.m_stMulticastGroup, SOCKET_ADDR_IN_SIZE );
 }
 
-CSimpleSocket::CSimpleSocket( CSimpleSocket&& socket ) noexcept
-{
-   swap( *this, socket );
-}
+CSimpleSocket::CSimpleSocket( CSimpleSocket&& socket ) noexcept { swap( *this, socket ); }
 
 CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket other )
 {
@@ -195,14 +202,17 @@ bool CSimpleSocket::Initialize()
 {
    errno = CSimpleSocket::SocketSuccess;
 
-#ifdef WIN32
+#ifdef _WIN32
    // Data structure containing general Windows Sockets Info
    memset( &m_hWSAData, 0, sizeof( m_hWSAData ) );
    WSAStartup( MAKEWORD( 2, 2 ), &m_hWSAData );
 #endif
 
    m_timer.SetStartTime();
+
+   /* Zero may not work with SOCK_RAW */
    m_socket = socket( m_nSocketDomain, m_nSocketType, 0 );   // Create the basic Socket Handle
+
    m_timer.SetEndTime();
 
    TranslateSocketError();
@@ -211,10 +221,7 @@ bool CSimpleSocket::Initialize()
 }
 
 //-------------------------------------------------------------------------------------------------
-void CSimpleSocket::SetSocketError( CSimpleSocket::CSocketError error )
-{
-   m_socketErrno = error;
-}
+void CSimpleSocket::SetSocketError( CSimpleSocket::CSocketError error ) { m_socketErrno = error; }
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -397,10 +404,7 @@ std::string CSimpleSocket::GetServerAddr()
    return buff;
 }
 
-in_addr CSimpleSocket::GetServerAddrOnWire() const
-{
-   return m_stServerSockaddr.sin_addr;
-}
+in_addr CSimpleSocket::GetServerAddrOnWire() const { return m_stServerSockaddr.sin_addr; }
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -686,16 +690,10 @@ bool CSimpleSocket::Flush()
 }
 
 //-------------------------------------------------------------------------------------------------
-sockaddr_in* CSimpleSocket::GetUdpRxAddrBuffer()
-{
-   return &m_stClientSockaddr;
-}
+sockaddr_in* CSimpleSocket::GetUdpRxAddrBuffer() { return &m_stClientSockaddr; }
 
 //-------------------------------------------------------------------------------------------------
-sockaddr_in* CSimpleSocket::GetUdpTxAddrBuffer()
-{
-   return m_bIsMulticast ? &m_stMulticastGroup : &m_stClientSockaddr;
-}
+sockaddr_in* CSimpleSocket::GetUdpTxAddrBuffer() { return m_bIsMulticast ? &m_stMulticastGroup : &m_stClientSockaddr; }
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -817,16 +815,10 @@ bool CSimpleSocket::SetOptionReuseAddr()
 }
 
 //-------------------------------------------------------------------------------------------------
-int32 CSimpleSocket::GetConnectTimeoutSec() const
-{
-   return m_stConnectTimeout.tv_sec;
-}
+int32 CSimpleSocket::GetConnectTimeoutSec() const { return m_stConnectTimeout.tv_sec; }
 
 //-------------------------------------------------------------------------------------------------
-int32 CSimpleSocket::GetConnectTimeoutUSec() const
-{
-   return m_stConnectTimeout.tv_usec;
-}
+int32 CSimpleSocket::GetConnectTimeoutUSec() const { return m_stConnectTimeout.tv_usec; }
 
 //-------------------------------------------------------------------------------------------------
 void CSimpleSocket::SetConnectTimeout( int32 nConnectTimeoutSec, int32 nConnectTimeoutUsec )
@@ -933,28 +925,16 @@ int32 CSimpleSocket::Receive( uint32 nMaxBytes, uint8* pBuffer )
 }
 
 //-------------------------------------------------------------------------------------------------
-std::string CSimpleSocket::GetData() const
-{
-   return m_sBuffer;
-}
+std::string CSimpleSocket::GetData() const { return m_sBuffer; }
 
 //-------------------------------------------------------------------------------------------------
-int32 CSimpleSocket::GetBytesReceived() const
-{
-   return m_nBytesReceived;
-}
+int32 CSimpleSocket::GetBytesReceived() const { return m_nBytesReceived; }
 
 //-------------------------------------------------------------------------------------------------
-int32 CSimpleSocket::GetBytesSent() const
-{
-   return m_nBytesSent;
-}
+int32 CSimpleSocket::GetBytesSent() const { return m_nBytesSent; }
 
 //-------------------------------------------------------------------------------------------------
-bool CSimpleSocket::IsNonblocking() const
-{
-   return !m_bIsBlocking;
-}
+bool CSimpleSocket::IsNonblocking() const { return !m_bIsBlocking; }
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -1261,10 +1241,7 @@ std::string CSimpleSocket::DescribeError( CSocketError err )
 }
 
 //-------------------------------------------------------------------------------------------------
-std::string CSimpleSocket::DescribeError() const
-{
-   return DescribeError( m_socketErrno );
-}
+std::string CSimpleSocket::DescribeError() const { return DescribeError( m_socketErrno ); }
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -1327,7 +1304,4 @@ bool CSimpleSocket::Select()
 }
 
 //-------------------------------------------------------------------------------------------------
-bool CSimpleSocket::IsSocketValid() const
-{
-   return ( m_socket != INVALID_SOCKET );
-}
+bool CSimpleSocket::IsSocketValid() const { return ( m_socket != INVALID_SOCKET ); }
