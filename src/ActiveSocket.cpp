@@ -213,10 +213,10 @@ bool CActiveSocket::Open( const char* pAddr, uint16 nPort )
       {
          bRetVal = ConnectUDP();
       }
-      else if ( m_nSocketType == CSimpleSocket::SocketTypeRaw )
-      {
-         bRetVal = ConnectRAW();
-      }
+      //else if ( m_nSocketType == CSimpleSocket::SocketTypeRaw )
+      //{
+      //   bRetVal = ConnectRAW();
+      //}
    }
 
    // If successful then get a local copy of the address and port
@@ -235,13 +235,7 @@ bool CActiveSocket::Open( const char* pAddr, uint16 nPort )
 }
 
 //------------------------------------------------------------------------------
-sockaddr_in* CActiveSocket::GetUdpRxAddrBuffer()
-{
-   return m_bIsMulticast ? &m_stClientSockaddr : &m_stServerSockaddr;
-}
+sockaddr_in* CActiveSocket::GetUdpRxAddrBuffer() { return m_bIsMulticast ? &m_stClientSockaddr : &m_stServerSockaddr; }
 
 //------------------------------------------------------------------------------
-sockaddr_in* CActiveSocket::GetUdpTxAddrBuffer()
-{
-   return m_bIsMulticast ? &m_stMulticastGroup : &m_stServerSockaddr;
-}
+sockaddr_in* CActiveSocket::GetUdpTxAddrBuffer() { return m_bIsMulticast ? &m_stMulticastGroup : &m_stServerSockaddr; }

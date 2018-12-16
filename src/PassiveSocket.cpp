@@ -90,7 +90,7 @@ bool CPassiveSocket::Listen( const char* pAddr, uint16 nPort, int32 nConnectionB
       }
    }
 
-   m_stServerSockaddr.sin_family = m_nSocketDomain;
+   m_stServerSockaddr.sin_family = static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain );
    m_stServerSockaddr.sin_port = htons( nPort );
 
    m_timer.SetStartTime();
