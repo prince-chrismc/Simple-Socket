@@ -117,11 +117,7 @@ bool CActiveSocket::PreConnect( const char* pAddr, uint16 nPort )
 }
 
 //------------------------------------------------------------------------------
-//
-// ConnectTCP() -
-//
-//------------------------------------------------------------------------------
-bool CActiveSocket::ConnectTCP()
+bool CActiveSocket::ConnectStreamSocket()
 {
    bool bRetVal = false;
 
@@ -157,11 +153,7 @@ bool CActiveSocket::ConnectTCP()
 }
 
 //------------------------------------------------------------------------------
-//
-// ConnectUDP() -
-//
-//------------------------------------------------------------------------------
-bool CActiveSocket::ConnectUDP()
+bool CActiveSocket::ConnectDatagramSocket()
 {
    m_timer.SetStartTime();
    const bool bRetVal = ( CONNECT( m_socket, &m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
@@ -172,26 +164,6 @@ bool CActiveSocket::ConnectUDP()
    return bRetVal;
 }
 
-//------------------------------------------------------------------------------
-//
-// ConnectRAW() -
-//
-//------------------------------------------------------------------------------
-bool CActiveSocket::ConnectRAW()
-{
-   m_timer.SetStartTime();
-   const bool bRetVal = ( CONNECT( m_socket, &m_stServerSockaddr, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
-   m_timer.SetEndTime();
-
-   TranslateSocketError();
-
-   return bRetVal;
-}
-
-//------------------------------------------------------------------------------
-//
-// Open() - Create a connection to a specified address on a specified port
-//
 //------------------------------------------------------------------------------
 bool CActiveSocket::Open( const char* pAddr, uint16 nPort )
 {
@@ -205,18 +177,20 @@ bool CActiveSocket::Open( const char* pAddr, uint16 nPort )
 
    if ( bRetVal )
    {
-      if ( m_nSocketType == CSimpleSocket::SocketTypeTcp )
+      switch ( m_nSocketType )
       {
-         bRetVal = ConnectTCP();
+      case SocketTypeTcp:
+         bRetVal = ConnectStreamSocket();
+         break;
+      case SocketTypeUdp:
+      //case SocketTypeRaw:
+         bRetVal = ConnectDatagramSocket();
+         break;
+      default:
+         SetSocketError( CSimpleSocket::SocketProtocolError );
+         bRetVal = false;
+         break;
       }
-      else if ( m_nSocketType == CSimpleSocket::SocketTypeUdp )
-      {
-         bRetVal = ConnectUDP();
-      }
-      //else if ( m_nSocketType == CSimpleSocket::SocketTypeRaw )
-      //{
-      //   bRetVal = ConnectRAW();
-      //}
    }
 
    // If successful then get a local copy of the address and port
@@ -235,7 +209,13 @@ bool CActiveSocket::Open( const char* pAddr, uint16 nPort )
 }
 
 //------------------------------------------------------------------------------
-sockaddr_in* CActiveSocket::GetUdpRxAddrBuffer() { return m_bIsMulticast ? &m_stClientSockaddr : &m_stServerSockaddr; }
+sockaddr_in* CActiveSocket::GetUdpRxAddrBuffer()
+{
+   return m_bIsMulticast ? &m_stClientSockaddr : &m_stServerSockaddr;
+}
 
 //------------------------------------------------------------------------------
-sockaddr_in* CActiveSocket::GetUdpTxAddrBuffer() { return m_bIsMulticast ? &m_stMulticastGroup : &m_stServerSockaddr; }
+sockaddr_in* CActiveSocket::GetUdpTxAddrBuffer()
+{
+   return m_bIsMulticast ? &m_stMulticastGroup : &m_stServerSockaddr;
+}

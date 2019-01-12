@@ -52,14 +52,13 @@ public:
 
    CActiveSocket( CSocketType type = SocketTypeTcp );
 
-   virtual bool Open( const char* pAddr, uint16 nPort );
+   bool Open( const char* pAddr, uint16 nPort );
 
 private:
    bool Validate( const char* pAddr, uint16 nPort );
    bool PreConnect( const char* pAddr, uint16 nPort );   // Convert and Save params for OS layer
-   bool ConnectTCP();
-   bool ConnectUDP();
-   bool ConnectRAW();
+   bool ConnectStreamSocket();
+   bool ConnectDatagramSocket();
 
    sockaddr_in* GetUdpRxAddrBuffer() override;
    sockaddr_in* GetUdpTxAddrBuffer() override;
