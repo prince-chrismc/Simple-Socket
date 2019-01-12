@@ -118,29 +118,6 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    }
 }
 
-//CSimpleSocket::CSimpleSocket( const CSimpleSocket& socket )
-//{
-//   m_socket = socket.m_socket;
-//   m_socketErrno = socket.m_socketErrno;
-//   m_sBuffer = socket.GetData();
-//   m_nBufferSize = socket.m_nBufferSize;
-//   m_nSocketDomain = socket.m_nSocketDomain;
-//   m_nSocketType = socket.m_nSocketType;
-//   m_nBytesReceived = socket.GetBytesReceived();
-//   m_nBytesSent = socket.GetBytesSent();
-//   m_nFlags = socket.m_nFlags;
-//   m_bIsMulticast = socket.m_bIsMulticast;
-//   m_bIsBlocking = socket.m_bIsBlocking;
-//
-//   SetConnectTimeout( socket.GetConnectTimeoutSec(), socket.GetConnectTimeoutUSec() );
-//   memcpy( &m_stRecvTimeout, &socket.m_stRecvTimeout, sizeof( struct timeval ) );
-//   memcpy( &m_stSendTimeout, &socket.m_stSendTimeout, sizeof( struct timeval ) );
-//   memcpy( &m_stLinger, &socket.m_stLinger, sizeof( struct linger ) );
-//   memcpy( &m_stClientSockaddr, &socket.m_stClientSockaddr, SOCKET_ADDR_IN_SIZE );
-//   memcpy( &m_stServerSockaddr, &socket.m_stServerSockaddr, SOCKET_ADDR_IN_SIZE );
-//   memcpy( &m_stMulticastGroup, &socket.m_stMulticastGroup, SOCKET_ADDR_IN_SIZE );
-//}
-
 CSimpleSocket::CSimpleSocket( CSimpleSocket&& socket ) noexcept :
    m_socket( INVALID_SOCKET ),
    m_socketErrno( CSimpleSocket::SocketInvalidSocket ),
@@ -156,12 +133,6 @@ CSimpleSocket::CSimpleSocket( CSimpleSocket&& socket ) noexcept :
    swap( *this, socket );
    return;
 }
-
-//CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket other )
-//{
-//   swap( *this, other );
-//   return *this;
-//}
 
 CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket&& other ) noexcept
 {
