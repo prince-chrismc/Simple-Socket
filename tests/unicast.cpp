@@ -365,23 +365,61 @@ TEST_CASE( "Sockets can close", "[Close][UDP]" )
 }
 #endif
 
-TEST_CASE( "Sockets are ctor copyable", "[Socket][TCP]" )
+//TEST_CASE( "Sockets are ctor copyable", "[Socket][TCP]" )
+//{
+//   CActiveSocket alpha;
+//
+//   REQUIRE( alpha.Open( "www.google.ca", 80 ) );
+//
+//   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+//
+//   REQUIRE( alpha.Receive( 17 ) == 17 );
+//   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
+//
+//   std::string httpResponse = alpha.GetData();
+//
+//   REQUIRE( httpResponse.length() > 0 );
+//   REQUIRE( httpResponse == "HTTP/1.0 200 OK\r\n" );
+//
+//   CActiveSocket beta( alpha );
+//   REQUIRE( alpha.IsSocketValid() );
+//   REQUIRE( beta.IsSocketValid() );
+//
+//   REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+//
+//   REQUIRE( beta.Receive( 6 ) == 6 );
+//   REQUIRE( beta.GetSocketError() == CSimpleSocket::SocketSuccess );
+//
+//   httpResponse = beta.GetData();
+//   CAPTURE( httpResponse );
+//   REQUIRE( httpResponse == "Date: " );
+//
+//   // Only clean up once since we duplicated the socket!
+//   REQUIRE( beta.Shutdown( CSimpleSocket::Both ) );
+//   REQUIRE( beta.Close() );
+//   REQUIRE_FALSE( beta.IsSocketValid() );
+//
+//   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) == CSimpleSocket::SocketError );
+//   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+//}
+
+TEST_CASE( "Sockets are ctor moveable", "[Socket][TCP]" )
 {
    CActiveSocket alpha;
 
-   REQUIRE( alpha.Open( "www.google.ca", 80 ) );
-
-   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
-
-   REQUIRE( alpha.Receive( 17 ) == 17 );
-   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
+   CHECK( alpha.Open( "www.google.ca", 80 ) );
+   CHECK( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+   CHECK( alpha.Receive( 17 ) == 17 );
+   CHECK( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    std::string httpResponse = alpha.GetData();
 
-   REQUIRE( httpResponse.length() > 0 );
-   REQUIRE( httpResponse == "HTTP/1.0 200 OK\r\n" );
+   CHECK( httpResponse.length() > 0 );
+   CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
 
-   CActiveSocket beta( alpha );
+   CActiveSocket beta( std::move( alpha ) );
+   REQUIRE_FALSE( alpha.IsSocketValid() );  // NOLINT(hicpp-invalid-access-moved)
+   REQUIRE( beta.IsSocketValid() );
 
    REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
 
@@ -392,37 +430,73 @@ TEST_CASE( "Sockets are ctor copyable", "[Socket][TCP]" )
    CAPTURE( httpResponse );
    REQUIRE( httpResponse == "Date: " );
 
-   // Only clean up once since we duplicated the socket!
+   // Only clean up once since the other is uninitialized!
    REQUIRE( beta.Shutdown( CSimpleSocket::Both ) );
    REQUIRE( beta.Close() );
    REQUIRE_FALSE( beta.IsSocketValid() );
 
-   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) == CSimpleSocket::SocketError );
-   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) == CSimpleSocket::SocketError );  // NOLINT(hicpp-invalid-access-moved)
+   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );  // NOLINT(hicpp-invalid-access-moved)
 }
 
-TEST_CASE( "Sockets are assign copyable", "[Socket=][TCP]" )
+//TEST_CASE( "Sockets are assign copyable", "[Socket=][TCP]" )
+//{
+//   CActiveSocket alpha;
+//
+//   CHECK( alpha.Open( "www.google.ca", 80 ) );
+//
+//   CHECK( alpha.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ),
+//                        HTTP_GET_ROOT_REQUEST.length() ) == HTTP_GET_ROOT_REQUEST.length() );
+//   CHECK( alpha.Receive( 17 ) == 17 );
+//   CHECK( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
+//
+//   std::string httpResponse = alpha.GetData();
+//
+//   CHECK( httpResponse.length() > 0 );
+//   CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
+//
+//   CActiveSocket beta;
+//   REQUIRE( beta.Close() );
+//   REQUIRE_FALSE( beta.IsSocketValid() );
+//
+//   beta = alpha;
+//   REQUIRE( beta.IsSocketValid() );
+//
+//   REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+//
+//   REQUIRE( beta.Receive( 6 ) == 6 );
+//   REQUIRE( beta.GetSocketError() == CSimpleSocket::SocketSuccess );
+//
+//   httpResponse = beta.GetData();
+//   REQUIRE( httpResponse == "Date: " );
+//
+//   // Only clean up once since we duplicated the socket!
+//   REQUIRE( beta.Shutdown( CSimpleSocket::Both ) );
+//   REQUIRE( beta.Close() );
+//   REQUIRE_FALSE( beta.IsSocketValid() );
+//}
+
+TEST_CASE( "Sockets are assign moveable", "[Socket=][TCP]" )
 {
    CActiveSocket alpha;
 
-   REQUIRE( alpha.Open( "www.google.ca", 80 ) );
-
-   REQUIRE( alpha.Send( reinterpret_cast<const uint8*>( HTTP_GET_ROOT_REQUEST.data() ),
-                        HTTP_GET_ROOT_REQUEST.length() ) == HTTP_GET_ROOT_REQUEST.length() );
-
-   REQUIRE( alpha.Receive( 17 ) == 17 );
-   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
+   CHECK( alpha.Open( "www.google.ca", 80 ) );
+   CHECK( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+   CHECK( alpha.Receive( 17 ) == 17 );
+   CHECK( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    std::string httpResponse = alpha.GetData();
 
-   REQUIRE( httpResponse.length() > 0 );
-   REQUIRE( httpResponse == "HTTP/1.0 200 OK\r\n" );
+   CHECK( httpResponse.length() > 0 );
+   CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
 
    CActiveSocket beta;
    REQUIRE( beta.Close() );
    REQUIRE_FALSE( beta.IsSocketValid() );
 
-   beta = alpha;
+   beta = std::move( alpha );
+
+   REQUIRE_FALSE( alpha.IsSocketValid() );   // NOLINT(hicpp-invalid-access-moved)
    REQUIRE( beta.IsSocketValid() );
 
    REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
@@ -431,12 +505,17 @@ TEST_CASE( "Sockets are assign copyable", "[Socket=][TCP]" )
    REQUIRE( beta.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    httpResponse = beta.GetData();
+   CAPTURE( httpResponse );
    REQUIRE( httpResponse == "Date: " );
 
-   // Only clean up once since we duplicated the socket!
+   // Only clean up once since the other is uninitialized!
    REQUIRE( beta.Shutdown( CSimpleSocket::Both ) );
    REQUIRE( beta.Close() );
    REQUIRE_FALSE( beta.IsSocketValid() );
+
+   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) ==
+            CSimpleSocket::SocketError );                                     // NOLINT(hicpp-invalid-access-moved)
+   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );   // NOLINT(hicpp-invalid-access-moved)
 }
 
 TEST_CASE( "Sockets can listen", "[Listen][TCP]" )
