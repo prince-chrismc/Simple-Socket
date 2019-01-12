@@ -104,8 +104,9 @@ endif()
 
 # Tester
 if(SIMPLE_SOCKET_TEST)
+	FILE(GLOB TESTER_SOURCES "tests/*.cpp")
     ENABLE_TESTING()
-    ADD_EXECUTABLE(Simple-Socket-Tester tests/main.cpp)
+    ADD_EXECUTABLE(Simple-Socket-Tester ${TESTER_SOURCES})
     TARGET_LINK_LIBRARIES(Simple-Socket-Tester Simple-Socket ${THREAD_LIB})
     ADD_TEST(NAME Socket-Tester COMMAND Simple-Socket-Tester)
 endif()
