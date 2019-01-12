@@ -122,11 +122,11 @@ public:
 
 public:
    CSimpleSocket( CSocketType type = SocketTypeTcp );
-   CSimpleSocket( const CSimpleSocket& socket ) = delete;
+   CSimpleSocket( const CSimpleSocket& ) = delete;
    CSimpleSocket( CSimpleSocket&& socket ) noexcept;
    virtual ~CSimpleSocket();
 
-   CSimpleSocket& operator=( const CSimpleSocket& other ) = delete;
+   CSimpleSocket& operator=( const CSimpleSocket& ) = delete;
    CSimpleSocket& operator=( CSimpleSocket&& other ) noexcept;
 
    friend void swap( CSimpleSocket& lhs, CSimpleSocket& rhs ) noexcept;
