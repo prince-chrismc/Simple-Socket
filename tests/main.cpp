@@ -48,8 +48,11 @@ TEST_CASE( "Valid sockets are created", "[Initialization]" )
       REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeUdp );
    }
 
-   SECTION( "Invalid socket instantiation", "" )
+   SECTION( "Invalid socket instantiation", "[TCP][UDP][INVALID]" )
    {
+      REQUIRE_NOTHROW( CSimpleSocket{} );
+      REQUIRE_NOTHROW( CSimpleSocket{ CSimpleSocket::SocketTypeTcp } );
+      REQUIRE_NOTHROW( CSimpleSocket{ CSimpleSocket::SocketTypeUdp } );
       REQUIRE_THROWS_AS( CSimpleSocket{ CSimpleSocket::SocketTypeInvalid }, std::runtime_error );
    }
 }
