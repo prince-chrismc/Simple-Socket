@@ -27,7 +27,7 @@ SOFTWARE.
 #include "ActiveSocket.h"   // Include header for active socket object definition
 
 static constexpr auto MAX_PACKET = 4096;
-static constexpr uint8 TEST_PACKET[] = { 'T', 'e', 's', 't', ' ', 'P', 'a', 'c', 'k', 'e', 't' };
+static constexpr uint8_t TEST_PACKET[] = { 'T', 'e', 's', 't', ' ', 'P', 'a', 'c', 'k', 'e', 't' };
 
 static constexpr int SIZEOF_TEST_PACKET = ( sizeof( TEST_PACKET ) / sizeof( TEST_PACKET[ 0 ] ) );
 static_assert( SIZEOF_TEST_PACKET == 11, "Failed to compute SIZEOF_TEST_PACKET" );

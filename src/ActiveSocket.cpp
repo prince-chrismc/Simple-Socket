@@ -53,7 +53,7 @@
 CActiveSocket::CActiveSocket( CSocketType nType ) : CSimpleSocket( nType ) {}
 
 //------------------------------------------------------------------------------
-bool CActiveSocket::Validate( const char* pAddr, uint16 nPort )
+bool CActiveSocket::Validate( const char* pAddr, uint16_t nPort )
 {
    if ( !IsSocketValid() )
    {
@@ -77,7 +77,7 @@ bool CActiveSocket::Validate( const char* pAddr, uint16 nPort )
 }
 
 //------------------------------------------------------------------------------
-bool CActiveSocket::PreConnect( const char* pAddr, uint16 nPort )
+bool CActiveSocket::PreConnect( const char* pAddr, uint16_t nPort )
 {
    bool bRetVal = true;
 
@@ -165,7 +165,7 @@ bool CActiveSocket::ConnectDatagramSocket()
 }
 
 //------------------------------------------------------------------------------
-bool CActiveSocket::Open( const char* pAddr, uint16 nPort )
+bool CActiveSocket::Open( const char* pAddr, uint16_t nPort )
 {
    bool bRetVal = Validate( pAddr, nPort );
 

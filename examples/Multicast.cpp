@@ -72,7 +72,7 @@ int main( int argc, char** argv )
             std::cout << "Tx // Sending..." << std::endl;
          }
 
-         oSender.Send( reinterpret_cast<const uint8*>( TEST_PACKET ), SIZEOF_TEST_PACKET );
+         oSender.Send( reinterpret_cast<const uint8_t*>( TEST_PACKET ), SIZEOF_TEST_PACKET );
       }
 
       oSender.Shutdown( CSimpleSocket::Both );
@@ -100,7 +100,7 @@ int main( int argc, char** argv )
    auto oRxComplete = std::async( std::launch::async, [oExitEvent, &muConsoleOut, &oReceiver]() {
       while ( oExitEvent->wait_for( 100ms ) == std::future_status::timeout )
       {
-         uint8 buffer[ SIZEOF_TEST_PACKET + 1 ] = { '\0' };
+         uint8_t buffer[ SIZEOF_TEST_PACKET + 1 ] = { '\0' };
          oReceiver.Receive( SIZEOF_TEST_PACKET, buffer );
 
          std::lock_guard<std::mutex> oPrintLock( muConsoleOut );

@@ -54,15 +54,6 @@
    constexpr auto __WORDSIZE = ( sizeof( void* ) == 8 ) ? 64 : ( sizeof( void* ) == 4 ) ? 32 : 0;
 #endif
 
-using uint8  = unsigned char;
-using int8   = char;
-using uint16 = unsigned short;
-using int16  = short;
-using uint32 = unsigned int;
-using int32  = int;
-using uint64 = unsigned long long;
-using int64  = long long;
-
 #if defined(_LINUX) || defined(_DARWIN)
    using SOCKET = int;
 #elif defined( _WIN32 )
@@ -94,7 +85,7 @@ using int64  = long long;
    #define RECV(a,b,c,d)          recv(a, (char *)b, c, d)
    #define RECVFROM(a,b,c,d,e,f)  recvfrom(a, (char *)b, c, d, (sockaddr *)e, (int *)f)
    #define RECV_FLAGS             MSG_WAITALL
-   #define SELECT(a,b,c,d,e)      select((int32)a,b,c,d,e)
+   #define SELECT(a,b,c,d,e)      select((int32_t)a,b,c,d,e)
    #define SEND(a,b,c,d)          send(a, (const char *)b, (int)c, d)
    #define SENDTO(a,b,c,d,e,f)    sendto(a, (const char *)b, (int)c, d, e, f)
    #define SEND_FLAGS             0

@@ -53,7 +53,7 @@ public:
    CPassiveSocket( CSocketType type = SocketTypeTcp );
 
    auto Accept() -> std::unique_ptr<CActiveSocket>;
-   bool Listen( const char* pAddr, uint16 nPort, int32 nConnectionBacklog = 30000 );
+   bool Listen( const char* pAddr, uint16_t nPort, int32_t nConnectionBacklog = 30000 );
 };
 
 #endif   // __PASSIVESOCKET_H__

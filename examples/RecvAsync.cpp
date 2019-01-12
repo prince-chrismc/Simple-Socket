@@ -31,7 +31,7 @@ SOFTWARE.
 
 using namespace std::chrono_literals;
 
-static constexpr const int32 NEXT_BYTE = 1;
+static constexpr const int32_t NEXT_BYTE = 1;
 static constexpr const char* TEST_PACKET = "Test Packet";
 static constexpr const char* LOCAL_HOST = "127.0.0.1";
 
@@ -57,7 +57,7 @@ public:
 
    constexpr const std::string& ToString() const { return m_sMessage; }
 
-   const uint8* GetWireFormat() const { return reinterpret_cast<const uint8*>( m_sMessage.c_str() ); }
+   const uint8_t* GetWireFormat() const { return reinterpret_cast<const uint8_t*>( m_sMessage.c_str() ); }
    size_t GetWireFormatSize() const { return m_sMessage.size(); }
 
 private:
@@ -116,7 +116,7 @@ int main( int argc, char** argv )
 {
    std::promise<void> oExitSignal;
 
-   std::promise<uint16> oPortEvent;
+   std::promise<uint16_t> oPortEvent;
    auto oPortRetval = oPortEvent.get_future();
 
    // ---------------------------------------------------------------------------------------------
@@ -154,7 +154,7 @@ int main( int argc, char** argv )
       }
    } );
 
-   const uint16 nPort = oPortRetval.get();
+   const uint16_t nPort = oPortRetval.get();
 
    // ---------------------------------------------------------------------------------------------
    // Client Code

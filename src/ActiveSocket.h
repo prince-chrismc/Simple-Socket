@@ -52,11 +52,11 @@ public:
 
    CActiveSocket( CSocketType type = SocketTypeTcp );
 
-   bool Open( const char* pAddr, uint16 nPort );
+   bool Open( const char* pAddr, uint16_t nPort );
 
 private:
-   bool Validate( const char* pAddr, uint16 nPort );
-   bool PreConnect( const char* pAddr, uint16 nPort );   // Convert and Save params for OS layer
+   bool Validate( const char* pAddr, uint16_t nPort );
+   bool PreConnect( const char* pAddr, uint16_t nPort );   // Convert and Save params for OS layer
    bool ConnectStreamSocket();
    bool ConnectDatagramSocket();
 

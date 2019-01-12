@@ -40,11 +40,11 @@ using namespace std::string_literals;
 using namespace std::string_view_literals;
 
 static constexpr auto HTTP_GET_ROOT_REQUEST = "GET / HTTP/1.0\r\n\r\n"sv;
-static constexpr uint8 DNS_QUERY[] = { '\x12', '\x34', '\x01', '\x00', '\x00', '\x01', '\x00', '\x00', '\x00', '\x00',
+static constexpr uint8_t DNS_QUERY[] = { '\x12', '\x34', '\x01', '\x00', '\x00', '\x01', '\x00', '\x00', '\x00', '\x00',
                                        '\x00', '\x00', '\x07', '\x65', '\x78', '\x61', '\x6d', '\x70', '\x6c', '\x65',
                                        '\x03', '\x63', '\x6f', '\x6d', '\x00', '\x00', '\x01', '\x00', '\x01' };
 static constexpr auto DNS_QUERY_LENGTH = ( sizeof( DNS_QUERY ) / sizeof( DNS_QUERY[ 0 ] ) );
-static constexpr uint8 TEXT_PACKET[] = { 'T', 'e', 's', 't', ' ', 'P', 'a', 'c', 'k', 'e', 't' };
+static constexpr uint8_t TEXT_PACKET[] = { 'T', 'e', 's', 't', ' ', 'P', 'a', 'c', 'k', 'e', 't' };
 static constexpr auto TEXT_PACKET_LENGTH = ( sizeof( TEXT_PACKET ) / sizeof( TEXT_PACKET[ 0 ] ) );
 
 TEST_CASE( "Open socket for communication", "[Open][UDP]" )
@@ -216,7 +216,7 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
 
    SECTION( "Using external buffer" )
    {
-      uint8 buffer[ 1368 ];
+      uint8_t buffer[ 1368 ];
       REQUIRE( socket.Receive( 1368, buffer ) == 1368 );
       REQUIRE( socket.GetBytesReceived() == 1368 );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -231,7 +231,7 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
    SECTION( "external buffer is too small" )
    {
       // sadly this test is not valid https://github.com/catchorg/Catch2/issues/553
-      // uint8 buffer[ 512 ];
+      // uint8_t buffer[ 512 ];
       // CHECK( socket.Receive( 1024, buffer ) == CSimpleSocket::SocketError );
       // CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidPointer );
    }
@@ -664,7 +664,7 @@ TEST_CASE( "Sockets can repeate", "[Listen][Open][UDP]" )
    CAPTURE( socket.GetClientPort() );
 
    auto serverRespone = std::async( std::launch::async, [&] {
-      uint8 buffer[ TEXT_PACKET_LENGTH + 1 ];
+      uint8_t buffer[ TEXT_PACKET_LENGTH + 1 ];
       REQUIRE( server.Receive( 1024, buffer ) == TEXT_PACKET_LENGTH );
 
       CHECK( server.GetClientAddr() == socket.GetClientAddr() );
@@ -747,7 +747,7 @@ TEST_CASE( "Sockets can echo", "[Listen][Open][Accept][TCP]" )
       CHECK( server.GetServerAddr() == socket.GetServerAddr() );
       CHECK( server.GetServerPort() == socket.GetServerPort() );
 
-      REQUIRE( connection->Send( (uint8*)connection->GetData().c_str(), connection->GetBytesReceived() ) ==
+      REQUIRE( connection->Send( (uint8_t*)connection->GetData().c_str(), connection->GetBytesReceived() ) ==
                TEXT_PACKET_LENGTH );
    } );
 

@@ -122,7 +122,7 @@ For a practical test lets build an echo server. The server will listen on port 6
 #include <chrono>
 #include "PassiveSocket.h" // Include header for passive socket object definition
 
-static constexpr const int32 MAX_PACKET = 4096;
+static constexpr const int32_t MAX_PACKET = 4096;
 using namespace std::chrono_literals;
 
 int main( int argc, char** argv )
@@ -141,7 +141,7 @@ int main( int argc, char** argv )
                if( pClient->Receive( MAX_PACKET ) ) // Receive request from the client.
                {
                   // Send response to client and close connection to the client.
-                  pClient->Send( reinterpret_cast<const uint8*>( pClient->GetData().c_str() ),
+                  pClient->Send( reinterpret_cast<const uint8_t*>( pClient->GetData().c_str() ),
                                  pClient->GetBytesReceived() );
                }
             }

@@ -49,7 +49,7 @@ int main( int argc, char** argv )
             if ( pClient->Receive( MAX_PACKET ) > 0 )   // Receive request from the client
             {
                // Send response to client
-               pClient->Send( reinterpret_cast<const uint8*>( pClient->GetData().c_str() ),
+               pClient->Send( reinterpret_cast<const uint8_t*>( pClient->GetData().c_str() ),
                               pClient->GetBytesReceived() );
             }
          }

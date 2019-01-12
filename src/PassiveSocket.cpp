@@ -53,7 +53,7 @@
 
 CPassiveSocket::CPassiveSocket( CSocketType nType ) : CSimpleSocket( nType ) {}
 
-bool CPassiveSocket::Listen( const char* pAddr, uint16 nPort, int32 nConnectionBacklog )
+bool CPassiveSocket::Listen( const char* pAddr, uint16_t nPort, int32_t nConnectionBacklog )
 {
 #ifdef _LINUX
    //--------------------------------------------------------------------------
