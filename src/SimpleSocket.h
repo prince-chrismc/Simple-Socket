@@ -308,21 +308,12 @@ public:
    ///  @return socket descriptor which is a signed 32 bit integer.
    SOCKET GetSocketDescriptor() { return m_socket; }
 
-   /// Return socket descriptor
-   ///  @return socket descriptor which is a signed 32 bit integer.
-   CSocketType GetSocketType() { return m_nSocketType; }
+   CSocketType GetSocketType() const { return m_nSocketType; }
 
    std::string GetClientAddr();
-
-   /// Returns the port number on which the client is connected.
-   ///  @return client port number.
-   uint16_t GetClientPort() { return m_stClientSockaddr.sin_port; }
+   uint16_t GetClientPort() const { return ntohs( m_stClientSockaddr.sin_port ); }
 
    std::string GetServerAddr();
-   in_addr GetServerAddrOnWire() const;
-
-   /// Returns the port number on which the server is connected.
-   ///  @return server port number.
    uint16_t GetServerPort() const { return ntohs( m_stServerSockaddr.sin_port ); }
 
    std::string GetJoinedGroup();
@@ -364,7 +355,7 @@ protected:
 
    /// Set internal socket error to that specified error
    ///  @param error type of error
-   void SetSocketError( CSimpleSocket::CSocketError error );
+   void SetSocketError( CSimpleSocket::CSocketError error ) { m_socketErrno = error; }
 
    /// Provides a standard error code for cross platform development by mapping the
    /// operating system error to an error defined by the CSimpleSocket class.
@@ -407,12 +398,12 @@ protected:
    SOCKET m_socket;              /// socket handle
    CSocketError m_socketErrno;   /// number of last error
    std::string m_sBuffer;        /// internal send/receive buffer
-   int32_t m_nBufferSize;          /// size of internal send/receive buffer
-   int32_t m_nSocketDomain;        /// socket type PF_INET, PF_INET6
+   int32_t m_nBufferSize;        /// size of internal send/receive buffer
+   int32_t m_nSocketDomain;      /// socket type PF_INET, PF_INET6
    CSocketType m_nSocketType;    /// socket type - UDP, TCP or RAW
-   int32_t m_nBytesReceived;       /// number of bytes received
-   int32_t m_nBytesSent;           /// number of bytes sent
-   uint32_t m_nFlags;              /// socket flags
+   int32_t m_nBytesReceived;     /// number of bytes received
+   int32_t m_nBytesSent;         /// number of bytes sent
+   uint32_t m_nFlags;            /// socket flags
    bool m_bIsBlocking;           /// is socket blocking
    bool m_bIsMulticast;          /// is the UDP socket multicast;
    struct timeval m_stConnectTimeout

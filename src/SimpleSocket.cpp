@@ -206,9 +206,6 @@ bool CSimpleSocket::Initialize()
 }
 
 //-------------------------------------------------------------------------------------------------
-void CSimpleSocket::SetSocketError( CSimpleSocket::CSocketError error ) { m_socketErrno = error; }
-
-//-------------------------------------------------------------------------------------------------
 //
 // BindInterface()
 //
@@ -358,8 +355,7 @@ bool CSimpleSocket::SetSocketDscp( int32_t nDscp )
 //-------------------------------------------------------------------------------------------------
 std::string CSimpleSocket::GetClientAddr()
 {
-   // return inet_ntoa(m_stClientSockaddr.sin_addr);
-   char buff[ 16 ];
+   char buff[ 16 ] = { '\0' };
 
    if ( inet_ntop( m_nSocketDomain, &m_stClientSockaddr.sin_addr, buff, 16 ) == nullptr )
    {
@@ -377,7 +373,6 @@ std::string CSimpleSocket::GetClientAddr()
 //-------------------------------------------------------------------------------------------------
 std::string CSimpleSocket::GetServerAddr()
 {
-   // return inet_ntoa(m_stServerSockaddr.sin_addr);
    char buff[ 16 ] = { '\0' };
 
    if ( inet_ntop( m_nSocketDomain, &m_stServerSockaddr.sin_addr, buff, 16 ) == nullptr )
@@ -388,8 +383,6 @@ std::string CSimpleSocket::GetServerAddr()
 
    return buff;
 }
-
-in_addr CSimpleSocket::GetServerAddrOnWire() const { return m_stServerSockaddr.sin_addr; }
 
 //-------------------------------------------------------------------------------------------------
 //

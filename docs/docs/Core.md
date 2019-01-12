@@ -170,6 +170,13 @@ bool Select();
 std::string DescribeError() const;
 ```
 ## Information
+### Get Socket Type
+```cpp
+/// Return socket descriptor
+///  @return socket descriptor which is a signed 32 bit integer.
+CSocketType GetSocketType() const;
+```
+
 ### Get Client Address
 ```cpp
  /// Returns clients Internet host address as a string in standard numbers-and-dots notation.
@@ -177,11 +184,25 @@ std::string DescribeError() const;
 std::string GetClientAddr();
 ```
 
+### Get Client Port
+```cpp
+/// Returns the port number on which the client is connected.
+///  @return client port number.
+uint16_t GetClientPort() const;
+```
+
 ### Get Server Address
 ```cpp
 /// Returns server Internet host address as a string in standard numbers-and-dots notation.
 ///  @return IP address or empty if invalid
 std::string GetServerAddr();
+```
+
+### Get Server Port
+```cpp
+/// Returns the port number on which the server is connected.
+///  @return server port number.
+uint16_t GetServerPort() const;
 ```
 
 ### Get Joined Group
