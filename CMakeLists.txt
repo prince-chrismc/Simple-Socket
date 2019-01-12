@@ -66,6 +66,7 @@ set(DATA_FILE docs/README.md )
 FILE(GLOB SIMPLE_SOCKET_HEADERS "src/*.h")
 FILE(GLOB SIMPLE_SOCKET_SOURCES "src/*.cpp")
 LIST(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS}) # append to sources so that dependency checks work on headers
+FILE(GLOB TESTER_SOURCES "tests/*.cpp")
 
 # Project Options
 OPTION(BUILD_SHARED_LIBS "Build Simple-Socket as a shared library." OFF)
@@ -104,7 +105,6 @@ endif()
 
 # Tester
 if(SIMPLE_SOCKET_TEST)
-	FILE(GLOB TESTER_SOURCES "tests/*.cpp")
     ENABLE_TESTING()
     ADD_EXECUTABLE(Simple-Socket-Tester ${TESTER_SOURCES})
     TARGET_LINK_LIBRARIES(Simple-Socket-Tester Simple-Socket ${THREAD_LIB})
@@ -120,7 +120,7 @@ AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "8" )
     APPEND_COVERAGE_COMPILER_FLAGS()
     set(COVERAGE_LCOV_EXCLUDES '*tests/*' '*examples/*' '*7/*')
 
-    ADD_EXECUTABLE(Simple-Socket-Coverage tests/main.cpp ${SIMPLE_SOCKET_SOURCES})
+    ADD_EXECUTABLE(Simple-Socket-Coverage ${TESTER_SOURCES} ${SIMPLE_SOCKET_SOURCES})
     TARGET_LINK_LIBRARIES(Simple-Socket-Coverage ${THREAD_LIB} gcov)
     SETUP_TARGET_FOR_COVERAGE_LCOV(NAME coverage EXECUTABLE Simple-Socket-Coverage)
 endif()
