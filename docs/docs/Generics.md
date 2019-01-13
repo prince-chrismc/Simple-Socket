@@ -71,4 +71,5 @@ SocketConnectionReset     | Connection was forcibly closed by the remote host.
 SocketAddressInUse        | Address already in use.
 SocketInvalidPointer      | Pointer type supplied as argument is invalid.
 SocketInvalidOperation    | An invalid argument was provide for the requested action.
+SocketAlreadyConnected    | A requested action was not possible because of socket state.
 SocketEunknown            | Unknown error please report to prince.chrismc@gmail.com

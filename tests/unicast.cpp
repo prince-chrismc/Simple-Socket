@@ -41,8 +41,8 @@ using namespace std::string_view_literals;
 
 static constexpr auto HTTP_GET_ROOT_REQUEST = "GET / HTTP/1.0\r\n\r\n"sv;
 static constexpr uint8_t DNS_QUERY[] = { '\x12', '\x34', '\x01', '\x00', '\x00', '\x01', '\x00', '\x00', '\x00', '\x00',
-                                       '\x00', '\x00', '\x07', '\x65', '\x78', '\x61', '\x6d', '\x70', '\x6c', '\x65',
-                                       '\x03', '\x63', '\x6f', '\x6d', '\x00', '\x00', '\x01', '\x00', '\x01' };
+                                         '\x00', '\x00', '\x07', '\x65', '\x78', '\x61', '\x6d', '\x70', '\x6c', '\x65',
+                                         '\x03', '\x63', '\x6f', '\x6d', '\x00', '\x00', '\x01', '\x00', '\x01' };
 static constexpr auto DNS_QUERY_LENGTH = ( sizeof( DNS_QUERY ) / sizeof( DNS_QUERY[ 0 ] ) );
 static constexpr uint8_t TEXT_PACKET[] = { 'T', 'e', 's', 't', ' ', 'P', 'a', 'c', 'k', 'e', 't' };
 static constexpr auto TEXT_PACKET_LENGTH = ( sizeof( TEXT_PACKET ) / sizeof( TEXT_PACKET[ 0 ] ) );
@@ -322,6 +322,8 @@ TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
 
    std::string httpResponse = socket.GetData();
 
+   CAPTURE( httpResponse );
+
    CHECK( httpResponse.length() > 0 );
    CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
 
@@ -348,6 +350,7 @@ TEST_CASE( "Sockets can close", "[Close][UDP]" )
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    const std::string dnsResponse = socket.GetData();
+   CAPTURE( dnsResponse );
 
    CHECK( dnsResponse.length() == 45 );
    CHECK_THAT( dnsResponse,
@@ -380,7 +383,7 @@ TEST_CASE( "Sockets are ctor moveable", "[Socket][TCP]" )
    CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
 
    CActiveSocket beta( std::move( alpha ) );
-   REQUIRE_FALSE( alpha.IsSocketValid() );  // NOLINT(hicpp-invalid-access-moved)
+   REQUIRE_FALSE( alpha.IsSocketValid() );   // NOLINT(hicpp-invalid-access-moved)
    REQUIRE( beta.IsSocketValid() );
 
    REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
@@ -397,8 +400,9 @@ TEST_CASE( "Sockets are ctor moveable", "[Socket][TCP]" )
    REQUIRE( beta.Close() );
    REQUIRE_FALSE( beta.IsSocketValid() );
 
-   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) == CSimpleSocket::SocketError );  // NOLINT(hicpp-invalid-access-moved)
-   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );  // NOLINT(hicpp-invalid-access-moved)
+   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) ==
+            CSimpleSocket::SocketError );                                     // NOLINT(hicpp-invalid-access-moved)
+   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );   // NOLINT(hicpp-invalid-access-moved)
 }
 
 TEST_CASE( "Sockets are assign moveable", "[Socket=][TCP]" )
@@ -795,11 +799,101 @@ TEST_CASE( "Sockets can echo", "[Listen][Open][Accept][TCP]" )
    REQUIRE( actualResponse.length() == TEXT_PACKET_LENGTH );
    REQUIRE_THAT( actualResponse, Catch::StartsWith( expectedResponse ) );
 
-   REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
-   REQUIRE( socket.Close() );
-   REQUIRE_FALSE( socket.IsSocketValid() );
+   CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+   CHECK( socket.Close() );
+   CHECK_FALSE( socket.IsSocketValid() );
 
-   REQUIRE( server.Shutdown( CSimpleSocket::Both ) );
-   REQUIRE( server.Close() );
-   REQUIRE_FALSE( server.IsSocketValid() );
+   CHECK( server.Shutdown( CSimpleSocket::Both ) );
+   CHECK( server.Close() );
+   CHECK_FALSE( server.IsSocketValid() );
+}
+
+TEST_CASE( "Sockets opening twice", "[Open]" )
+{
+   SECTION( "Stream sockets FAIL to connect again", "[TCP]" )
+   {
+      CActiveSocket socket;
+
+      REQUIRE( socket.Open( "www.google.ca", 80 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+
+      CHECK( socket.Receive( 17 ) == 17 );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      std::string httpResponse = socket.GetData();
+
+      CAPTURE( httpResponse );
+
+      CHECK( httpResponse.length() > 0 );
+      CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
+
+      REQUIRE_FALSE( socket.Open( "github.com", 80 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketAlreadyConnected );
+
+      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+      CHECK( socket.Close() );
+      CHECK_FALSE( socket.IsSocketValid() );
+   }
+
+#ifndef _DARWIN
+   SECTION( "Datagram sockets ARE able to open", "[UDP]" )
+   {
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+
+      CHECK( socket.GetServerAddr() == "0.0.0.0" );
+      CHECK( socket.GetServerPort() == 0 );
+
+      REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.GetServerAddr() == "8.8.8.8" );
+      CHECK( socket.GetServerPort() == 53 );
+
+      CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.Receive( 1024 ) == 45 );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      const std::string googleDnsResponse = socket.GetData();
+      CAPTURE( googleDnsResponse );
+
+      CHECK( googleDnsResponse.length() == 45 );
+      CHECK_THAT( googleDnsResponse,
+                  Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
+                                     "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
+                                     "\x01\x00\x01\x00\x00"s ) );
+      CHECK_THAT( googleDnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
+
+      REQUIRE( socket.Open( "1.1.1.1", 53 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.GetServerAddr() == "1.1.1.1" );
+      CHECK( socket.GetServerPort() == 53 );
+
+      CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.Receive( 1024 ) == 45 );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      const std::string cloudfareDnsResponse = socket.GetData();
+      CAPTURE( cloudfareDnsResponse );
+
+      CHECK( cloudfareDnsResponse.length() == 45 );
+      REQUIRE_THAT( cloudfareDnsResponse,
+                    Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
+                                       "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
+                                       "\x01\x00\x01\x00\x00"s ) );
+      REQUIRE_THAT( cloudfareDnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
+
+      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+      CHECK( socket.Close() );
+      CHECK_FALSE( socket.IsSocketValid() );
+
+      REQUIRE_FALSE( googleDnsResponse == cloudfareDnsResponse );
+   }
+#endif
 }

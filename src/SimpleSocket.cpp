@@ -1096,6 +1096,9 @@ void CSimpleSocket::TranslateSocketError( void )
    case EADDRINUSE:
       SetSocketError( CSimpleSocket::SocketAddressInUse );
       break;
+   case EISCONN:
+      SetSocketError( CSimpleSocket::SocketAlreadyConnected );
+      break;
    default:
       SetSocketError( CSimpleSocket::SocketEunknown );
       break;
@@ -1156,6 +1159,9 @@ void CSimpleSocket::TranslateSocketError( void )
       break;
    case WSAEFAULT:
       SetSocketError( CSimpleSocket::SocketInvalidPointer );
+      break;
+   case WSAEISCONN:
+      SetSocketError( CSimpleSocket::SocketAlreadyConnected );
       break;
    default:
       SetSocketError( CSimpleSocket::SocketEunknown );
