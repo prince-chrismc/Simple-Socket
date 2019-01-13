@@ -533,8 +533,8 @@ TEST_CASE( "Sockets can listen", "[Listen][TCP]" )
 
       CPassiveSocket secondSocket;
 
-      CHECK( secondSocket.Listen( "127.0.0.1", 54683 ) );
-      CHECK( secondSocket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( secondSocket.Listen( "127.0.0.1", 54683 ) );
+      REQUIRE( secondSocket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
       CHECK( secondSocket.GetServerAddr() == "127.0.0.1" );
       CHECK( secondSocket.GetServerPort() == 54683 );
@@ -555,6 +555,33 @@ TEST_CASE( "Sockets can listen", "[Listen][TCP]" )
 
       CHECK( duplicateSocket.GetServerAddr() == "0.0.0.0" );
       CHECK( duplicateSocket.GetServerPort() == 0 );
+   }
+
+   SECTION( "BindInterface then Listen on same ip" )
+   {
+      REQUIRE( socket.BindInterface( "127.0.0.1" ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE_FALSE( socket.Listen( "127.0.0.1", 54683 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidOperation );
+   }
+
+   SECTION( "BindInterface then Listen on different ip" )
+   {
+      REQUIRE( socket.BindInterface( "127.0.0.1" ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE_FALSE( socket.Listen( nullptr, 54683 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidOperation );
+   }
+
+   SECTION( "Listen then BindInterface" )
+   {
+      REQUIRE( socket.Listen( nullptr, 54683 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE_FALSE( socket.BindInterface( "127.0.0.1" ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidOperation );
    }
 }
 
