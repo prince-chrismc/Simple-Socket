@@ -392,6 +392,9 @@ private:
    /// @return true data was successfully sent, else return false;
    bool Flush();
 
+   bool BindUnicastInterface( const char* pInterface );
+   bool BindMulticastInterface( const char* pInterface );
+
    virtual sockaddr_in* GetUdpRxAddrBuffer();
    virtual sockaddr_in* GetUdpTxAddrBuffer();
 

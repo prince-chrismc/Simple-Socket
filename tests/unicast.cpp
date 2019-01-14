@@ -447,7 +447,7 @@ TEST_CASE( "Sockets are assign moveable", "[Socket=][TCP]" )
    REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );   // NOLINT(hicpp-invalid-access-moved)
 }
 
-TEST_CASE( "Sockets can listen", "[Listen][TCP]" )
+TEST_CASE( "Sockets can listen", "[Listen][Bind][TCP]" )
 {
    CPassiveSocket socket;
 

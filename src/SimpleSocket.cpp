@@ -195,7 +195,7 @@ bool CSimpleSocket::Initialize()
 
    m_timer.SetStartTime();
 
-   /* Zero may not work with SOCK_RAW */
+   // TO DO : Zero may not work with SOCK_RAW
    m_socket = socket( m_nSocketDomain, m_nSocketType, 0 );   // Create the basic Socket Handle
 
    m_timer.SetEndTime();
@@ -212,35 +212,42 @@ bool CSimpleSocket::Initialize()
 //-------------------------------------------------------------------------------------------------
 bool CSimpleSocket::BindInterface( const char* pInterface )
 {
-   bool bRetVal = false;
+   return GetMulticast() ? BindMulticastInterface( pInterface ) : BindUnicastInterface( pInterface );
+}
 
-   if ( GetMulticast() )
+bool CSimpleSocket::BindUnicastInterface( const char* pInterface )
+{
+   bool bRetVal = ( pInterface != nullptr && pInterface[ 0 ] != '\0' );
+
+   if ( bRetVal )
    {
-      if ( pInterface )
-      {
-         in_addr stInterfaceAddr{};
-         memset( &stInterfaceAddr, 0, sizeof( stInterfaceAddr ) );
-         inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.s_addr );
+      sockaddr_in stInterfaceAddr{};
+      // Set up the sockaddr structure
+      stInterfaceAddr.sin_family = static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain );
+      inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.sin_addr.s_addr );
+      stInterfaceAddr.sin_port = 0;
 
-         bRetVal = ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_MULTICAST_IF, &stInterfaceAddr, sizeof( stInterfaceAddr ) ) ==
-                     SocketSuccess );
-         TranslateSocketError();
-      }
+      // Bind the socket using the such that it only use a specified interface
+      bRetVal = ( BIND( m_socket, &stInterfaceAddr, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
+      TranslateSocketError();
    }
-   else
-   {
-      if ( pInterface )
-      {
-         sockaddr_in stInterfaceAddr{};
-         // Set up the sockaddr structure
-         stInterfaceAddr.sin_family = static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain );
-         inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.sin_addr.s_addr );
-         stInterfaceAddr.sin_port = 0;
 
-         // Bind the socket using the such that it only use a specified interface
-         bRetVal = ( BIND( m_socket, &stInterfaceAddr, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
-         TranslateSocketError();
-      }
+   return bRetVal;
+}
+
+bool CSimpleSocket::BindMulticastInterface( const char* pInterface )
+{
+   bool bRetVal = ( pInterface != nullptr && pInterface[ 0 ] != '\0' );
+
+   if ( bRetVal )
+   {
+      in_addr stInterfaceAddr{};
+      memset( &stInterfaceAddr, 0, sizeof( stInterfaceAddr ) );
+      inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.s_addr );
+
+      bRetVal = ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_MULTICAST_IF, &stInterfaceAddr, sizeof( stInterfaceAddr ) ) ==
+                  SocketSuccess );
+      TranslateSocketError();
    }
 
    return bRetVal;
@@ -325,31 +332,6 @@ bool CSimpleSocket::JoinMulticast( const char* pGroup, uint16_t nPort )
 
 //-------------------------------------------------------------------------------------------------
 //
-// SetSocketDscp()
-//
-//-------------------------------------------------------------------------------------------------
-bool CSimpleSocket::SetSocketDscp( int32_t nDscp )
-{
-   bool bRetVal = true;
-   int32_t nTempVal = nDscp;
-
-   nTempVal <<= 4;
-   nTempVal /= 4;
-
-   if ( IsSocketValid() )
-   {
-      if ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_TOS, &nTempVal, sizeof( nTempVal ) ) == SocketError )
-      {
-         TranslateSocketError();
-         bRetVal = false;
-      }
-   }
-
-   return bRetVal;
-}
-
-//-------------------------------------------------------------------------------------------------
-//
 // GetClientAddr()
 //
 //-------------------------------------------------------------------------------------------------
@@ -424,6 +406,31 @@ int32_t CSimpleSocket::GetSocketDscp()
    }
 
    return nTempVal;
+}
+
+//-------------------------------------------------------------------------------------------------
+//
+// SetSocketDscp()
+//
+//-------------------------------------------------------------------------------------------------
+bool CSimpleSocket::SetSocketDscp( int32_t nDscp )
+{
+   bool bRetVal = true;
+   int32_t nTempVal = nDscp;
+
+   nTempVal <<= 4;
+   nTempVal /= 4;
+
+   if ( IsSocketValid() )
+   {
+      if ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_TOS, &nTempVal, sizeof( nTempVal ) ) == SocketError )
+      {
+         TranslateSocketError();
+         bRetVal = false;
+      }
+   }
+
+   return bRetVal;
 }
 
 //-------------------------------------------------------------------------------------------------
