@@ -134,7 +134,6 @@ public:
    friend void swap( CSimpleSocket& lhs, CSimpleSocket& rhs ) noexcept;
 
    bool Shutdown( CShutdownMode nShutdown );
-
    bool Close();
 
    bool Select();
@@ -145,7 +144,7 @@ public:
    std::string DescribeError() const;
    static std::string DescribeError( CSocketError err );
 
-   virtual int32_t Receive( uint32_t nMaxBytes = 1, uint8_t* pBuffer = nullptr );
+   int32_t Receive( uint32_t nMaxBytes = 1, uint8_t* pBuffer = nullptr );
 
    /// Attempts to send a block of data on an established connection.
    /// @param pBuf block of data to be sent.
@@ -180,21 +179,24 @@ public:
    /// @return number of bytes written to the out socket descriptor.
    virtual int32_t SendFile( int32_t nOutFd, int32_t nInFd, off_t* pOffset, int32_t nCount );
 
-   bool IsNonblocking() const;
+   bool IsNonblocking() const { return !m_bIsBlocking; }
+   bool SetBlocking();
+   bool SetNonblocking();
 
-   /// Set the socket to blocking.
-   /// @return true if successful set to blocking, else return false;
-   bool SetBlocking( void );
+   const std::string& GetData() const { return m_sBuffer; }
+   int32_t GetBytesReceived() const { return m_nBytesReceived; }
+   int32_t GetBytesSent() const { return m_nBytesSent; }
 
-   /// Set the socket as non-blocking.
-   /// @return true if successful set to non-blocking, else return false;
-   bool SetNonblocking( void );
+   /// IGMPv2 Join for a multicast group.This options is only valid for
+   /// socket descriptors of type CSimpleSocket::SocketTypeUdp and
+   /// GetMulticast() is true
+   /// @return true if the operation completes sucessfully or else an
+   /// error will be set.
+   bool JoinMulticast( const char* pGroup, uint16_t nPort );
 
-   std::string GetData() const;
-
-   int32_t GetBytesReceived() const;
-
-   int32_t GetBytesSent() const;
+   /// Bind socket to a specific interface when using unicast or multicast.
+   /// @return true if successfully bound to interface
+   bool BindInterface( const char* pInterface );
 
    /// Controls the actions taken when CSimpleSocket::Close is executed on a
    /// socket object that has unsent data.  The default value for this option
@@ -219,72 +221,20 @@ public:
    /// @return true if option successfully set
    bool SetOptionReuseAddr();
 
-   int32_t GetConnectTimeoutSec() const;
-
-   int32_t GetConnectTimeoutUSec() const;
-
+   int32_t GetConnectTimeoutSec() const { return m_stConnectTimeout.tv_sec; }
+   int32_t GetConnectTimeoutUSec() const { return m_stConnectTimeout.tv_usec; }
    void SetConnectTimeout( int32_t nConnectTimeoutSec, int32_t nConnectTimeoutUsec );
 
-   /// Gets the timeout value that specifies the maximum number of seconds a
-   /// a call to CSimpleSocket::Receive waits until it completes.
-   /// @return the length of time in seconds
-   int32_t GetReceiveTimeoutSec( void ) { return m_stRecvTimeout.tv_sec; }
-
-   /// Gets the timeout value that specifies the maximum number of microseconds
-   /// a call to CSimpleSocket::Receive waits until it completes.
-   /// @return the length of time in microseconds
-   int32_t GetReceiveTimeoutUSec( void ) { return m_stRecvTimeout.tv_usec; }
-
-   /// Sets the timeout value that specifies the maximum amount of time a call
-   /// to CSimpleSocket::Receive waits until it completes. Use the method
-   /// CSimpleSocket::SetReceiveTimeout to specify the number of seconds to wait.
-   /// If a call to CSimpleSocket::Receive has blocked for the specified length of
-   /// time without receiving additional data, it returns with a partial count
-   /// or CSimpleSocket::GetSocketError set to CSimpleSocket::SocketEwouldblock if no data
-   /// were received.
-   ///  @param nRecvTimeoutSec of timeout in seconds.
-   ///  @param nRecvTimeoutUsec of timeout in microseconds.
-   ///  @return true if socket timeout was successfully set.
+   int32_t GetReceiveTimeoutSec() const { return m_stRecvTimeout.tv_sec; }
+   int32_t GetReceiveTimeoutUSec() const { return m_stRecvTimeout.tv_usec; }
    bool SetReceiveTimeout( int32_t nRecvTimeoutSec, int32_t nRecvTimeoutUsec = 0 );
 
-   /// Enable/disable multicast for a socket.  This options is only valid for
-   /// socket descriptors of type CSimpleSocket::SocketTypeUdp.
-   /// @return true if multicast was enabled or false if socket type is not
-   /// CSimpleSocket::SocketTypeUdp and the error will be set to
-   /// CSimpleSocket::SocketProtocolError
-   bool SetMulticast( bool bEnable, uint8_t multicastTTL = 1 );
-
-   /// Return true if socket is multicast or false is socket is unicast
-   /// @return true if multicast is enabled
-   bool GetMulticast() { return m_bIsMulticast; }
-
-   /// IGMPv2 Join for a multicast group.This options is only valid for
-   /// socket descriptors of type CSimpleSocket::SocketTypeUdp and
-   /// GetMulticast() is true
-   /// @return true if the operation completes sucessfully or else an
-   /// error will be set.
-   bool JoinMulticast( const char* pGroup, uint16_t nPort );
-
-   /// Bind socket to a specific interface when using unicast or multicast.
-   /// @return true if successfully bound to interface
-   bool BindInterface( const char* pInterface );
-
-   /// Gets the timeout value that specifies the maximum number of seconds a
-   /// a call to CSimpleSocket::Send waits until it completes.
-   /// @return the length of time in seconds
-   int32_t GetSendTimeoutSec( void ) { return m_stSendTimeout.tv_sec; }
-
-   /// Gets the timeout value that specifies the maximum number of microseconds
-   /// a call to CSimpleSocket::Send waits until it completes.
-   /// @return the length of time in microseconds
-   int32_t GetSendTimeoutUSec( void ) { return m_stSendTimeout.tv_usec; }
-
-   /// Gets the timeout value that specifies the maximum amount of time a call
-   /// to CSimpleSocket::Send waits until it completes.
-   /// @return the length of time in seconds
+   int32_t GetSendTimeoutSec() const { return m_stSendTimeout.tv_sec; }
+   int32_t GetSendTimeoutUSec() const { return m_stSendTimeout.tv_usec; }
    bool SetSendTimeout( int32_t nSendTimeoutSec, int32_t nSendTimeoutUsec = 0 );
 
-   CSocketError GetSocketError() const { return m_socketErrno; }
+   bool SetMulticast( bool bEnable, uint8_t multicastTTL = 1 );
+   bool GetMulticast() const { return m_bIsMulticast; }
 
    /// Get the total time the of the last operation in milliseconds.
    ///  @return number of milliseconds of last operation.
@@ -305,10 +255,7 @@ public:
    /// <br><br> \b NOTE: Windows special notes http://support.microsoft.com/kb/248611.
    bool SetSocketDscp( int nDscp );
 
-   /// Return socket descriptor
-   ///  @return socket descriptor which is a signed 32 bit integer.
-   SOCKET GetSocketDescriptor() { return m_socket; }
-
+   CSocketError GetSocketError() const { return m_socketErrno; }
    CSocketType GetSocketType() const { return m_nSocketType; }
 
    std::string GetClientAddr();
@@ -327,7 +274,7 @@ public:
    /// Get the TCP send buffer window size for the current socket object.
    /// <br><br>\b NOTE: Linux will set the send buffer to twice the value passed.
    ///  @return zero on failure else the number of bytes of the TCP receive buffer window size if successful.
-   uint32_t GetSendWindowSize() { return GetWindowSize( SO_SNDBUF ); };
+   uint32_t GetSendWindowSize() { return GetWindowSize( SO_SNDBUF ); }
 
    /// Set the TCP receive buffer window size for the current socket object.
    /// <br><br>\b NOTE: Linux will set the receive buffer to twice the value passed.
@@ -348,6 +295,10 @@ public:
    bool EnableNagleAlgoritm();
 
 protected:
+   /// Return socket descriptor
+   ///  @return socket descriptor which is a signed 32 bit integer.
+   SOCKET GetSocketDescriptor() { return m_socket; }
+
    /// Initialize instance of CSocket.  This method MUST be called before an
    /// object can be used. Errors : CSocket::SocketProtocolError,
    /// CSocket::SocketInvalidSocket,
@@ -395,8 +346,8 @@ private:
    bool BindUnicastInterface( const char* pInterface );
    bool BindMulticastInterface( const char* pInterface );
 
-   virtual sockaddr_in* GetUdpRxAddrBuffer();
-   virtual sockaddr_in* GetUdpTxAddrBuffer();
+   virtual sockaddr_in* GetUdpRxAddrBuffer() { return &m_stClientSockaddr; };
+   virtual sockaddr_in* GetUdpTxAddrBuffer() { return m_bIsMulticast ? &m_stMulticastGroup : &m_stClientSockaddr; };
 
 protected:
    SOCKET m_socket;              /// socket handle

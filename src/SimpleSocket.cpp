@@ -675,12 +675,6 @@ bool CSimpleSocket::Flush()
 }
 
 //-------------------------------------------------------------------------------------------------
-sockaddr_in* CSimpleSocket::GetUdpRxAddrBuffer() { return &m_stClientSockaddr; }
-
-//-------------------------------------------------------------------------------------------------
-sockaddr_in* CSimpleSocket::GetUdpTxAddrBuffer() { return m_bIsMulticast ? &m_stMulticastGroup : &m_stClientSockaddr; }
-
-//-------------------------------------------------------------------------------------------------
 //
 // Writev -
 //
@@ -800,12 +794,6 @@ bool CSimpleSocket::SetOptionReuseAddr()
 }
 
 //-------------------------------------------------------------------------------------------------
-int32_t CSimpleSocket::GetConnectTimeoutSec() const { return m_stConnectTimeout.tv_sec; }
-
-//-------------------------------------------------------------------------------------------------
-int32_t CSimpleSocket::GetConnectTimeoutUSec() const { return m_stConnectTimeout.tv_usec; }
-
-//-------------------------------------------------------------------------------------------------
 void CSimpleSocket::SetConnectTimeout( int32_t nConnectTimeoutSec, int32_t nConnectTimeoutUsec )
 {
    m_stConnectTimeout.tv_sec = nConnectTimeoutSec;
@@ -908,18 +896,6 @@ int32_t CSimpleSocket::Receive( uint32_t nMaxBytes, uint8_t* pBuffer )
 
    return m_nBytesReceived;
 }
-
-//-------------------------------------------------------------------------------------------------
-std::string CSimpleSocket::GetData() const { return m_sBuffer; }
-
-//-------------------------------------------------------------------------------------------------
-int32_t CSimpleSocket::GetBytesReceived() const { return m_nBytesReceived; }
-
-//-------------------------------------------------------------------------------------------------
-int32_t CSimpleSocket::GetBytesSent() const { return m_nBytesSent; }
-
-//-------------------------------------------------------------------------------------------------
-bool CSimpleSocket::IsNonblocking() const { return !m_bIsBlocking; }
 
 //-------------------------------------------------------------------------------------------------
 //

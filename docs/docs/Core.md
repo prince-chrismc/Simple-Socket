@@ -111,7 +111,7 @@ The internal buffer is only valid until the next call to Receive() returns, or u
 /// @return number of bytes actually received.
 /// @return of zero means the connection has been shutdown on the other side.
 /// @return of -1 means that an error has occurred.
-virtual int32 Receive(uint32 nMaxBytes = 1, uint8 * pBuffer = nullptr);
+int32 Receive(uint32 nMaxBytes = 1, uint8 * pBuffer = nullptr);
 ```
 
 ### Get Data
@@ -119,7 +119,7 @@ virtual int32 Receive(uint32 nMaxBytes = 1, uint8 * pBuffer = nullptr);
 /// Get a pointer to internal receive buffer. This memory is managed
 /// internally by the CSocket class.
 /// @return copy of data if valid, else returns empty.
-str::string GetData();
+const std::string& GetData();
 ```
 
 ### Shutdown
