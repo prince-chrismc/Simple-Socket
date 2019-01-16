@@ -32,18 +32,18 @@ TEST_CASE( "Valid sockets are created", "[Initialization]" )
 {
    SECTION( "TCP socket instantiation", "[TCP]" )
    {
-      CSimpleSocket socket;
+      const CSimpleSocket socket;
 
-      REQUIRE( socket.GetSocketDescriptor() != INVALID_SOCKET );
+      REQUIRE( socket.IsSocketValid() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
    }
 
    SECTION( "UDP socket instantiation", "[UDP]" )
    {
-      CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
+      const CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
 
-      REQUIRE( socket.GetSocketDescriptor() != INVALID_SOCKET );
+      REQUIRE( socket.IsSocketValid() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeUdp );
    }

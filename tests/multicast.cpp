@@ -33,12 +33,13 @@ TEST_CASE( "Valid sockets are multicast", "[Initialization]" )
    {
       CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
 
-      CHECK( socket.GetSocketDescriptor() != INVALID_SOCKET );
+      CHECK( socket.IsSocketValid() );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeUdp );
 
       REQUIRE_FALSE( socket.GetMulticast() );
       REQUIRE( socket.SetMulticast( true ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       REQUIRE( socket.GetMulticast() );
    }
 
@@ -46,7 +47,7 @@ TEST_CASE( "Valid sockets are multicast", "[Initialization]" )
    {
       CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
 
-      CHECK( socket.GetSocketDescriptor() != INVALID_SOCKET );
+      CHECK( socket.IsSocketValid() );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeUdp );
 
@@ -54,8 +55,10 @@ TEST_CASE( "Valid sockets are multicast", "[Initialization]" )
       REQUIRE( socket.SetMulticast( true ) );
 
       REQUIRE( socket.GetMulticast() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
       REQUIRE( socket.SetMulticast( false ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       REQUIRE_FALSE( socket.GetMulticast() );
    }
 
@@ -63,12 +66,13 @@ TEST_CASE( "Valid sockets are multicast", "[Initialization]" )
    {
       CSimpleSocket socket;
 
-      CHECK( socket.GetSocketDescriptor() != INVALID_SOCKET );
+      CHECK( socket.IsSocketValid() );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
 
       REQUIRE_FALSE( socket.GetMulticast() );
       REQUIRE_FALSE( socket.SetMulticast( true ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
       REQUIRE_FALSE( socket.GetMulticast() );
    }
 }
