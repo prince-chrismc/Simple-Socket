@@ -63,52 +63,52 @@ set(BUILD_VERSION ${BUILD_MAJOR}.${BUILD_MINOR}.${BUILD_VERSION})
 include_directories(src)
 
 set(DATA_FILE docs/README.md )
-FILE(GLOB SIMPLE_SOCKET_HEADERS "src/*.h")
-FILE(GLOB SIMPLE_SOCKET_SOURCES "src/*.cpp")
-LIST(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS}) # append to sources so that dependency checks work on headers
-FILE(GLOB TESTER_SOURCES "tests/*.cpp")
+file(GLOB SIMPLE_SOCKET_HEADERS "src/*.h")
+file(GLOB SIMPLE_SOCKET_SOURCES "src/*.cpp")
+LIST(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS})
+file(GLOB TESTER_SOURCES "tests/*.cpp")
 
 # Project Options
-OPTION(BUILD_SHARED_LIBS "Build Simple-Socket as a shared library." OFF)
-OPTION(USE_LIBCXX "Build using libc++ as the standard library when using clang." OFF)
-OPTION(SIMPLE_SOCKET_EXAMPLES "Build the examples" ON)
-OPTION(SIMPLE_SOCKET_TEST "Build the tester" OFF)
-OPTION(SIMPLE_SOCKET_COVERAGE "Build the tester" OFF)
+option(BUILD_SHARED_LIBS "Build Simple-Socket as a shared library." OFF)
+option(USE_LIBCXX "Build using libc++ as the standard library when using clang." OFF)
+option(SIMPLE_SOCKET_EXAMPLES "Build the examples" ON)
+option(SIMPLE_SOCKET_TEST "Build the tester" OFF)
+option(SIMPLE_SOCKET_COVERAGE "Build the tester" OFF)
 mark_as_advanced(SIMPLE_SOCKET_TEST SIMPLE_SOCKET_COVERAGE)
 
 # Build the lib and install into configured prefix
-ADD_LIBRARY(Simple-Socket ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
+add_library(Simple-Socket ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
 install(TARGETS Simple-Socket
-                RUNTIME DESTINATION bin
-                ARCHIVE DESTINATION lib )
+        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib )
 install(FILES ${SIMPLE_SOCKET_HEADERS} DESTINATION include)
-TARGET_LINK_LIBRARIES(Simple-Socket ${PROJECT_LIBS})
+target_link_libraries(Simple-Socket ${PROJECT_LIBS})
 set_target_properties(Simple-Socket PROPERTIES VERSION ${BUILD_VERSION} SOVERSION ${BUILD_MAJOR})
 
 # Examples
 if(SIMPLE_SOCKET_EXAMPLES)
-    ADD_EXECUTABLE(asyncclient-example examples/RecvAsync.cpp)
-    TARGET_LINK_LIBRARIES(asyncclient-example Simple-Socket ${THREAD_LIB})
+    add_executable(asyncclient-example examples/RecvAsync.cpp)
+    target_link_libraries(asyncclient-example Simple-Socket ${THREAD_LIB})
 
-    ADD_EXECUTABLE(querydaytime-example examples/QueryDayTime.cpp)
-    TARGET_LINK_LIBRARIES(querydaytime-example Simple-Socket)
+    add_executable(querydaytime-example examples/QueryDayTime.cpp)
+    target_link_libraries(querydaytime-example Simple-Socket)
 
-    ADD_EXECUTABLE(echoserver-example examples/EchoServer.cpp)
-    TARGET_LINK_LIBRARIES(echoserver-example Simple-Socket ${THREAD_LIB})
+    add_executable(echoserver-example examples/EchoServer.cpp)
+    target_link_libraries(echoserver-example Simple-Socket ${THREAD_LIB})
 
-    ADD_EXECUTABLE(echoclient-example examples/EchoClient.cpp)
-    TARGET_LINK_LIBRARIES(echoclient-example Simple-Socket)
+    add_executable(echoclient-example examples/EchoClient.cpp)
+    target_link_libraries(echoclient-example Simple-Socket)
 
-    ADD_EXECUTABLE(multicast-example examples/Multicast.cpp)
-    TARGET_LINK_LIBRARIES(multicast-example Simple-Socket ${THREAD_LIB})
+    add_executable(multicast-example examples/Multicast.cpp)
+    target_link_libraries(multicast-example Simple-Socket ${THREAD_LIB})
 endif()
 
 # Tester
 if(SIMPLE_SOCKET_TEST)
-    ENABLE_TESTING()
-    ADD_EXECUTABLE(Simple-Socket-Tester ${TESTER_SOURCES})
-    TARGET_LINK_LIBRARIES(Simple-Socket-Tester Simple-Socket ${THREAD_LIB})
-    ADD_TEST(NAME Socket-Tester COMMAND Simple-Socket-Tester)
+    enable_testing()
+    add_executable(Simple-Socket-Tester ${TESTER_SOURCES})
+    target_link_libraries(Simple-Socket-Tester Simple-Socket ${THREAD_LIB})
+    add_test(NAME Socket-Tester COMMAND Simple-Socket-Tester)
 endif()
 
 # Coverage
@@ -120,7 +120,7 @@ AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "8" )
     APPEND_COVERAGE_COMPILER_FLAGS()
     set(COVERAGE_LCOV_EXCLUDES '*tests/*' '*examples/*' '*7/*')
 
-    ADD_EXECUTABLE(Simple-Socket-Coverage ${TESTER_SOURCES} ${SIMPLE_SOCKET_SOURCES})
-    TARGET_LINK_LIBRARIES(Simple-Socket-Coverage ${THREAD_LIB} gcov)
+    add_executable(Simple-Socket-Coverage ${TESTER_SOURCES} ${SIMPLE_SOCKET_SOURCES})
+    target_link_libraries(Simple-Socket-Coverage ${THREAD_LIB} gcov)
     SETUP_TARGET_FOR_COVERAGE_LCOV(NAME coverage EXECUTABLE Simple-Socket-Coverage)
 endif()
