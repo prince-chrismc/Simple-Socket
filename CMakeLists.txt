@@ -86,25 +86,10 @@ install(TARGETS Simple-Socket
         ARCHIVE DESTINATION lib )
 install(FILES ${SIMPLE_SOCKET_HEADERS} DESTINATION include)
 
-# Examples
 if(SIMPLE_SOCKET_EXAMPLES)
-    add_executable(asyncclient-example examples/RecvAsync.cpp)
-    target_link_libraries(asyncclient-example Simple-Socket ${THREAD_LIB})
-
-    add_executable(querydaytime-example examples/QueryDayTime.cpp)
-    target_link_libraries(querydaytime-example Simple-Socket)
-
-    add_executable(echoserver-example examples/EchoServer.cpp)
-    target_link_libraries(echoserver-example Simple-Socket ${THREAD_LIB})
-
-    add_executable(echoclient-example examples/EchoClient.cpp)
-    target_link_libraries(echoclient-example Simple-Socket)
-
-    add_executable(multicast-example examples/Multicast.cpp)
-    target_link_libraries(multicast-example Simple-Socket ${THREAD_LIB})
+    add_subdirectory(examples)
 endif()
 
-# Tester
 if(SIMPLE_SOCKET_TEST OR SIMPLE_SOCKET_COVERAGE)
     add_subdirectory(tests)
 endif()

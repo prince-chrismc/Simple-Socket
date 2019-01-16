@@ -23,7 +23,6 @@ AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "8" )
     set(COVERAGE_LCOV_EXCLUDES "*tests/*" "*examples/*" "*7/*")
 
     add_executable(${COVERAGE} ${TESTER_SOURCES} ${SIMPLE_SOCKET_SOURCES})
-    target_include_directories(${COVERAGE} PRIVATE ${PROJECT_SOURCE_DIR}/src)
     target_compile_options(${COVERAGE} PRIVATE ${WARNING_FLAGS})
     target_link_libraries(${COVERAGE} ${THREAD_LIB} gcov)
     SETUP_TARGET_FOR_COVERAGE_LCOV(NAME coverage EXECUTABLE ${COVERAGE})
