@@ -25,4 +25,4 @@ build:
   project: $(APPVEYOR_BUILD_FOLDER)\build-appveyor\$(APPVEYOR_PROJECT_NAME).sln
 
 test_script:
-  - '%APPVEYOR_BUILD_FOLDER%\build-appveyor\%CONFIGURATION%\Simple-Socket-tester.exe'
+  - '%APPVEYOR_BUILD_FOLDER%\build-appveyor\tests\%CONFIGURATION%\Simple-Socket-tester.exe'
