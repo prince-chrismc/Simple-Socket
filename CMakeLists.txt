@@ -105,22 +105,6 @@ if(SIMPLE_SOCKET_EXAMPLES)
 endif()
 
 # Tester
-if(SIMPLE_SOCKET_TEST)
+if(SIMPLE_SOCKET_TEST OR SIMPLE_SOCKET_COVERAGE)
     add_subdirectory(tests)
-endif()
-
-# Coverage
-if( SIMPLE_SOCKET_COVERAGE
-AND CMAKE_COMPILER_IS_GNUCXX
-AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER "7"
-AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "8" )
-    add_subdirectory(tests)
-    include(CodeCoverage)
-    APPEND_COVERAGE_COMPILER_FLAGS()
-    set(COVERAGE_LCOV_EXCLUDES '*tests/*' '*examples/*' '*7/*')
-
-    add_executable(Simple-Socket-Coverage ${SIMPLE_SOCKET_TESTER_SOURCES} ${SIMPLE_SOCKET_SOURCES})
-    target_compile_options(Simple-Socket-Coverage PRIVATE ${WARNING_FLAGS})
-    target_link_libraries(Simple-Socket-Coverage ${THREAD_LIB} gcov)
-    SETUP_TARGET_FOR_COVERAGE_LCOV(NAME coverage EXECUTABLE Simple-Socket-Coverage)
 endif()
