@@ -10,7 +10,7 @@ if(SIMPLE_SOCKET_TEST)
     target_include_directories(${TESTER} PRIVATE ${PROJECT_SOURCE_DIR}/src)
     target_compile_options(${TESTER} PRIVATE ${WARNING_FLAGS})
     target_link_libraries(${TESTER} Simple-Socket ${THREAD_LIB})
-    add_test(NAME Socket-Tester COMMAND ${TESTER})
+    add_test(NAME test COMMAND ${TESTER})
 endif()
 
 # Coverage
@@ -19,11 +19,11 @@ AND CMAKE_COMPILER_IS_GNUCXX
 AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER "7"
 AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "8" )
     include(CodeCoverage)
-    APPEND_COVERAGE_COMPILER_FLAGS()
-    set(COVERAGE_LCOV_EXCLUDES "*tests/*" "*examples/*" "*7/*")
+    set(COVERAGE_LCOV_EXCLUDES ${TESTER_SOURCES} "*7/*")
 
-    add_executable(${COVERAGE} ${TESTER_SOURCES} ${SIMPLE_SOCKET_SOURCES})
-    target_compile_options(${COVERAGE} PRIVATE ${WARNING_FLAGS})
+    add_executable(${COVERAGE} ${SIMPLE_SOCKET_SOURCES} ${TESTER_SOURCES})
+    target_compile_options(${COVERAGE} PRIVATE -g -O0 --coverage -fprofile-arcs -ftest-coverage)
     target_link_libraries(${COVERAGE} ${THREAD_LIB} gcov)
+
     SETUP_TARGET_FOR_COVERAGE_LCOV(NAME coverage EXECUTABLE ${COVERAGE})
 endif()
