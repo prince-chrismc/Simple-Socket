@@ -19,7 +19,7 @@ AND CMAKE_COMPILER_IS_GNUCXX
 AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER "7"
 AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "8" )
     include(CodeCoverage)
-    set(COVERAGE_LCOV_EXCLUDES ${TESTER_SOURCES} "*7/*")
+    set(COVERAGE_LCOV_EXCLUDES ${TESTER_SOURCES} "*catch2/*" "*7/*")
 
     add_executable(${COVERAGE} ${SIMPLE_SOCKET_SOURCES} ${TESTER_SOURCES})
     target_compile_options(${COVERAGE} PRIVATE -g -O0 --coverage -fprofile-arcs -ftest-coverage)
