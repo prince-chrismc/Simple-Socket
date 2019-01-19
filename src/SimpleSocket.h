@@ -190,7 +190,7 @@ public:
    /// IGMPv2 Join for a multicast group.This options is only valid for
    /// socket descriptors of type CSimpleSocket::SocketTypeUdp and
    /// GetMulticast() is true
-   /// @return true if the operation completes sucessfully or else an
+   /// @return true if the operation completes successfully or else an
    /// error will be set.
    bool JoinMulticast( const char* pGroup, uint16_t nPort );
 
@@ -297,7 +297,7 @@ public:
 protected:
    /// Return socket descriptor
    ///  @return socket descriptor which is a signed 32 bit integer.
-   SOCKET GetSocketDescriptor() { return m_socket; }
+   SOCKET GetSocketDescriptor() const { return m_socket; }
 
    /// Initialize instance of CSocket.  This method MUST be called before an
    /// object can be used. Errors : CSocket::SocketProtocolError,
@@ -346,43 +346,29 @@ private:
    bool BindUnicastInterface( const char* pInterface );
    bool BindMulticastInterface( const char* pInterface );
 
-   virtual sockaddr_in* GetUdpRxAddrBuffer() { return &m_stClientSockaddr; };
-   virtual sockaddr_in* GetUdpTxAddrBuffer() { return m_bIsMulticast ? &m_stMulticastGroup : &m_stClientSockaddr; };
+   virtual sockaddr_in* GetUdpRxAddrBuffer() { return &m_stClientSockaddr; }
+   virtual sockaddr_in* GetUdpTxAddrBuffer() { return m_bIsMulticast ? &m_stMulticastGroup : &m_stClientSockaddr; }
 
 protected:
-   SOCKET m_socket;              /// socket handle
-   CSocketError m_socketErrno;   /// number of last error
-   std::string m_sBuffer;        /// internal send/receive buffer
-   int32_t m_nBufferSize;        /// size of internal send/receive buffer
-   int32_t m_nSocketDomain;      /// socket type PF_INET, PF_INET6
-   CSocketType m_nSocketType;    /// socket type - UDP, TCP or RAW
-   int32_t m_nBytesReceived;     /// number of bytes received
-   int32_t m_nBytesSent;         /// number of bytes sent
-   uint32_t m_nFlags;            /// socket flags
-   bool m_bIsBlocking;           /// is socket blocking
-   bool m_bIsMulticast;          /// is the UDP socket multicast;
-   struct timeval m_stConnectTimeout
-   {
-   };   /// connection timeout
-   struct timeval m_stRecvTimeout
-   {
-   };   /// receive timeout
-   struct timeval m_stSendTimeout
-   {
-   };   /// send timeout
-   struct sockaddr_in m_stServerSockaddr
-   {
-   };   /// server address
-   struct sockaddr_in m_stClientSockaddr
-   {
-   };   /// client address
-   struct sockaddr_in m_stMulticastGroup
-   {
-   };   /// multicast group to bind to
-   struct linger m_stLinger
-   {
-   };                    /// linger flag
-   CStatTimer m_timer;   /// internal statistics.
+   SOCKET m_socket;                    /// socket handle
+   CSocketError m_socketErrno;         /// number of last error
+   std::string m_sBuffer;              /// internal send/receive buffer
+   int32_t m_nBufferSize;              /// size of internal send/receive buffer
+   int32_t m_nSocketDomain;            /// socket type PF_INET, PF_INET6
+   CSocketType m_nSocketType;          /// socket type - UDP, TCP or RAW
+   int32_t m_nBytesReceived;           /// number of bytes received
+   int32_t m_nBytesSent;               /// number of bytes sent
+   uint32_t m_nFlags;                  /// socket flags
+   bool m_bIsBlocking;                 /// is socket blocking
+   bool m_bIsMulticast;                /// is the UDP socket multicast;
+   timeval m_stConnectTimeout{};       /// connection timeout
+   timeval m_stRecvTimeout{};          /// receive timeout
+   timeval m_stSendTimeout{};          /// send timeout
+   sockaddr_in m_stServerSockaddr{};   /// server address
+   sockaddr_in m_stClientSockaddr{};   /// client address
+   sockaddr_in m_stMulticastGroup{};   /// multicast group to bind to
+   linger m_stLinger{};                /// linger flag
+   CStatTimer m_timer;                 /// internal statistics.
 #ifdef WIN32
    WSADATA m_hWSAData{};   /// Windows
 #endif
