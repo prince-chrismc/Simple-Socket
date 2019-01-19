@@ -1090,7 +1090,7 @@ void CSimpleSocket::TranslateSocketError( void )
    case EISCONN:
       SetSocketError( CSimpleSocket::SocketAlreadyConnected );
       break;
-   case ENETUNREACH
+   case ENETUNREACH:
       SetSocketError( CSimpleSocket::SocketRoutingError );
       break;
    default:
