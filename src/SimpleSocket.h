@@ -353,7 +353,6 @@ protected:
    SOCKET m_socket;                    /// socket handle
    CSocketError m_socketErrno;         /// number of last error
    std::string m_sBuffer;              /// internal send/receive buffer
-   int32_t m_nBufferSize;              /// size of internal send/receive buffer
    int32_t m_nSocketDomain;            /// socket type PF_INET, PF_INET6
    CSocketType m_nSocketType;          /// socket type - UDP, TCP or RAW
    int32_t m_nBytesReceived;           /// number of bytes received

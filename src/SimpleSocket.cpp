@@ -63,8 +63,6 @@ static constexpr auto SOCKET_SENDFILE_BLOCKSIZE = 8192;
 CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    m_socket( INVALID_SOCKET ),
    m_socketErrno( CSimpleSocket::SocketInvalidSocket ),
-   m_sBuffer( 48, '\0' ),
-   m_nBufferSize( 48 ),
    m_nSocketDomain( AF_UNSPEC ),
    m_nSocketType( nType ),
    m_nBytesReceived( -1 ),
@@ -73,7 +71,7 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
    m_bIsBlocking( true ),
    m_bIsMulticast( false )
 {
-   SetConnectTimeout( 1, 0 );
+   SetConnectTimeout( 0, 0 );
    SetReceiveTimeout( 0, 0 );
    SetSendTimeout( 0, 0 );
    SetOptionLinger( false, 0 );
@@ -121,7 +119,6 @@ CSimpleSocket::CSimpleSocket( CSocketType nType ) :
 CSimpleSocket::CSimpleSocket( CSimpleSocket&& socket ) noexcept :
    m_socket( INVALID_SOCKET ),
    m_socketErrno( CSimpleSocket::SocketInvalidSocket ),
-   m_nBufferSize( 0 ),
    m_nSocketDomain( AF_UNSPEC ),
    m_nSocketType( CSimpleSocket::SocketTypeInvalid ),
    m_nBytesReceived( -1 ),
@@ -154,7 +151,6 @@ void swap( CSimpleSocket& lhs, CSimpleSocket& rhs ) noexcept
    swap( lhs.m_socket, rhs.m_socket );
    swap( lhs.m_socketErrno, rhs.m_socketErrno );
    swap( lhs.m_sBuffer, rhs.m_sBuffer );
-   swap( lhs.m_nBufferSize, rhs.m_nBufferSize );
    swap( lhs.m_nSocketDomain, rhs.m_nSocketDomain );
    swap( lhs.m_nSocketType, rhs.m_nSocketType );
    swap( lhs.m_nBytesReceived, rhs.m_nBytesReceived );
@@ -846,7 +842,6 @@ int32_t CSimpleSocket::Receive( uint32_t nMaxBytes, uint8_t* pBuffer )
    uint8_t* pWorkBuffer = pBuffer;
    if ( pBuffer == nullptr )
    {
-      m_nBufferSize = nMaxBytes;
       m_sBuffer.assign( nMaxBytes, '\0' );
       pWorkBuffer = reinterpret_cast<uint8_t*>( &m_sBuffer[ 0 ] );   // Use string's internal memory as the buffer
    }

@@ -55,4 +55,43 @@ TEST_CASE( "Valid sockets are created", "[Initialization]" )
       REQUIRE_NOTHROW( CSimpleSocket{ CSimpleSocket::SocketTypeUdp } );
       REQUIRE_THROWS_AS( CSimpleSocket{ CSimpleSocket::SocketTypeInvalid }, std::runtime_error );
    }
+
+   SECTION( "Socket instantiated with default zero values", "[TCP]" )
+   {
+      CSimpleSocket socket;
+
+      CHECK( socket.IsSocketValid() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
+
+      REQUIRE_FALSE( socket.IsNonblocking() );
+      REQUIRE_FALSE( socket.GetMulticast() );
+
+      auto internalBuffer = socket.GetData();
+      CAPTURE( internalBuffer );
+
+      REQUIRE( internalBuffer.empty() );
+      REQUIRE( internalBuffer.length() == 0 );
+
+      REQUIRE( socket.GetBytesReceived() == -1 );
+      REQUIRE( socket.GetBytesSent() == -1 );
+
+      REQUIRE( socket.GetConnectTimeoutSec() == 0 );
+      REQUIRE( socket.GetConnectTimeoutUSec() == 0 );
+      REQUIRE( socket.GetReceiveTimeoutSec() == 0 );
+      REQUIRE( socket.GetReceiveTimeoutUSec() == 0 );
+      REQUIRE( socket.GetSendTimeoutSec() == 0 );
+      REQUIRE( socket.GetSendTimeoutUSec() == 0 );
+
+      REQUIRE( socket.GetTotalTimeMs() == 0 );
+      REQUIRE( socket.GetTotalTimeUsec() > 0 ); // Timer tracked internal init from ctor
+
+      REQUIRE( socket.GetServerAddr() == "0.0.0.0" );
+      REQUIRE( socket.GetServerPort() == 0 );
+
+      REQUIRE( socket.GetClientAddr() == "0.0.0.0" );
+      REQUIRE( socket.GetClientPort() == 0 );
+
+      REQUIRE( socket.GetJoinedGroup() == "0.0.0.0" );
+   }
 }
