@@ -1090,6 +1090,9 @@ void CSimpleSocket::TranslateSocketError( void )
    case EISCONN:
       SetSocketError( CSimpleSocket::SocketAlreadyConnected );
       break;
+   case ENETUNREACH
+      SetSocketError( CSimpleSocket::SocketRoutingError );
+      break;
    default:
       SetSocketError( CSimpleSocket::SocketEunknown );
       break;
@@ -1153,6 +1156,9 @@ void CSimpleSocket::TranslateSocketError( void )
       break;
    case WSAEISCONN:
       SetSocketError( CSimpleSocket::SocketAlreadyConnected );
+      break;
+   case WSAENETUNREACH:
+      SetSocketError( CSimpleSocket::SocketRoutingError );
       break;
    default:
       SetSocketError( CSimpleSocket::SocketEunknown );

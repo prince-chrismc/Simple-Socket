@@ -119,6 +119,7 @@ public:
       SocketInvalidPointer,      ///< Pointer type supplied as argument is invalid.
       SocketInvalidOperation,    ///< An invalid argument was provide for the requested action.
       SocketAlreadyConnected,    ///< A requested action was not possible because of socket state.
+      SocketRoutingError,        ///< OS could not resolve route for requested operation
       SocketEunknown             ///< Unknown error please report to mark@carrierlabs.com
    };
 

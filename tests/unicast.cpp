@@ -953,4 +953,15 @@ TEST_CASE( "Sockets can be NIC specific", "[Bind][TCP]" )
       CHECK( server.Close() );
       CHECK_FALSE( server.IsSocketValid() );
    }
+
+   SECTION( "Cannot connet to outside network" )
+   {
+      REQUIRE( socket.BindInterface( "127.0.0.1" ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.GetClientAddr() == "127.0.0.1" );
+
+      REQUIRE_FALSE( socket.Open( "www.google.ca", 80 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketRoutingError );
+   }
 }
