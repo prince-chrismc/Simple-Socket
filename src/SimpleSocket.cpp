@@ -1113,6 +1113,7 @@ void CSimpleSocket::TranslateSocketError( void )
       SetSocketError( CSimpleSocket::SocketInterrupted );
       break;
    case WSAEINVAL:
+   case WSAENETUNREACH:
       SetSocketError( SocketInvalidOperation );
       break;
    case WSAEACCES:
@@ -1156,9 +1157,6 @@ void CSimpleSocket::TranslateSocketError( void )
       break;
    case WSAEISCONN:
       SetSocketError( CSimpleSocket::SocketAlreadyConnected );
-      break;
-   case WSAENETUNREACH:
-      SetSocketError( CSimpleSocket::SocketRoutingError );
       break;
    default:
       SetSocketError( CSimpleSocket::SocketEunknown );

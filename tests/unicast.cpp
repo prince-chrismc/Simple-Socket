@@ -962,6 +962,6 @@ TEST_CASE( "Sockets can be NIC specific", "[Bind][TCP]" )
       CHECK( socket.GetClientAddr() == "127.0.0.1" );
 
       REQUIRE_FALSE( socket.Open( "www.google.ca", 80 ) );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketRoutingError );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidOperation );
    }
 }
