@@ -310,7 +310,7 @@ bool CSimpleSocket::JoinMulticast( const char* pGroup, uint16_t nPort )
 
    if ( bRetVal )
    {
-      ip_mreq stMulticastRequest;
+      ip_mreq stMulticastRequest{};
 
       inet_pton( m_nSocketDomain, pGroup, &stMulticastRequest.imr_multiaddr.s_addr );
       stMulticastRequest.imr_interface.s_addr = htonl( INADDR_ANY );
@@ -323,8 +323,13 @@ bool CSimpleSocket::JoinMulticast( const char* pGroup, uint16_t nPort )
 
    if ( bRetVal )
    {
-      // Save group address ( for sending ... rcv TBA )
+      // Save group address
       inet_pton( m_nSocketDomain, pGroup, &m_stMulticastGroup.sin_addr.s_addr );
+
+      // Save local info
+      socklen_t nSockLen = SOCKET_ADDR_IN_SIZE;
+      memset( &m_stClientSockaddr, 0, SOCKET_ADDR_IN_SIZE );
+      GETSOCKNAME( m_socket, &m_stClientSockaddr, &nSockLen );
    }
 
    return bRetVal;
