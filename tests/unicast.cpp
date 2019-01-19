@@ -808,7 +808,7 @@ TEST_CASE( "Sockets can echo", "[Listen][Open][Accept][TCP]" )
    CHECK_FALSE( server.IsSocketValid() );
 }
 
-TEST_CASE( "Sockets opening twice", "[Open]" )
+TEST_CASE( "Sockets connect twice", "[Open]" )
 {
    SECTION( "Stream sockets FAIL to connect again", "[TCP]" )
    {
@@ -836,8 +836,11 @@ TEST_CASE( "Sockets opening twice", "[Open]" )
       CHECK( socket.Close() );
       CHECK_FALSE( socket.IsSocketValid() );
    }
+}
 
 #ifndef _DARWIN
+TEST_CASE( "Sockets opening twice", "[Open]" )
+{
    SECTION( "Datagram sockets ARE able to open", "[UDP]" )
    {
       CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
@@ -849,7 +852,7 @@ TEST_CASE( "Sockets opening twice", "[Open]" )
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
       REQUIRE( socket.GetServerAddr() == "8.8.8.8" );
-      CHECK( socket.GetServerPort() == 53 );
+      REQUIRE( socket.GetServerPort() == 53 );
 
       CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -895,5 +898,59 @@ TEST_CASE( "Sockets opening twice", "[Open]" )
 
       REQUIRE_FALSE( googleDnsResponse == cloudfareDnsResponse );
    }
+}
 #endif
+
+TEST_CASE( "Sockets can be NIC specific", "[Bind][TCP]" )
+{
+   CActiveSocket socket;
+
+   SECTION( "Regular Bind before use" )
+   {
+      REQUIRE( socket.BindInterface( "127.0.0.1" ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.GetClientAddr() == "127.0.0.1" );
+   }
+
+   SECTION( "Sockets communication while bound" )
+   {
+      REQUIRE( socket.BindInterface( "127.0.0.1" ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CPassiveSocket server;
+
+      REQUIRE( server.Listen( "127.0.0.1", 26148 ) );
+      REQUIRE( server.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.Open( "127.0.0.1", 26148 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      auto serverRespone = std::async( std::launch::async, [&] {
+         auto connection = server.Accept();
+         REQUIRE( connection != nullptr );
+         REQUIRE( connection->GetClientAddr() == "127.0.0.1" );
+
+         uint8_t buffer[ TEXT_PACKET_LENGTH + 1 ];
+         REQUIRE( connection->Receive( 1024, buffer ) == TEXT_PACKET_LENGTH );
+
+         CAPTURE( buffer );
+
+         REQUIRE( connection->Send( buffer, connection->GetBytesReceived() ) == TEXT_PACKET_LENGTH );
+      } );
+
+      REQUIRE( socket.Send( TEXT_PACKET, TEXT_PACKET_LENGTH ) == TEXT_PACKET_LENGTH );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.Receive( 1024 ) == TEXT_PACKET_LENGTH );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+      CHECK( socket.Close() );
+      CHECK_FALSE( socket.IsSocketValid() );
+
+      CHECK( server.Shutdown( CSimpleSocket::Both ) );
+      CHECK( server.Close() );
+      CHECK_FALSE( server.IsSocketValid() );
+   }
 }

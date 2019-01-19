@@ -228,6 +228,14 @@ bool CSimpleSocket::BindUnicastInterface( const char* pInterface )
       TranslateSocketError();
    }
 
+   // If successful then get a local copy of the address
+   if ( bRetVal )
+   {
+      socklen_t nSockLen = SOCKET_ADDR_IN_SIZE;
+      memset( &m_stClientSockaddr, 0, SOCKET_ADDR_IN_SIZE );
+      GETSOCKNAME( m_socket, &m_stClientSockaddr, &nSockLen );
+   }
+
    return bRetVal;
 }
 
