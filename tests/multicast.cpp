@@ -77,20 +77,51 @@ TEST_CASE( "Valid sockets are multicast", "[Initialization]" )
    }
 }
 
-TEST_CASE( "Sockets can Join group", "[Join][Multicast][UDP]" )
+TEST_CASE( "Sockets can Join group", "[Join]" )
 {
-   CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
+   SECTION( "Can UDP Multicast socket join", "[Multicast][UDP]" )
+   {
+      CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
 
-   CHECK( socket.IsSocketValid() );
+      CHECK( socket.IsSocketValid() );
 
-   REQUIRE( socket.SetMulticast( true ) );
+      REQUIRE( socket.SetMulticast( true ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.GetMulticast() );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.GetMulticast() );
 
-   REQUIRE( socket.JoinMulticast( "239.9.2.3", 12345 ) );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.JoinMulticast( "239.9.2.3", 12345 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.GetJoinedGroup() == "239.9.2.3" );
-   REQUIRE( socket.GetClientPort() == 12345 );
+      REQUIRE( socket.GetJoinedGroup() == "239.9.2.3" );
+      REQUIRE( socket.GetClientPort() == 12345 );
+   }
+
+   SECTION( "Can UDP unicast socket join", "[UDP]" )
+   {
+      CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
+
+      CHECK( socket.IsSocketValid() );
+      REQUIRE_FALSE( socket.GetMulticast() );
+
+      REQUIRE_FALSE( socket.JoinMulticast( "239.9.2.3", 12345 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+
+      REQUIRE( socket.GetJoinedGroup() == "0.0.0.0" );
+      REQUIRE( socket.GetClientPort() == 0 );
+   }
+
+   SECTION( "Can TCP socket join", "[TCP]")
+   {
+      CSimpleSocket socket;
+
+      CHECK( socket.IsSocketValid() );
+      REQUIRE_FALSE( socket.GetMulticast() );
+
+      REQUIRE_FALSE( socket.JoinMulticast( "239.9.2.3", 12345 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+
+      REQUIRE( socket.GetJoinedGroup() == "0.0.0.0" );
+      REQUIRE( socket.GetClientPort() == 0 );
+   }
 }
