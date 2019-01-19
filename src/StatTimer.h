@@ -43,9 +43,9 @@ public:
    TimePoint GetEndTime() const { return m_endTime; }
    void SetEndTime() { m_endTime = GetTimeNow(); }
 
-   auto GetMilliSeconds() const { return duration_cast<std::chrono::milliseconds>( m_startTime - m_endTime ).count(); }
-   auto GetMicroSeconds() const { return duration_cast<std::chrono::microseconds>( m_startTime - m_endTime ).count(); }
-   auto GetSeconds() const { return duration_cast<std::chrono::seconds>( m_startTime - m_endTime ).count(); }
+   auto GetMilliSeconds() const { return duration_cast<std::chrono::milliseconds>( m_endTime - m_startTime ).count(); }
+   auto GetMicroSeconds() const { return duration_cast<std::chrono::microseconds>( m_endTime - m_startTime ).count(); }
+   auto GetSeconds() const { return duration_cast<std::chrono::seconds>( m_endTime - m_startTime ).count(); }
 
    static TimePoint GetTimeNow() { return high_resolution_clock::now(); }
 
