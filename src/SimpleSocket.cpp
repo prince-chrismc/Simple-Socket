@@ -1069,6 +1069,7 @@ void CSimpleSocket::TranslateSocketError( void )
       SetSocketError( CSimpleSocket::SocketConnectionAborted );
       break;
    case EINVAL:
+   case EADDRNOTAVAIL:
       SetSocketError( SocketInvalidOperation );
       break;
    case EPROTO:
