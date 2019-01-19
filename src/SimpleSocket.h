@@ -139,10 +139,10 @@ public:
    bool Select();
    bool Select( int32_t nTimeoutSec, int32_t nTimeoutUSec );
 
-   bool IsSocketValid() const;
+   bool IsSocketValid() const { return ( m_socket != INVALID_SOCKET ); }
 
-   std::string DescribeError() const;
    static std::string DescribeError( CSocketError err );
+   std::string DescribeError() const { return DescribeError( m_socketErrno ); }
 
    int32_t Receive( uint32_t nMaxBytes = 1, uint8_t* pBuffer = nullptr );
 

@@ -1213,9 +1213,6 @@ std::string CSimpleSocket::DescribeError( CSocketError err )
 }
 
 //-------------------------------------------------------------------------------------------------
-std::string CSimpleSocket::DescribeError() const { return DescribeError( m_socketErrno ); }
-
-//-------------------------------------------------------------------------------------------------
 //
 // Select()
 //
@@ -1274,6 +1271,3 @@ bool CSimpleSocket::Select()
 {
    return Select( -1, -1 );   // Specify Blocking Select
 }
-
-//-------------------------------------------------------------------------------------------------
-bool CSimpleSocket::IsSocketValid() const { return ( m_socket != INVALID_SOCKET ); }
