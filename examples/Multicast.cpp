@@ -62,7 +62,7 @@ int main( int argc, char** argv )
       {
          const auto sResult = ( bRetval ) ? "Successfully" : "Failed to";
          std::lock_guard<std::mutex> oPrintLock( muConsoleOut );
-         std::cout << "Tx // " << sResult << " join group '" << oSender.GetJoinedGroup().c_str() << "'." << std::endl;
+         std::cout << "Tx // " << sResult << " join group '" << oSender.GetJoinedGroup() << "'." << std::endl;
       }
 
       while ( oExitEvent->wait_for( 250ms ) == std::future_status::timeout )
@@ -94,7 +94,7 @@ int main( int argc, char** argv )
    {
       const auto sResult = ( bRetval ) ? "Successfully" : "Failed to";
       std::lock_guard<std::mutex> oPrintLock( muConsoleOut );
-      std::cout << "Rx // " << sResult << " join group '" << oReceiver.GetJoinedGroup().c_str() << "'." << std::endl;
+      std::cout << "Rx // " << sResult << " join group '" << oReceiver.GetJoinedGroup() << "'." << std::endl;
    }
 
    auto oRxComplete = std::async( std::launch::async, [oExitEvent, &muConsoleOut, &oReceiver]() {
