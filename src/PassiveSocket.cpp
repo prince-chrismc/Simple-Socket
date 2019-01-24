@@ -139,9 +139,8 @@ auto CPassiveSocket::Accept() -> std::unique_ptr<CActiveSocket>
 
    m_timer.SetStartTime();
 
-   do
-   {
-      errno = 0;
+   //do
+   //{
       socklen_t nSockAddrLen( SOCKET_ADDR_IN_SIZE );
       const SOCKET socket = ACCEPT( m_socket, &m_stClientSockaddr, &nSockAddrLen );   // Wait for incoming connection.
 
@@ -162,8 +161,7 @@ auto CPassiveSocket::Accept() -> std::unique_ptr<CActiveSocket>
          TranslateSocketError();
          socketErrno = GetSocketError();
       }
-
-   } while ( socketErrno == CSimpleSocket::SocketInterrupted );
+   //} while ( socketErrno == CSimpleSocket::SocketInterrupted );
 
    m_timer.SetEndTime();
 

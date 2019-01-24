@@ -965,9 +965,36 @@ TEST_CASE( "Sockets can be NIC specific", "[Bind][TCP]" )
 
 #ifdef _DARWIN
       int socketError = errno;
-
       CAPTURE( socketError );
 #endif
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidOperation );
    }
+}
+
+TEST_CASE( "Waiting for connections can be closed", "[TCP][Listen][Accept][Close]" )
+{
+   CPassiveSocket server;
+
+   REQUIRE( server.Listen( "127.0.0.1", 26148 ) );
+   CHECK( server.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   auto serverRespone = std::async( std::launch::async, [&] {
+      REQUIRE( server.Accept() == nullptr );
+      return server.GetSocketError();
+   } );
+
+   REQUIRE( serverRespone.wait_for( std::chrono::seconds( 10 ) ) == std::future_status::timeout );
+   REQUIRE( server.Shutdown( CSimpleSocket::Both ) );
+
+   REQUIRE( serverRespone.wait_for( std::chrono::seconds( 10 ) ) == std::future_status::timeout );
+
+   REQUIRE( server.Close() );
+   CHECK_FALSE( server.IsSocketValid() );
+
+   REQUIRE( serverRespone.wait_for( std::chrono::seconds( 10 ) ) == std::future_status::ready );
+
+   int socketError = errno;
+   CAPTURE( socketError );
+
+   REQUIRE( serverRespone.get() == CSimpleSocket::SocketInterrupted ); // Windows this means a blocking call was canceled...
 }
