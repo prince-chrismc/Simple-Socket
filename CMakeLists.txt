@@ -15,7 +15,6 @@ endif()
 # OS and compiler checks.
 if(UNIX)
     add_definitions(-D_LINUX)
-    set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set(CMAKE_CXX_EXTENSIONS OFF)
     set(CMAKE_EXECUTABLE_SUFFIX .run)
@@ -71,6 +70,9 @@ LIST(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS})
 # Project Options
 option(BUILD_SHARED_LIBS "Build Simple-Socket as a shared library." OFF)
 option(USE_LIBCXX "Build using libc++ as the standard library when using clang." OFF)
+
+option(SIMPLE_SOCKET_STRING_VIEW "Generate a version of Simple-Socket allowing for use for string view" ON)
+
 option(SIMPLE_SOCKET_EXAMPLES "Build the examples" ON)
 option(SIMPLE_SOCKET_TEST "Build the tester" OFF)
 option(SIMPLE_SOCKET_COVERAGE "Build the tester for code coverage" OFF)
@@ -78,6 +80,11 @@ mark_as_advanced(SIMPLE_SOCKET_TEST SIMPLE_SOCKET_COVERAGE)
 
 # Build the lib and install into configured prefix
 add_library(Simple-Socket ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
+target_compile_features(Simple-Socket PUBLIC cxx_std_11)
+if(SIMPLE_SOCKET_STRING_VIEW)
+    target_compile_features(Simple-Socket PUBLIC cxx_std_17)
+    target_compile_options(Simple-Socket INTERFACE -DSTRING_VIEW)
+endif()
 target_compile_options(Simple-Socket INTERFACE ${WARNING_FLAGS})
 target_link_libraries(Simple-Socket ${PROJECT_LIBS})
 set_target_properties(Simple-Socket PROPERTIES VERSION ${BUILD_VERSION} SOVERSION ${BUILD_MAJOR})

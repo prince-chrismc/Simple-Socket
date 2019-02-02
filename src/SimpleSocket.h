@@ -67,6 +67,10 @@
 #include <string>
 #include <cstdint>
 
+#ifdef STRING_VIEW
+#include <string_view>
+#endif
+
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET ~( 0 )
 #endif
@@ -154,7 +158,10 @@ public:
    /// @return of zero means the connection has been shutdown on the other side.
    /// @return of -1 means that an error has occurred.
    virtual int32_t Send( const uint8_t* pBuf, size_t bytesToSend );
-   virtual int32_t Send( std::string buffer );
+
+   #ifdef STRING_VIEW
+   int32_t Send( std::string_view bytes ) { return Send( reinterpret_cast<const uint8_t*>( bytes.data() ), bytes.length() ); }
+   #endif
 
    /// Attempts to send at most nNumItem blocks described by sendVector
    /// to the socket descriptor associated with the socket object.

@@ -92,7 +92,7 @@ jobs:
     script:
     - mkdir build-travis
     - cd build-travis
-    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF
+    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_STRING_VIEW=OFF
   
   - stage: "Legacy"
     addons:
@@ -110,5 +110,5 @@ jobs:
     script:
     - mkdir build-travis
     - cd build-travis
-    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DUSE_LIBCXX=ON -DSIMPLE_SOCKET_EXAMPLES=OFF
+    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DUSE_LIBCXX=ON -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_STRING_VIEW=OFF
   

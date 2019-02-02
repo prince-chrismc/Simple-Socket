@@ -44,8 +44,8 @@ static constexpr uint8_t DNS_QUERY[] = { '\x12', '\x34', '\x01', '\x00', '\x00',
                                          '\x00', '\x00', '\x07', '\x65', '\x78', '\x61', '\x6d', '\x70', '\x6c', '\x65',
                                          '\x03', '\x63', '\x6f', '\x6d', '\x00', '\x00', '\x01', '\x00', '\x01' };
 static constexpr auto DNS_QUERY_LENGTH = ( sizeof( DNS_QUERY ) / sizeof( DNS_QUERY[ 0 ] ) );
-static constexpr uint8_t TEXT_PACKET[] = { 'T', 'e', 's', 't', ' ', 'P', 'a', 'c', 'k', 'e', 't' };
-static constexpr auto TEXT_PACKET_LENGTH = ( sizeof( TEXT_PACKET ) / sizeof( TEXT_PACKET[ 0 ] ) );
+static constexpr auto TEXT_PACKET = "Test Packet"sv;
+static constexpr auto TEXT_PACKET_LENGTH = TEXT_PACKET.length();
 
 TEST_CASE( "Open socket for communication", "[Open][UDP]" )
 {
@@ -142,7 +142,7 @@ TEST_CASE( "Sockets can transfer", "[Send][TCP]" )
    CHECK( socket.Open( "www.google.ca", 80 ) );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
    REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 }
@@ -180,7 +180,7 @@ TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
    CHECK( socket.Open( "www.google.ca", 80 ) );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    CHECK( socket.GetBytesReceived() == CSimpleSocket::SocketError );
@@ -244,7 +244,7 @@ TEST_CASE( "Receive a huge message", "[!mayfail][TCP]" )
    CHECK( socket.Open( "www.google.ca", 80 ) );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    CHECK( socket.GetBytesReceived() == CSimpleSocket::SocketError );
@@ -315,7 +315,7 @@ TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
    CHECK( socket.Open( "www.google.ca", 80 ) );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
 
    CHECK( socket.Receive( 17 ) == 17 );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -331,7 +331,7 @@ TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
    REQUIRE( socket.Close() );
    REQUIRE_FALSE( socket.IsSocketValid() );
 
-   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == CSimpleSocket::SocketError );
+   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == CSimpleSocket::SocketError );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
 }
 
@@ -373,7 +373,7 @@ TEST_CASE( "Sockets are ctor moveable", "[Socket][TCP]" )
    CActiveSocket alpha;
 
    CHECK( alpha.Open( "www.google.ca", 80 ) );
-   CHECK( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+   CHECK( alpha.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
    CHECK( alpha.Receive( 17 ) == 17 );
    CHECK( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
 
@@ -386,7 +386,7 @@ TEST_CASE( "Sockets are ctor moveable", "[Socket][TCP]" )
    REQUIRE_FALSE( alpha.IsSocketValid() );   // NOLINT(hicpp-invalid-access-moved)
    REQUIRE( beta.IsSocketValid() );
 
-   REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
 
    REQUIRE( beta.Receive( 6 ) == 6 );
    REQUIRE( beta.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -400,9 +400,8 @@ TEST_CASE( "Sockets are ctor moveable", "[Socket][TCP]" )
    REQUIRE( beta.Close() );
    REQUIRE_FALSE( beta.IsSocketValid() );
 
-   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) ==
-            CSimpleSocket::SocketError );                                     // NOLINT(hicpp-invalid-access-moved)
-   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );   // NOLINT(hicpp-invalid-access-moved)
+   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST ) == CSimpleSocket::SocketError );   // NOLINT(hicpp-invalid-access-moved)
+   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );        // NOLINT(hicpp-invalid-access-moved)
 }
 
 TEST_CASE( "Sockets are assign moveable", "[Socket=][TCP]" )
@@ -410,7 +409,7 @@ TEST_CASE( "Sockets are assign moveable", "[Socket=][TCP]" )
    CActiveSocket alpha;
 
    CHECK( alpha.Open( "www.google.ca", 80 ) );
-   CHECK( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+   CHECK( alpha.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
    CHECK( alpha.Receive( 17 ) == 17 );
    CHECK( alpha.GetSocketError() == CSimpleSocket::SocketSuccess );
 
@@ -428,7 +427,7 @@ TEST_CASE( "Sockets are assign moveable", "[Socket=][TCP]" )
    REQUIRE_FALSE( alpha.IsSocketValid() );   // NOLINT(hicpp-invalid-access-moved)
    REQUIRE( beta.IsSocketValid() );
 
-   REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
 
    REQUIRE( beta.Receive( 6 ) == 6 );
    REQUIRE( beta.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -442,9 +441,8 @@ TEST_CASE( "Sockets are assign moveable", "[Socket=][TCP]" )
    REQUIRE( beta.Close() );
    REQUIRE_FALSE( beta.IsSocketValid() );
 
-   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST.data() ) ==
-            CSimpleSocket::SocketError );                                     // NOLINT(hicpp-invalid-access-moved)
-   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );   // NOLINT(hicpp-invalid-access-moved)
+   REQUIRE( alpha.Send( HTTP_GET_ROOT_REQUEST ) == CSimpleSocket::SocketError );   // NOLINT(hicpp-invalid-access-moved)
+   REQUIRE( alpha.GetSocketError() == CSimpleSocket::SocketInvalidSocket );        // NOLINT(hicpp-invalid-access-moved)
 }
 
 TEST_CASE( "Sockets can listen", "[Listen][Bind][TCP]" )
@@ -707,7 +705,7 @@ TEST_CASE( "Sockets can repeate", "[Listen][Open][UDP]" )
       REQUIRE( server.Send( buffer, server.GetBytesReceived() ) == TEXT_PACKET_LENGTH );
    } );
 
-   REQUIRE( socket.Send( TEXT_PACKET, TEXT_PACKET_LENGTH ) == TEXT_PACKET_LENGTH );
+   REQUIRE( socket.Send( TEXT_PACKET ) == TEXT_PACKET_LENGTH );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    REQUIRE( socket.Receive( 1024 ) == TEXT_PACKET_LENGTH );
@@ -717,7 +715,7 @@ TEST_CASE( "Sockets can repeate", "[Listen][Open][UDP]" )
    CHECK( socket.GetServerPort() == 35346 );
 
    const std::string actualResponse = socket.GetData();
-   const std::string expectedResponse( reinterpret_cast<const char*>( TEXT_PACKET ), TEXT_PACKET_LENGTH );
+   const std::string expectedResponse( TEXT_PACKET.data(), TEXT_PACKET_LENGTH );
 
    CAPTURE( actualResponse );
 
@@ -782,7 +780,7 @@ TEST_CASE( "Sockets can echo", "[Listen][Open][Accept][TCP]" )
                TEXT_PACKET_LENGTH );
    } );
 
-   REQUIRE( socket.Send( TEXT_PACKET, TEXT_PACKET_LENGTH ) == TEXT_PACKET_LENGTH );
+   REQUIRE( socket.Send( TEXT_PACKET ) == TEXT_PACKET_LENGTH );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    REQUIRE( socket.Receive( 1024 ) == TEXT_PACKET_LENGTH );
@@ -792,7 +790,7 @@ TEST_CASE( "Sockets can echo", "[Listen][Open][Accept][TCP]" )
    CHECK( socket.GetServerPort() == 35346 );
 
    const std::string actualResponse = socket.GetData();
-   const std::string expectedResponse( reinterpret_cast<const char*>( TEXT_PACKET ), TEXT_PACKET_LENGTH );
+   const std::string expectedResponse( TEXT_PACKET.data(), TEXT_PACKET_LENGTH );
 
    CAPTURE( actualResponse );
 
@@ -817,7 +815,7 @@ TEST_CASE( "Sockets connect twice", "[Open]" )
       REQUIRE( socket.Open( "www.google.ca", 80 ) );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-      CHECK( socket.Send( HTTP_GET_ROOT_REQUEST.data() ) == HTTP_GET_ROOT_REQUEST.length() );
+      CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
 
       CHECK( socket.Receive( 17 ) == 17 );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -939,7 +937,7 @@ TEST_CASE( "Sockets can be NIC specific", "[Bind][TCP]" )
          REQUIRE( connection->Send( buffer, connection->GetBytesReceived() ) == TEXT_PACKET_LENGTH );
       } );
 
-      REQUIRE( socket.Send( TEXT_PACKET, TEXT_PACKET_LENGTH ) == TEXT_PACKET_LENGTH );
+      REQUIRE( socket.Send( TEXT_PACKET ) == TEXT_PACKET_LENGTH );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
       REQUIRE( socket.Receive( 1024 ) == TEXT_PACKET_LENGTH );
@@ -996,5 +994,6 @@ TEST_CASE( "Waiting for connections can be closed", "[TCP][Listen][Accept][Close
    int socketError = errno;
    CAPTURE( socketError );
 
-   REQUIRE( serverRespone.get() == CSimpleSocket::SocketInterrupted ); // Windows this means a blocking call was canceled...
+   REQUIRE( serverRespone.get() ==
+            CSimpleSocket::SocketInterrupted );   // Windows this means a blocking call was canceled...
 }

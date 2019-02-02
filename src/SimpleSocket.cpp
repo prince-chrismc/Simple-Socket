@@ -589,11 +589,6 @@ int32_t CSimpleSocket::Send( const uint8_t* pBuf, size_t bytesToSend )
    return m_nBytesSent;
 }
 
-int32_t CSimpleSocket::Send( std::string buffer )
-{
-   return Send( reinterpret_cast<const uint8_t*>( buffer.c_str() ), buffer.length() );
-}
-
 //-------------------------------------------------------------------------------------------------
 //
 // Close() - Close socket and free up any memory allocated for the socket
