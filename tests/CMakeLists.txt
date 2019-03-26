@@ -13,7 +13,7 @@ if(SIMPLE_SOCKET_TEST)
     target_include_directories(${TESTER} PRIVATE ${PROJECT_SOURCE_DIR}/src)
     target_compile_options(${TESTER} PRIVATE ${WARNING_FLAGS})
     target_link_libraries(${TESTER} Simple-Socket ${THREAD_LIB})
-    add_test(NAME test COMMAND ${TESTER})
+    add_test(NAME tester COMMAND ${TESTER})
 endif()
 
 # Coverage
