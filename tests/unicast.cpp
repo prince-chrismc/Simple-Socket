@@ -984,7 +984,15 @@ TEST_CASE( "Waiting for connections can be closed", "[TCP][Listen][Accept][Close
    REQUIRE( serverRespone.wait_for( std::chrono::seconds( 10 ) ) == std::future_status::timeout );
    REQUIRE( server.Shutdown( CSimpleSocket::Both ) );
 
+   //
+   // This is a behavoiral difference between win_sock and posix sockets =?
+   // not sure how to handle this at the API level
+   //
+#ifdef _WIN32
    REQUIRE( serverRespone.wait_for( std::chrono::seconds( 10 ) ) == std::future_status::timeout );
+#else
+   REQUIRE( serverRespone.wait_for( std::chrono::seconds( 10 ) ) == std::future_status::ready );
+#endif
 
    REQUIRE( server.Close() );
    CHECK_FALSE( server.IsSocketValid() );
@@ -994,6 +1002,10 @@ TEST_CASE( "Waiting for connections can be closed", "[TCP][Listen][Accept][Close
    int socketError = errno;
    CAPTURE( socketError );
 
-   REQUIRE( serverRespone.get() ==
-            CSimpleSocket::SocketInterrupted );   // Windows this means a blocking call was canceled...
+#ifdef _WIN32
+   // Windows this scenario means a blocking call was canceled...
+   REQUIRE( serverRespone.get() == CSimpleSocket::SocketInterrupted );
+#else
+   REQUIRE( serverRespone.get() == CSimpleSocket::SocketInvalidOperation );
+#endif
 }
