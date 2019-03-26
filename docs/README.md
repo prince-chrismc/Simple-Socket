@@ -4,6 +4,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/sqbvy884ybs8rtv7?svg=true)](https://ci.appveyor.com/project/prince-chrismc/simple-socket)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 [![Coverage Status](https://coveralls.io/repos/github/prince-chrismc/Simple-Socket/badge.svg?branch=master)](https://coveralls.io/github/prince-chrismc/Simple-Socket?branch=master)
+[![Slack Status](https://img.shields.io/badge/Slack-Join-blue.svg?logo=slack)](https://prince-chrismc.slack.com)
 
 This ~~fork~~ repository aims to have the original library compile and work reliably using modern c++ compilers ( MSVC 15.7 / GCC 7.3 / Clang 6.0 ) with a focus on
 the async and multicast functionality.
