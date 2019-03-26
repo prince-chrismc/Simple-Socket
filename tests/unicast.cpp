@@ -990,6 +990,8 @@ TEST_CASE( "Waiting for connections can be closed", "[TCP][Listen][Accept][Close
    //
 #ifdef _WIN32
    REQUIRE( serverRespone.wait_for( std::chrono::seconds( 10 ) ) == std::future_status::timeout );
+#elif _DARWIN
+   REQUIRE( serverRespone.wait_for( std::chrono::seconds( 10 ) ) == std::future_status::timeout );
 #else
    REQUIRE( serverRespone.wait_for( std::chrono::seconds( 10 ) ) == std::future_status::ready );
 #endif
