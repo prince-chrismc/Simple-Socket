@@ -114,6 +114,13 @@ TEST_CASE( "Establish connection to remote host", "[Open][TCP]" )
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketConnectionRefused );
    }
 
+   SECTION( "No effect with invalid" )
+   {
+      CActiveSocket secondary = std::move(socket);
+      CHECK_FALSE( socket.Open( "127.0.0.1", 34867 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+   }
+
    SECTION( "To Google" )
    {
       REQUIRE( socket.Open( "www.google.ca", 80 ) );
