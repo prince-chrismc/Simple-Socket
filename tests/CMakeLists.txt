@@ -26,7 +26,7 @@ AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "8" )
 
     add_executable(${COVERAGE} ${SIMPLE_SOCKET_SOURCES} ${TESTER_SOURCES})
 	target_compile_features(${COVERAGE} PRIVATE cxx_std_17 )
-    target_compile_options(${COVERAGE} PRIVATE -g -O0 --coverage -fprofile-arcs -ftest-coverage)
+    target_compile_options(${COVERAGE} PRIVATE -g -O0 --coverage -fprofile-arcs -ftest-coverage -DSTRING_VIEW)
     target_link_libraries(${COVERAGE} ${THREAD_LIB} gcov)
 
     SETUP_TARGET_FOR_COVERAGE_LCOV(NAME coverage EXECUTABLE ${COVERAGE})
