@@ -973,7 +973,7 @@ TEST_CASE( "Waiting for connections can be closed", "[TCP][Listen][Accept][Close
 {
    CPassiveSocket server;
 
-   REQUIRE( server.Listen( "127.0.0.1", 26148 ) );
+   REQUIRE( server.Listen( "127.0.0.1", 36748 ) );
    CHECK( server.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    auto serverRespone = std::async( std::launch::async, [&] {
