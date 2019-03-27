@@ -177,20 +177,9 @@ bool CActiveSocket::Open( const char* pAddr, uint16_t nPort )
 
    if ( bRetVal )
    {
-      switch ( m_nSocketType )
-      {
-      case SocketTypeTcp:
-         bRetVal = ConnectStreamSocket();
-         break;
-      case SocketTypeUdp:
-      //case SocketTypeRaw:
-         bRetVal = ConnectDatagramSocket();
-         break;
-      default:
-         SetSocketError( CSimpleSocket::SocketProtocolError );
-         bRetVal = false;
-         break;
-      }
+      bRetVal = ( m_nSocketType == SocketTypeTcp ) ? ConnectStreamSocket() :
+                ( m_nSocketType == SocketTypeUdp ) ? ConnectDatagramSocket() :
+                [this] { SetSocketError( SocketProtocolError ); return false; }();
    }
 
    // If successful then get a local copy of the address and port
