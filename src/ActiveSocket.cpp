@@ -79,38 +79,29 @@ bool CActiveSocket::Validate( const char* pAddr, uint16_t nPort )
 //------------------------------------------------------------------------------
 bool CActiveSocket::PreConnect( const char* pAddr, uint16_t nPort )
 {
-   bool bRetVal = true;
+   bool bRetVal = false;
 
    memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
    m_stServerSockaddr.sin_family = static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain );
 
-   addrinfo hints{ AI_ALL, AF_INET, 0, 0, 0, nullptr, nullptr, nullptr };
+   addrinfo hints{ AI_ALL, m_nSocketDomain, 0, 0, 0, nullptr, nullptr, nullptr };
    addrinfo* pResult = nullptr;
-   const int iErrorCode =
-       getaddrinfo( pAddr, nullptr, &hints, &pResult );   /// https://codereview.stackexchange.com/a/17866
 
-   if ( iErrorCode != 0 )
+   /// https://codereview.stackexchange.com/a/17866
+   if ( getaddrinfo( pAddr, nullptr, &hints, &pResult ) != SocketSuccess )
    {
-#ifdef WIN32
+#ifdef _WIN32
       TranslateSocketError();
 #else
-      // http://man7.org/linux/man-pages/man3/getaddrinfo.3.html#return-value
-      if ( iErrorCode == EAI_SYSTEM )
-      {
-         TranslateSocketError();
-      }
-      else
-      {
-         SetSocketError( SocketInvalidAddress );
-      }
+      SetSocketError( SocketInvalidAddress );
 #endif
-      bRetVal = false;
    }
    else
    {
       m_stServerSockaddr.sin_addr = reinterpret_cast<sockaddr_in*>( pResult->ai_addr )->sin_addr;
       m_stServerSockaddr.sin_port = htons( nPort );
       freeaddrinfo( pResult );
+      bRetVal = true;
    }
 
    return bRetVal;
