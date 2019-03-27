@@ -129,7 +129,21 @@ TEST_CASE( "Non-blocking Sockets can connect", "[TCP][Async][Open]" )
 
    SECTION( "To Google Timeout" )
    {
+      REQUIRE( socket.GetConnectTimeoutSec() == 0 );
+      REQUIRE( socket.GetConnectTimeoutUSec() == 0 );
+
       REQUIRE_FALSE( socket.Open( "www.google.ca", 80 ) );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
+   }
+
+   SECTION( "To Google" )
+   {
+      socket.SetConnectTimeout(5, 500); // Allow enough time to establish connections
+
+      REQUIRE( socket.GetConnectTimeoutSec() == 5 );
+      REQUIRE( socket.GetConnectTimeoutUSec() == 500 );
+
+      REQUIRE( socket.Open( "www.google.ca", 80 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
    }
 }
