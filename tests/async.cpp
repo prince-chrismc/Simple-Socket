@@ -117,14 +117,19 @@ TEST_CASE( "Non-blocking Sockets can connect", "[TCP][Async][Open]" )
 
    SECTION( "Connection Timeout" )
    {
-      CHECK_FALSE( socket.Open( "www.google.ca", 34867 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
+      REQUIRE_FALSE( socket.Open( "www.google.ca", 34867 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
    }
 
    SECTION( "Connection Refused" )
    {
-      CHECK_FALSE( socket.Open( "127.0.0.1", 34867 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketConnectionRefused );
+      REQUIRE_FALSE( socket.Open( "127.0.0.1", 34867 ) );
+
+      #ifdef _WIN32
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
+      #else
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketConnectionRefused );
+      #endif
    }
 
    SECTION( "To Google Timeout" )
