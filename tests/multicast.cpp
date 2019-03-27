@@ -125,3 +125,23 @@ TEST_CASE( "Sockets can Join group", "[Join]" )
       REQUIRE( socket.GetClientPort() == 0 );
    }
 }
+
+TEST_CASE( "Sockets can Join from certain interface", "[Join][Bind]" )
+{
+   CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
+
+   CHECK( socket.IsSocketValid() );
+
+   REQUIRE( socket.SetMulticast( true ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   REQUIRE( socket.GetMulticast() );
+
+   REQUIRE( socket.BindInterface( "0.0.0.0" ) );
+
+   REQUIRE( socket.JoinMulticast( "239.9.2.3", 12345 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   REQUIRE( socket.GetJoinedGroup() == "239.9.2.3" );
+   REQUIRE( socket.GetClientPort() == 12345 );
+}
