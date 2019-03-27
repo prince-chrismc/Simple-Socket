@@ -25,7 +25,7 @@ SOFTWARE.
 */
 
 #include "catch2/catch.hpp"
-#include "SimpleSocket.h"
+#include "ActiveSocket.h"
 
 TEST_CASE( "Sockets can be set to non-blocking", "[Initialization]" )
 {
@@ -99,5 +99,37 @@ TEST_CASE( "Sockets can be set to non-blocking", "[Initialization]" )
       REQUIRE( socket.SetNonblocking() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       REQUIRE( socket.IsNonblocking() );
+   }
+}
+
+TEST_CASE( "Non-blocking Sockets can connect", "[TCP][Async][Open]" )
+{
+   CActiveSocket socket;
+
+   CHECK( socket.IsSocketValid() );
+   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
+
+   REQUIRE_FALSE( socket.IsNonblocking() );
+   REQUIRE( socket.SetNonblocking() );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.IsNonblocking() );
+
+   SECTION( "Connection Timeout" )
+   {
+      CHECK_FALSE( socket.Open( "www.google.ca", 34867 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
+   }
+
+   SECTION( "Connection Refused" )
+   {
+      CHECK_FALSE( socket.Open( "127.0.0.1", 34867 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketConnectionRefused );
+   }
+
+   SECTION( "To Google Timeout" )
+   {
+      REQUIRE_FALSE( socket.Open( "www.google.ca", 80 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
    }
 }
