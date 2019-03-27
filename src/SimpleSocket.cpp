@@ -651,12 +651,12 @@ bool CSimpleSocket::Flush()
    //--------------------------------------------------------------------------
    // Get the current setting of the TCP_NODELAY flag.
    //--------------------------------------------------------------------------
-   if ( GETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nCurFlags, sizeof( int32_t ) ) == 0 )
+   if ( GETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nCurFlags, sizeof( int32_t ) ) == SocketSuccess )
    {
       //----------------------------------------------------------------------
       // Set TCP NoDelay flag
       //----------------------------------------------------------------------
-      if ( SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nTcpNoDelay, sizeof( int32_t ) ) == 0 )
+      if ( SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nTcpNoDelay, sizeof( int32_t ) ) == SocketSuccess )
       {
          //------------------------------------------------------------------
          // Send empty byte stream to flush the TCP send buffer
@@ -672,7 +672,10 @@ bool CSimpleSocket::Flush()
       //----------------------------------------------------------------------
       // Reset the TCP_NODELAY flag to original state.
       //----------------------------------------------------------------------
-      SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nCurFlags, sizeof( int32_t ) );
+      if ( SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nCurFlags, sizeof( int32_t ) ) == SocketSuccess )
+      {
+         // TO DO
+      }
    }
 
    return bRetVal;
@@ -816,7 +819,7 @@ bool CSimpleSocket::SetOptionLinger( bool bEnable, uint16_t nTime )
    m_stLinger.l_onoff = ( bEnable ) ? 1 : 0;
    m_stLinger.l_linger = nTime;
 
-   if ( SETSOCKOPT( m_socket, SOL_SOCKET, SO_LINGER, &m_stLinger, sizeof( m_stLinger ) ) == 0 )
+   if ( SETSOCKOPT( m_socket, SOL_SOCKET, SO_LINGER, &m_stLinger, sizeof( m_stLinger ) ) == SocketSuccess )
    {
       bRetVal = true;
    }
