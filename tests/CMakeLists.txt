@@ -1,7 +1,7 @@
 # Setup source files
 set(TESTER ${PROJECT_NAME}-Tester)
 set(COVERAGE ${PROJECT_NAME}-Coverage)
-set(TESTER_SOURCES "main.cpp" "unicast.cpp" "multicast.cpp")
+set(TESTER_SOURCES "main.cpp" "unicast.cpp" "multicast.cpp" "async.cpp")
 
 set(SIMPLE_SOCKET_STRING_VIEW ON CACHE BOOL "Required by tester and coverage" FORCE)
 
