@@ -42,4 +42,26 @@ TEST_CASE( "Sockets can be set to non-blocking", "[Initialization]" )
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       REQUIRE( socket.IsNonblocking() );
    }
+
+   SECTION( "Toggle async mode on TCP sockets", "[Async][TCP]" )
+   {
+      CSimpleSocket socket;
+
+      CHECK( socket.IsSocketValid() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
+
+      REQUIRE_FALSE( socket.IsNonblocking() );
+      REQUIRE( socket.SetNonblocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.IsNonblocking() );
+
+      REQUIRE( socket.SetBlocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE_FALSE( socket.IsNonblocking() );
+
+      REQUIRE( socket.SetNonblocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.IsNonblocking() );
+   }
 }
