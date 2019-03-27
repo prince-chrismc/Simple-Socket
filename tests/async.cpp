@@ -125,11 +125,19 @@ TEST_CASE( "Non-blocking Sockets can connect", "[TCP][Async][Open]" )
    {
       REQUIRE_FALSE( socket.Open( "127.0.0.1", 34867 ) );
 
-      #ifdef _WIN32
+#ifdef _WIN32
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
-      #else
+#elif _DARWIN
+      // For xcode 10.0
+      //REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
+
+      // For xcode 9.4
+      //REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketConnectionRefused );
+
+      REQUIRE_FALSE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+#else
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketConnectionRefused );
-      #endif
+#endif
    }
 
    SECTION( "To Google Timeout" )
@@ -143,7 +151,7 @@ TEST_CASE( "Non-blocking Sockets can connect", "[TCP][Async][Open]" )
 
    SECTION( "To Google" )
    {
-      socket.SetConnectTimeout(5, 500); // Allow enough time to establish connections
+      socket.SetConnectTimeout( 5, 500 );   // Allow enough time to establish connections
 
       REQUIRE( socket.GetConnectTimeoutSec() == 5 );
       REQUIRE( socket.GetConnectTimeoutUSec() == 500 );

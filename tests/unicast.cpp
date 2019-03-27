@@ -1017,6 +1017,7 @@ TEST_CASE( "Waiting for connections can be closed", "[TCP][Listen][Accept][Close
 #elif _DARWIN
    // Different versions of xcode produce different error codes ( sometimes undefined )
    //REQUIRE( serverRespone.get() == CSimpleSocket::SocketConnectionAborted );
+   REQUIRE_FALSE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 #else
    REQUIRE( serverRespone.get() == CSimpleSocket::SocketInvalidOperation );
 #endif
