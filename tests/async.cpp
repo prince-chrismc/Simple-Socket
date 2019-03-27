@@ -43,6 +43,20 @@ TEST_CASE( "Sockets can be set to non-blocking", "[Initialization]" )
       REQUIRE( socket.IsNonblocking() );
    }
 
+   SECTION( "Non-blocking UDP sockets", "[Async][UDP]" )
+   {
+      CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
+
+      CHECK( socket.IsSocketValid() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeUdp );
+
+      REQUIRE_FALSE( socket.IsNonblocking() );
+      REQUIRE( socket.SetNonblocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.IsNonblocking() );
+   }
+
    SECTION( "Toggle async mode on TCP sockets", "[Async][TCP]" )
    {
       CSimpleSocket socket;
@@ -50,6 +64,28 @@ TEST_CASE( "Sockets can be set to non-blocking", "[Initialization]" )
       CHECK( socket.IsSocketValid() );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
+
+      REQUIRE_FALSE( socket.IsNonblocking() );
+      REQUIRE( socket.SetNonblocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.IsNonblocking() );
+
+      REQUIRE( socket.SetBlocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE_FALSE( socket.IsNonblocking() );
+
+      REQUIRE( socket.SetNonblocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.IsNonblocking() );
+   }
+
+   SECTION( "Toggle async mode on UDP sockets", "[Async][UDP]" )
+   {
+      CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
+
+      CHECK( socket.IsSocketValid() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeUdp );
 
       REQUIRE_FALSE( socket.IsNonblocking() );
       REQUIRE( socket.SetNonblocking() );
