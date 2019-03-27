@@ -94,4 +94,44 @@ TEST_CASE( "Valid sockets are created", "[Initialization]" )
 
       REQUIRE( socket.GetJoinedGroup() == "0.0.0.0" );
    }
+
+   SECTION( "Socket is invalid after being moved", "[TCP]" )
+   {
+      CSimpleSocket socket;
+      CSimpleSocket secondary = std::move(socket);
+
+      REQUIRE_FALSE( socket.IsSocketValid() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeInvalid );
+
+      REQUIRE_FALSE( socket.IsNonblocking() );
+      REQUIRE_FALSE( socket.GetMulticast() );
+
+      auto internalBuffer = socket.GetData();
+      CAPTURE( internalBuffer );
+
+      REQUIRE( internalBuffer.empty() );
+      REQUIRE( internalBuffer.length() == 0 );
+
+      REQUIRE( socket.GetBytesReceived() == -1 );
+      REQUIRE( socket.GetBytesSent() == -1 );
+
+      REQUIRE( socket.GetConnectTimeoutSec() == 0 );
+      REQUIRE( socket.GetConnectTimeoutUSec() == 0 );
+      REQUIRE( socket.GetReceiveTimeoutSec() == 0 );
+      REQUIRE( socket.GetReceiveTimeoutUSec() == 0 );
+      REQUIRE( socket.GetSendTimeoutSec() == 0 );
+      REQUIRE( socket.GetSendTimeoutUSec() == 0 );
+
+      REQUIRE( socket.GetTotalTimeMs() == 0 );
+      REQUIRE( socket.GetTotalTimeUsec() > 0 ); // Timer tracked internal init from ctor
+
+      REQUIRE( socket.GetServerAddr() == CSimpleSocket::DescribeError(CSimpleSocket::SocketInvalidSocket) );
+      REQUIRE( socket.GetServerPort() == 0 );
+
+      REQUIRE( socket.GetClientAddr() == CSimpleSocket::DescribeError(CSimpleSocket::SocketInvalidSocket) );
+      REQUIRE( socket.GetClientPort() == 0 );
+
+      REQUIRE( socket.GetJoinedGroup() == CSimpleSocket::DescribeError(CSimpleSocket::SocketInvalidSocket) );
+   }
 }
