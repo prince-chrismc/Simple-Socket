@@ -108,7 +108,7 @@ TEST_CASE( "Sockets can be set to non-blocking", "[Initialization]" )
       
       REQUIRE_FALSE( socket.IsNonblocking() );
       REQUIRE_FALSE( socket.SetNonblocking() );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
    }
 }
 
