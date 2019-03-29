@@ -100,6 +100,16 @@ TEST_CASE( "Sockets can be set to non-blocking", "[Initialization]" )
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       REQUIRE( socket.IsNonblocking() );
    }
+   
+   SECTION( "Invalid socket can not be set to non-blocking", "[Async][TCP]" )
+   {
+      CSimpleSocket socket;
+      CSimpleSocket secondary = std::move(socket);
+      
+      REQUIRE_FALSE( socket.IsNonblocking() );
+      REQUIRE( socket.SetNonblocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
 }
 
 TEST_CASE( "Non-blocking Sockets can connect", "[TCP][Async][Open]" )
