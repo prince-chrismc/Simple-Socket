@@ -915,13 +915,13 @@ bool CSimpleSocket::SetNonblocking()
 #if WIN32
    nCurFlags = 1;
 
-   if ( ioctlsocket( m_socket, FIONBIO, (ULONG*)&nCurFlags ) != SocketSuccess )
+   if ( ioctlsocket( m_socket, FIONBIO, (ULONG*)&nCurFlags ) == SocketError )
    {
       TranslateSocketError();
       return false;
    }
 #else
-   if ( ( nCurFlags = fcntl( m_socket, F_GETFL ) ) < 0 )
+   if ( ( nCurFlags = fcntl( m_socket, F_GETFL ) ) == SocketError )
    {
       TranslateSocketError();
       return false;
@@ -929,7 +929,7 @@ bool CSimpleSocket::SetNonblocking()
 
    nCurFlags |= O_NONBLOCK;
 
-   if ( fcntl( m_socket, F_SETFL, nCurFlags ) != 0 )
+   if ( fcntl( m_socket, F_SETFL, nCurFlags ) == SocketError )
    {
       TranslateSocketError();
       return false;
@@ -953,12 +953,13 @@ bool CSimpleSocket::SetBlocking( void )
 #if WIN32
    nCurFlags = 0;
 
-   if ( ioctlsocket( m_socket, FIONBIO, (ULONG*)&nCurFlags ) != SocketSuccess )
+   if ( ioctlsocket( m_socket, FIONBIO, (ULONG*)&nCurFlags ) == SocketError )
    {
+      TranslateSocketError();
       return false;
    }
 #else
-   if ( ( nCurFlags = fcntl( m_socket, F_GETFL ) ) < 0 )
+   if ( ( nCurFlags = fcntl( m_socket, F_GETFL ) ) == SocketError )
    {
       TranslateSocketError();
       return false;
@@ -966,12 +967,13 @@ bool CSimpleSocket::SetBlocking( void )
 
    nCurFlags &= ( ~O_NONBLOCK );
 
-   if ( fcntl( m_socket, F_SETFL, nCurFlags ) != 0 )
+   if ( fcntl( m_socket, F_SETFL, nCurFlags ) == SocketError )
    {
       TranslateSocketError();
       return false;
    }
 #endif
+   
    m_bIsBlocking = true;
 
    return true;
