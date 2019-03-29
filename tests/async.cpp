@@ -107,7 +107,7 @@ TEST_CASE( "Sockets can be set to non-blocking", "[Initialization]" )
       CSimpleSocket secondary = std::move(socket);
       
       REQUIRE_FALSE( socket.IsNonblocking() );
-      REQUIRE( socket.SetNonblocking() );
+      REQUIRE_FALSE( socket.SetNonblocking() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
    }
 }
