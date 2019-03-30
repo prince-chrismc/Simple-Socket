@@ -143,6 +143,15 @@ TEST_CASE( "Sockets can send", "[Send][UDP]" )
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
    }
 
+   SECTION( "Send from invalid socket" )
+   {
+      CActiveSocket secondary = std::move( socket );
+
+      REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == CSimpleSocket::SocketError );
+      REQUIRE( socket.GetBytesSent() == CSimpleSocket::SocketError );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+   }
+
    SECTION( "Send 2.5s timeout" )
    {
       REQUIRE( socket.SetSendTimeout( 2, 500 ) );
@@ -189,6 +198,15 @@ TEST_CASE( "Sockets can transfer", "[Send][TCP]" )
       REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
       REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+
+   SECTION( "Send from invalid socket" )
+   {
+      CActiveSocket secondary = std::move( socket );
+
+      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == CSimpleSocket::SocketError );
+      REQUIRE( socket.GetBytesSent() == CSimpleSocket::SocketError );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
    }
 
    SECTION( "Send 2.5s timeout" )
