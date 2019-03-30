@@ -136,9 +136,44 @@ TEST_CASE( "Sockets can send", "[Send][UDP]" )
    CHECK( socket.Open( "8.8.8.8", 53 ) );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
-   REQUIRE( socket.GetBytesSent() == DNS_QUERY_LENGTH );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   SECTION( "plain Send" )
+   {
+      REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+      REQUIRE( socket.GetBytesSent() == DNS_QUERY_LENGTH );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+
+   SECTION( "Send 2.5s timeout" )
+   {
+      REQUIRE( socket.SetSendTimeout( 2, 500 ) );
+
+      REQUIRE( socket.GetSendTimeoutSec() == 2 );
+      REQUIRE( socket.GetSendTimeoutUSec() == 500 );
+
+      REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+
+      CAPTURE( "Send (ms)", socket.GetTotalTimeMs(), "Send (us)", socket.GetTotalTimeUsec() );
+      CHECK( socket.GetTotalTimeMs() == 0 );
+
+      REQUIRE( socket.GetBytesSent() == DNS_QUERY_LENGTH );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+
+   SECTION( "Send 0.1s timeout" )
+   {
+      REQUIRE( socket.SetSendTimeout( 0, 100 ) );
+
+      REQUIRE( socket.GetSendTimeoutSec() == 0 );
+      REQUIRE( socket.GetSendTimeoutUSec() == 100 );
+
+      REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+
+      CAPTURE( "Send (ms)", socket.GetTotalTimeMs(), "Send (us)", socket.GetTotalTimeUsec() );
+      CHECK( socket.GetTotalTimeMs() == 0 );
+
+      REQUIRE( socket.GetBytesSent() == DNS_QUERY_LENGTH );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
 }
 #endif
 
@@ -149,9 +184,44 @@ TEST_CASE( "Sockets can transfer", "[Send][TCP]" )
    CHECK( socket.Open( "www.google.ca", 80 ) );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
-   REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   SECTION( "Plain send" )
+   {
+      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+      REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+
+   SECTION( "Send 2.5s timeout" )
+   {
+      REQUIRE( socket.SetSendTimeout( 2, 500 ) );
+
+      REQUIRE( socket.GetSendTimeoutSec() == 2 );
+      REQUIRE( socket.GetSendTimeoutUSec() == 500 );
+
+      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+
+      CAPTURE( "Send (ms)", socket.GetTotalTimeMs(), "Send (us)", socket.GetTotalTimeUsec() );
+      CHECK( socket.GetTotalTimeMs() == 0 );
+
+      REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+
+   SECTION( "Send 0.1s timeout" )
+   {
+      REQUIRE( socket.SetSendTimeout( 0, 100 ) );
+
+      REQUIRE( socket.GetSendTimeoutSec() == 0 );
+      REQUIRE( socket.GetSendTimeoutUSec() == 100 );
+
+      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+
+      CAPTURE( "Send (ms)", socket.GetTotalTimeMs(), "Send (us)", socket.GetTotalTimeUsec() );
+      CHECK( socket.GetTotalTimeMs() == 0 );
+
+      REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
 }
 
 #ifndef _DARWIN
