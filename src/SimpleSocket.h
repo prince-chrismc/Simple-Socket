@@ -147,7 +147,7 @@ public:
    bool IsSocketValid() const { return ( m_socket != INVALID_SOCKET ); }
 
    static std::string DescribeError( CSocketError err );
-   std::string DescribeError() const { return DescribeError( m_socketErrno ); }
+   std::string DescribeError() const { return DescribeError( m_error ); }
 
    int32_t Receive( uint32_t nMaxBytes = 1, uint8_t* pBuffer = nullptr );
 
@@ -159,9 +159,12 @@ public:
    /// @return of -1 means that an error has occurred.
    virtual int32_t Send( const uint8_t* pBuf, size_t bytesToSend );
 
-   #ifdef STRING_VIEW
-   int32_t Send( std::string_view bytes ) { return Send( reinterpret_cast<const uint8_t*>( bytes.data() ), bytes.length() ); }
-   #endif
+#ifdef STRING_VIEW
+   int32_t Send( std::string_view bytes )
+   {
+      return Send( reinterpret_cast<const uint8_t*>( bytes.data() ), bytes.length() );
+   }
+#endif
 
    /// Attempts to send at most nNumItem blocks described by sendVector
    /// to the socket descriptor associated with the socket object.
@@ -263,7 +266,7 @@ public:
    /// <br><br> \b NOTE: Windows special notes http://support.microsoft.com/kb/248611.
    bool SetSocketDscp( int nDscp );
 
-   CSocketError GetSocketError() const { return m_socketErrno; }
+   CSocketError GetSocketError() const { return m_error; }
    CSocketType GetSocketType() const { return m_nSocketType; }
 
    std::string GetClientAddr();
@@ -307,15 +310,13 @@ protected:
    ///  @return socket descriptor which is a signed 32 bit integer.
    SOCKET GetSocketDescriptor() const { return m_socket; }
 
-   /// Initialize instance of CSocket.  This method MUST be called before an
-   /// object can be used. Errors : CSocket::SocketProtocolError,
-   /// CSocket::SocketInvalidSocket,
+   /// Errors : CSocket::SocketProtocolError, CSocket::SocketInvalidSocket,
    /// @return true if properly initialized.
-   bool Initialize();
+   bool ObtainNewHandle();
 
    /// Set internal socket error to that specified error
    ///  @param error type of error
-   void SetSocketError( CSimpleSocket::CSocketError error ) { m_socketErrno = error; }
+   void SetSocketError( CSimpleSocket::CSocketError error ) { m_error = error; }
 
    /// Provides a standard error code for cross platform development by mapping the
    /// operating system error to an error defined by the CSimpleSocket class.
@@ -358,30 +359,32 @@ private:
    virtual sockaddr_in* GetUdpTxAddrBuffer() { return m_bIsMulticast ? &m_stMulticastGroup : &m_stClientSockaddr; }
 
 protected:
-   SOCKET m_socket;                    /// socket handle
-   CSocketError m_socketErrno;         /// number of last error
-   std::string m_sBuffer;              /// internal send/receive buffer
-   int32_t m_nSocketDomain;            /// socket type PF_INET, PF_INET6
-   CSocketType m_nSocketType;          /// socket type - UDP, TCP or RAW
-   int32_t m_nBytesReceived;           /// number of bytes received
-   int32_t m_nBytesSent;               /// number of bytes sent
-   uint32_t m_nFlags;                  /// socket flags
-   bool m_bIsBlocking;                 /// is socket blocking
-   bool m_bIsMulticast;                /// is the UDP socket multicast;
-   timeval m_stConnectTimeout{};       /// connection timeout
-   timeval m_stRecvTimeout{};          /// receive timeout
-   timeval m_stSendTimeout{};          /// send timeout
-   sockaddr_in m_stServerSockaddr{};   /// server address
-   sockaddr_in m_stClientSockaddr{};   /// client address
-   sockaddr_in m_stMulticastGroup{};   /// multicast group to bind to
-   linger m_stLinger{};                /// linger flag
-   CStatTimer m_timer;                 /// internal statistics.
+   SOCKET m_socket = INVALID_SOCKET;                /// socket handle
+   CSocketError m_error = SocketInvalidSocket;      /// number of last error
+   std::string m_sBuffer;                           /// internal send/receive buffer
+   int32_t m_nSocketDomain = AF_UNSPEC;             /// socket domain IPv4 (AF_INET) or IPv6 (AF_INET6)
+   CSocketType m_nSocketType = SocketTypeInvalid;   /// socket type - UDP, TCP or RAW
+   int32_t m_nBytesReceived = -1;                   /// number of bytes received
+   int32_t m_nBytesSent = -1;                       /// number of bytes sent
+   uint32_t m_nFlags = 0;                           /// socket flags
+   bool m_bIsBlocking = true;                       /// is socket blocking
+   bool m_bIsMulticast = false;                     /// is the UDP socket multi-cast;
+   timeval m_stConnectTimeout = { 0, 0 };           /// connection timeout
+   timeval m_stRecvTimeout = { 0, 0 };              /// receive timeout
+   timeval m_stSendTimeout = { 0, 0 };              /// send timeout
+   sockaddr_in m_stServerSockaddr = {};             /// server address
+   sockaddr_in m_stClientSockaddr = {};             /// client address
+   sockaddr_in m_stMulticastGroup = {};             /// multi-cast group to bind to
+   linger m_stLinger = { 0, 0 };                    /// linger flag
+   CStatTimer m_timer;                              /// internal statistics.
+
 #ifdef WIN32
-   WSADATA m_hWSAData{};   /// Windows
+   WSADATA m_hWSAData = {};   /// Windows
 #endif
-   fd_set m_writeFds{};   /// write file descriptor set
-   fd_set m_readFds{};    /// read file descriptor set
-   fd_set m_errorFds{};   /// error file descriptor set
+
+   fd_set m_writeFds = { 0, 0 };   /// write file descriptor set
+   fd_set m_readFds = { 0, 0 };    /// read file descriptor set
+   fd_set m_errorFds = { 0, 0 };   /// error file descriptor set
 };
 
 #endif /*  __SOCKET_H__  */

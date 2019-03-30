@@ -60,72 +60,20 @@ static constexpr auto IPTOS_LOWDELAY = 0x10;
 
 static constexpr auto SOCKET_SENDFILE_BLOCKSIZE = 8192;
 
-CSimpleSocket::CSimpleSocket( CSocketType nType ) :
-   m_socket( INVALID_SOCKET ),
-   m_socketErrno( CSimpleSocket::SocketInvalidSocket ),
-   m_nSocketDomain( AF_UNSPEC ),
-   m_nSocketType( nType ),
-   m_nBytesReceived( -1 ),
-   m_nBytesSent( -1 ),
-   m_nFlags( 0 ),
-   m_bIsBlocking( true ),
-   m_bIsMulticast( false )
+CSimpleSocket::CSimpleSocket( CSocketType nType ) : m_nSocketType( nType )
 {
-   SetConnectTimeout( 0, 0 );
-   SetReceiveTimeout( 0, 0 );
-   SetSendTimeout( 0, 0 );
-   SetOptionLinger( false, 0 );
-   memset( &m_stClientSockaddr, 0, SOCKET_ADDR_IN_SIZE );
-   memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
-   memset( &m_stMulticastGroup, 0, SOCKET_ADDR_IN_SIZE );
-
-   switch ( nType )
+   if ( nType == SocketTypeTcp || nType == SocketTypeUdp )
    {
-   case CSimpleSocket::SocketTypeTcp:
-   case CSimpleSocket::SocketTypeUdp:
       m_nSocketDomain = AF_INET;
-      break;
-      // case CSimpleSocket::SocketTypeTcp6:
-      // case CSimpleSocket::SocketTypeUdp6:
-      //   m_nSocketDomain = AF_INET6;
-      //   break;
-
-      // Declare socket type raw Ethernet - Ethernet
-      //#if defined( _LINUX ) || defined( _DARWIN )
-      //   case CSimpleSocket::SocketTypeRaw:
-      //      // case CSimpleSocket::SocketTypeRaw6:
-      //      m_nSocketDomain = AF_PACKET;
-      //      break;
-      //#else
-      //   case CSimpleSocket::SocketTypeRaw:
-      //      m_nSocketDomain = AF_INET;
-      //      break;
-      //      // case CSimpleSocket::SocketTypeRaw6:
-      //      //   m_nSocketDomain = AF_INET6;
-      //      //   break;
-      //#endif
-
-   default:
-      m_nSocketType = CSimpleSocket::SocketTypeInvalid;
-      break;
    }
 
-   if ( !Initialize() )
+   if ( !ObtainNewHandle() )
    {
       throw std::runtime_error( "Failed to create socket! " + DescribeError() );
    }
 }
 
-CSimpleSocket::CSimpleSocket( CSimpleSocket&& socket ) noexcept :
-   m_socket( INVALID_SOCKET ),
-   m_socketErrno( CSimpleSocket::SocketInvalidSocket ),
-   m_nSocketDomain( AF_UNSPEC ),
-   m_nSocketType( CSimpleSocket::SocketTypeInvalid ),
-   m_nBytesReceived( -1 ),
-   m_nBytesSent( -1 ),
-   m_nFlags( 0 ),
-   m_bIsBlocking( true ),
-   m_bIsMulticast( false )
+CSimpleSocket::CSimpleSocket( CSimpleSocket&& socket ) noexcept
 {
    swap( *this, socket );
    return;
@@ -145,11 +93,10 @@ CSimpleSocket::~CSimpleSocket()
 
 void swap( CSimpleSocket& lhs, CSimpleSocket& rhs ) noexcept
 {
-   // enable ADL (not necessary in our case, but good practice)
-   using std::swap;
+   using std::swap; // enable ADL
 
    swap( lhs.m_socket, rhs.m_socket );
-   swap( lhs.m_socketErrno, rhs.m_socketErrno );
+   swap( lhs.m_error, rhs.m_error );
    swap( lhs.m_sBuffer, rhs.m_sBuffer );
    swap( lhs.m_nSocketDomain, rhs.m_nSocketDomain );
    swap( lhs.m_nSocketType, rhs.m_nSocketType );
@@ -159,12 +106,9 @@ void swap( CSimpleSocket& lhs, CSimpleSocket& rhs ) noexcept
    swap( lhs.m_bIsMulticast, rhs.m_bIsMulticast );
    swap( lhs.m_bIsBlocking, rhs.m_bIsBlocking );
 
-   swap( lhs.m_stConnectTimeout.tv_sec, rhs.m_stConnectTimeout.tv_sec );
-   swap( lhs.m_stConnectTimeout.tv_usec, rhs.m_stConnectTimeout.tv_usec );
-   swap( lhs.m_stRecvTimeout.tv_sec, rhs.m_stRecvTimeout.tv_sec );
-   swap( lhs.m_stRecvTimeout.tv_usec, rhs.m_stRecvTimeout.tv_usec );
-   swap( lhs.m_stSendTimeout.tv_sec, rhs.m_stSendTimeout.tv_sec );
-   swap( lhs.m_stSendTimeout.tv_usec, rhs.m_stSendTimeout.tv_usec );
+   swap( lhs.m_stConnectTimeout, rhs.m_stConnectTimeout );
+   swap( lhs.m_stRecvTimeout, rhs.m_stRecvTimeout );
+   swap( lhs.m_stSendTimeout, rhs.m_stSendTimeout );
 
    swap( lhs.m_stLinger.l_onoff, rhs.m_stLinger.l_onoff );
    swap( lhs.m_stLinger.l_linger, rhs.m_stLinger.l_linger );
@@ -174,12 +118,7 @@ void swap( CSimpleSocket& lhs, CSimpleSocket& rhs ) noexcept
    swap( lhs.m_stMulticastGroup, rhs.m_stMulticastGroup );
 }
 
-//-------------------------------------------------------------------------------------------------
-//
-// Initialize() - Initialize socket class
-//
-//-------------------------------------------------------------------------------------------------
-bool CSimpleSocket::Initialize()
+bool CSimpleSocket::ObtainNewHandle()
 {
    errno = CSimpleSocket::SocketSuccess;
 
@@ -275,7 +214,7 @@ bool CSimpleSocket::SetMulticast( bool bEnable, uint8_t multicastTTL )
    }
    else
    {
-      m_socketErrno = CSimpleSocket::SocketProtocolError;
+      m_error = CSimpleSocket::SocketProtocolError;
    }
 
    return bRetVal;
@@ -293,7 +232,7 @@ bool CSimpleSocket::JoinMulticast( const char* pGroup, uint16_t nPort )
    if ( GetSocketType() != CSimpleSocket::SocketTypeUdp || !GetMulticast() )
    {
       bRetVal = false;
-      m_socketErrno = CSimpleSocket::SocketProtocolError;
+      m_error = CSimpleSocket::SocketProtocolError;
    }
 
    if ( bRetVal )
@@ -630,7 +569,7 @@ bool CSimpleSocket::Shutdown( CShutdownMode nShutdown )
       // Shutdown failed because there was no connection.
       // This is typically cause by a the remote sending FIN
       // before the local side has finished.
-      return ( m_socketErrno == SocketNotconnected );
+      return ( m_error == SocketNotconnected );
    }
 
    return true;
@@ -973,7 +912,7 @@ bool CSimpleSocket::SetBlocking( void )
       return false;
    }
 #endif
-   
+
    m_bIsBlocking = true;
 
    return true;
