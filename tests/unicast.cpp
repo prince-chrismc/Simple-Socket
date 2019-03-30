@@ -116,7 +116,7 @@ TEST_CASE( "Establish connection to remote host", "[Open][TCP]" )
 
    SECTION( "No effect with invalid" )
    {
-      CActiveSocket secondary = std::move(socket);
+      CActiveSocket secondary = std::move( socket );
       CHECK_FALSE( socket.Open( "127.0.0.1", 34867 ) );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
    }
