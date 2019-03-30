@@ -27,6 +27,9 @@ SOFTWARE.
 #include "catch2/catch.hpp"
 #include "ActiveSocket.h"
 
+using namespace std::string_view_literals;
+static constexpr auto HTTP_GET_ROOT_REQUEST = "GET / HTTP/1.0\r\n\r\n"sv;
+
 TEST_CASE( "Sockets can be set to non-blocking", "[Initialization]" )
 {
    SECTION( "Non-blocking TCP sockets", "[Async][TCP]" )
@@ -167,6 +170,47 @@ TEST_CASE( "Non-blocking Sockets can connect", "[TCP][Async][Open]" )
       REQUIRE( socket.GetConnectTimeoutUSec() == 500 );
 
       REQUIRE( socket.Open( "www.google.ca", 80 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+}
+
+TEST_CASE( "Non-blocking Sockets can send", "[TCP][Async][Open][Send]" )
+{
+   CActiveSocket socket;
+
+   CHECK( socket.IsSocketValid() );
+   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
+
+   REQUIRE_FALSE( socket.IsNonblocking() );
+   REQUIRE( socket.SetNonblocking() );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.IsNonblocking() );
+
+   socket.SetConnectTimeout( 5, 500 );   // Allow enough time to establish connections
+
+   REQUIRE( socket.GetConnectTimeoutSec() == 5 );
+   REQUIRE( socket.GetConnectTimeoutUSec() == 500 );
+
+   REQUIRE( socket.Open( "www.google.ca", 80 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   SECTION( "Send instant" )
+   {
+      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+      REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+
+   SECTION( "Send 2.5s timeout" )
+   {
+      REQUIRE( socket.SetSendTimeout( 2, 500 ) );
+
+      REQUIRE( socket.GetSendTimeoutSec() == 2 );
+      REQUIRE( socket.GetSendTimeoutUSec() == 500 );
+
+      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+      REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
    }
 }

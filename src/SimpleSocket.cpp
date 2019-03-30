@@ -93,7 +93,7 @@ CSimpleSocket::~CSimpleSocket()
 
 void swap( CSimpleSocket& lhs, CSimpleSocket& rhs ) noexcept
 {
-   using std::swap; // enable ADL
+   using std::swap;   // enable ADL
 
    swap( lhs.m_socket, rhs.m_socket );
    swap( lhs.m_error, rhs.m_error );
@@ -498,21 +498,13 @@ int32_t CSimpleSocket::Send( const uint8_t* pBuf, size_t bytesToSend )
    m_nBytesSent = 0;
 
    std::function<int32_t()> sendMessage = [] { return -1; };
-
-   switch ( m_nSocketType )
-   {
-   case CSimpleSocket::SocketTypeTcp:
+   if ( m_nSocketType == SocketTypeTcp )
       sendMessage = [&] { return SEND( m_socket, pBuf, bytesToSend, 0 ); };
-      break;
-   case CSimpleSocket::SocketTypeUdp:
+   else if ( m_nSocketType == SocketTypeUdp )
       sendMessage = [&] {
          const auto addrToSentTo = reinterpret_cast<const sockaddr*>( GetUdpTxAddrBuffer() );
          return SENDTO( m_socket, pBuf, bytesToSend, 0, addrToSentTo, SOCKET_ADDR_IN_SIZE );
       };
-      break;
-   default:
-      break;
-   }
 
    m_timer.SetStartTime();
 
