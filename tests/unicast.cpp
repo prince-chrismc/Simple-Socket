@@ -36,6 +36,7 @@ SOFTWARE.
 #include <netdb.h>
 #endif
 
+using namespace std::chrono_literals;
 using namespace std::string_literals;
 using namespace std::string_view_literals;
 
@@ -1104,9 +1105,58 @@ TEST_CASE( "Waiting for connections can be closed", "[TCP][Listen][Accept][Close
    REQUIRE( serverRespone.get() == CSimpleSocket::SocketInterrupted );
 #elif _DARWIN
    // Different versions of xcode produce different error codes ( sometimes undefined )
-   //REQUIRE( serverRespone.get() == CSimpleSocket::SocketConnectionAborted );
+   // REQUIRE( serverRespone.get() == CSimpleSocket::SocketConnectionAborted );
    REQUIRE_FALSE( serverRespone.get() == CSimpleSocket::SocketSuccess );
 #else
    REQUIRE( serverRespone.get() == CSimpleSocket::SocketInvalidOperation );
 #endif
+}
+
+TEST_CASE( "Sockets clear buffer on Rx fail", "[Listen][Open][Accept][TCP]" )
+{
+   CPassiveSocket server;
+
+   REQUIRE( server.Listen( "127.0.0.1", 54981 ) );
+   REQUIRE( server.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   CHECK( server.GetServerAddr() == "127.0.0.1" );
+   CHECK( server.GetServerPort() == 54981 );
+
+   CActiveSocket socket;
+
+   REQUIRE( socket.Open( "127.0.0.1", 54981 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   CHECK( socket.GetServerAddr() == "127.0.0.1" );
+   CHECK( socket.GetServerPort() == 54981 );
+
+   auto serverRespone = std::async( std::launch::async, [&] {
+      std::unique_ptr<CActiveSocket> connection = server.Accept();
+      REQUIRE( connection != nullptr );
+
+      REQUIRE( connection->Receive( 1024 ) == TEXT_PACKET_LENGTH );
+
+      std::this_thread::sleep_for( 125ms );
+
+      REQUIRE( connection->Close() );
+   } );
+
+   REQUIRE( socket.Send( TEXT_PACKET ) == TEXT_PACKET_LENGTH );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   REQUIRE( socket.Receive( 1024 ) == 0 );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   const std::string actualResponse = socket.GetData();
+
+   REQUIRE( actualResponse.length() == 0 );
+   REQUIRE( actualResponse.empty() );
+
+   CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+   CHECK( socket.Close() );
+   CHECK_FALSE( socket.IsSocketValid() );
+
+   CHECK( server.Shutdown( CSimpleSocket::Both ) );
+   CHECK( server.Close() );
+   CHECK_FALSE( server.IsSocketValid() );
 }

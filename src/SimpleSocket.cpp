@@ -511,7 +511,7 @@ int32_t CSimpleSocket::Send( const uint8_t* pBuf, size_t bytesToSend )
    // Check error condition and attempt to resend if call was interrupted by a signal.
    do
    {
-      m_nBytesSent = sendMessage();
+      m_nBytesSent += sendMessage();
       TranslateSocketError();
    } while ( GetSocketError() == CSimpleSocket::SocketInterrupted );
 
@@ -783,26 +783,17 @@ int32_t CSimpleSocket::Receive( uint32_t nMaxBytes, uint8_t* pBuffer )
       pWorkBuffer = reinterpret_cast<uint8_t*>( &m_sBuffer[ 0 ] );   // Use string's internal memory as the buffer
    }
 
-   SetSocketError( CSimpleSocket::SocketSuccess );
+   SetSocketError( SocketSuccess );
    m_nBytesReceived = 0;
 
    std::function<int32_t()> receivePacket = [] { return -1; };
-
-   switch ( m_nSocketType )
-   {
-   case CSimpleSocket::SocketTypeTcp:
+   if ( m_nSocketType == SocketTypeTcp )
       receivePacket = [&] { return RECV( m_socket, ( pWorkBuffer + m_nBytesReceived ), nMaxBytes, m_nFlags ); };
-      break;
-   case CSimpleSocket::SocketTypeUdp:
+   if ( m_nSocketType == SocketTypeUdp )
       receivePacket = [&] {
          uint32_t srcSize = SOCKET_ADDR_IN_SIZE;
          return RECVFROM( m_socket, ( pWorkBuffer + m_nBytesReceived ), nMaxBytes, 0, GetUdpRxAddrBuffer(), &srcSize );
       };
-      break;
-   default:
-      // SetSocketError( CSimpleSocket::SocketProtocolError );
-      break;
-   }
 
    m_timer.SetStartTime();
 
