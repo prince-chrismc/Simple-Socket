@@ -112,6 +112,71 @@ TEST_CASE( "Sockets can be set to non-blocking", "[Initialization]" )
       REQUIRE_FALSE( socket.IsNonblocking() );
       REQUIRE_FALSE( socket.SetNonblocking() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      REQUIRE_FALSE( socket.IsNonblocking() );
+   }
+
+   SECTION( "Invalid socket can not be set to blocking", "[Async][TCP]" )
+   {
+      CSimpleSocket socket;
+
+      CHECK( socket.IsSocketValid() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
+
+      REQUIRE_FALSE( socket.IsNonblocking() );
+      REQUIRE( socket.SetNonblocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.IsNonblocking() );
+
+      CSimpleSocket secondary = std::move( socket );
+
+      REQUIRE_FALSE( socket.SetBlocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      REQUIRE_FALSE( socket.IsNonblocking() );
+   }
+
+   SECTION( "Toggle async mode on moved socket", "[Async][TCP]" )
+   {
+      CSimpleSocket socket;
+
+      CHECK( socket.IsSocketValid() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
+
+      REQUIRE_FALSE( socket.IsNonblocking() );
+      REQUIRE( socket.SetNonblocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.IsNonblocking() );
+
+      CSimpleSocket secondary = std::move( socket );
+      REQUIRE( secondary.IsNonblocking() );
+      REQUIRE( secondary.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( secondary.SetBlocking() );
+      REQUIRE( secondary.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE_FALSE( secondary.IsNonblocking() );
+
+      REQUIRE( secondary.SetNonblocking() );
+      REQUIRE( secondary.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( secondary.IsNonblocking() );
+   }
+
+   SECTION( "Double set Non-blocking TCP sockets", "[Async][TCP]" )
+   {
+      CSimpleSocket socket;
+
+      CHECK( socket.IsSocketValid() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
+
+      REQUIRE_FALSE( socket.IsNonblocking() );
+      REQUIRE( socket.SetNonblocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.IsNonblocking() );
+
+      REQUIRE( socket.SetNonblocking() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.IsNonblocking() );
    }
 }
 
