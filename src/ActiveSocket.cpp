@@ -168,12 +168,8 @@ bool CActiveSocket::Open( const char* pAddr, uint16_t nPort )
 
    if ( bRetVal )
    {
-      bRetVal = ( m_nSocketType == SocketTypeTcp ) ?
-                    ConnectStreamSocket() :
-                    ( m_nSocketType == SocketTypeUdp ) ? ConnectDatagramSocket() : [this] {
-                       SetSocketError( SocketProtocolError );
-                       return false;
-                    }();
+      bRetVal = ( m_nSocketType == SocketTypeTcp ) ? ConnectStreamSocket () :
+                    ( m_nSocketType == SocketTypeUdp ) ? ConnectDatagramSocket() : false;
    }
 
    // If successful then get a local copy of the address and port
