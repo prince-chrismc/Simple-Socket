@@ -103,12 +103,12 @@ TEST_CASE( "Sockets can be set to non-blocking", "[Initialization]" )
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       REQUIRE( socket.IsNonblocking() );
    }
-   
+
    SECTION( "Invalid socket can not be set to non-blocking", "[Async][TCP]" )
    {
       CSimpleSocket socket;
       CSimpleSocket secondary = std::move( socket );
-      
+
       REQUIRE_FALSE( socket.IsNonblocking() );
       REQUIRE_FALSE( socket.SetNonblocking() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
@@ -207,10 +207,10 @@ TEST_CASE( "Non-blocking Sockets can connect", "[TCP][Async][Open]" )
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
 #elif _DARWIN
       // For xcode 10.0
-      //REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
+      // REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
 
       // For xcode 9.4
-      //REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketConnectionRefused );
+      // REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketConnectionRefused );
 
       REQUIRE_FALSE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 #else
@@ -301,5 +301,121 @@ TEST_CASE( "Non-blocking Sockets can send", "[TCP][Async][Open][Send]" )
 
       REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+}
+
+TEST_CASE( "Non-blocking Sockets can receive", "[TCP][Async][Open][Send][Receive]" )
+{
+   CActiveSocket socket;
+
+   CHECK( socket.IsSocketValid() );
+   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
+
+   REQUIRE_FALSE( socket.IsNonblocking() );
+   REQUIRE( socket.SetNonblocking() );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   REQUIRE( socket.IsNonblocking() );
+
+   socket.SetConnectTimeout( 5, 500 );   // Allow enough time to establish connections
+
+   CHECK( socket.GetConnectTimeoutSec() == 5 );
+   CHECK( socket.GetConnectTimeoutUSec() == 500 );
+
+   REQUIRE( socket.Open( "www.google.ca", 80 ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   REQUIRE( socket.SetSendTimeout( 1, 0 ) );
+
+   REQUIRE( socket.GetSendTimeoutSec() == 1 );
+   REQUIRE( socket.GetSendTimeoutUSec() == 0 );
+
+   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+
+   REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   SECTION( "Rx instant" )
+   {
+      REQUIRE( socket.Receive( 1368 ) == -1 );
+      REQUIRE( socket.GetBytesReceived() == -1 );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketEwouldblock );
+
+      const std::string httpResponse = socket.GetData();
+      CAPTURE( httpResponse );
+
+      REQUIRE( httpResponse.length() == 0 );
+      REQUIRE( httpResponse == "" );
+   }
+
+   SECTION( "Rx 0.5ms" )
+   {
+      REQUIRE( socket.SetReceiveTimeout(0, 500));
+
+      CHECK( socket.GetReceiveTimeoutSec() == 0);
+      CHECK( socket.GetReceiveTimeoutUSec() == 500);
+
+      CAPTURE( "Receive (ms)", socket.GetTotalTimeMs(), "Receive (us)", socket.GetTotalTimeUsec() );
+      CHECK( socket.GetTotalTimeMs() == 0 );
+
+      REQUIRE( socket.Receive( 1368 ) == -1 );
+      REQUIRE( socket.GetBytesReceived() == -1 );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketEwouldblock );
+
+      const std::string httpResponse = socket.GetData();
+      CAPTURE( httpResponse );
+
+      REQUIRE( httpResponse.length() == 0 );
+      REQUIRE( httpResponse == "" );
+   }
+
+   SECTION( "Rx 2.5ms" )
+   {
+      REQUIRE( socket.SetReceiveTimeout(2, 500));
+
+      CHECK( socket.GetReceiveTimeoutSec() == 2);
+      CHECK( socket.GetReceiveTimeoutUSec() == 500);
+
+      CAPTURE( "Receive (ms)", socket.GetTotalTimeMs(), "Receive (us)", socket.GetTotalTimeUsec() );
+      CHECK( socket.GetTotalTimeMs() == 0 );
+
+      REQUIRE( socket.Receive( 1368 ) == -1 );
+      REQUIRE( socket.GetBytesReceived() == -1 );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketEwouldblock );
+
+      const std::string httpResponse = socket.GetData();
+      CAPTURE( httpResponse );
+
+      REQUIRE( httpResponse.length() == 0 );
+      REQUIRE( httpResponse == "" );
+   }
+
+   SECTION( "Rx with select" )
+   {
+      REQUIRE( socket.Receive( 1368 ) == -1 );
+      REQUIRE( socket.GetBytesReceived() == -1 );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketEwouldblock );
+
+      REQUIRE( socket.Select() );
+
+      REQUIRE( socket.Receive( 1368 ) == -1 );
+      REQUIRE( socket.GetBytesReceived() == -1 );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketEwouldblock );
+
+      const std::string httpResponse = socket.GetData();
+      CAPTURE( httpResponse );
+
+      REQUIRE( httpResponse.length() == 0 );
+      REQUIRE( httpResponse == "" );
+      
+      /*REQUIRE( socket.Receive( 1368 ) == 1368 );
+      REQUIRE( socket.GetBytesReceived() == 1368 );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      const std::string httpResponse = socket.GetData();
+
+      REQUIRE( httpResponse.length() > 0 );
+      REQUIRE_THAT( httpResponse,
+                    Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) );*/
    }
 }
