@@ -111,7 +111,7 @@ TEST_CASE( "Sockets can Join group", "[Join]" )
       REQUIRE( socket.GetClientPort() == 0 );
    }
 
-   SECTION( "Can TCP socket join", "[TCP]")
+   SECTION( "Can TCP socket join", "[TCP]" )
    {
       CSimpleSocket socket;
 

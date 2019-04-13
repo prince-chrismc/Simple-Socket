@@ -113,18 +113,18 @@ public:
       SocketEwouldblock,         ///< Operation would block if socket were blocking.
       SocketNotconnected,        ///< Currently not connected.
       SocketEinprogress,         ///< Socket is non-blocking and the connection cannot be completed immediately
-      SocketInterrupted,         ///< Call was interrupted by a signal that was caught before a valid connection arrived.
-      SocketConnectionAborted,   ///< The connection has been aborted.
-      SocketProtocolError,       ///< Invalid protocol for operation.
-      SocketFirewallError,       ///< Firewall rules forbid connection.
-      SocketInvalidSocketBuffer, ///< The receive buffer point outside the process's address space.
-      SocketConnectionReset,     ///< Connection was forcibly closed by the remote host.
-      SocketAddressInUse,        ///< Address already in use.
-      SocketInvalidPointer,      ///< Pointer type supplied as argument is invalid.
-      SocketInvalidOperation,    ///< An invalid argument was provide for the requested action.
-      SocketAlreadyConnected,    ///< A requested action was not possible because of socket state.
-      SocketRoutingError,        ///< OS could not resolve route for requested operation
-      SocketEunknown             ///< Unknown error please report to mark@carrierlabs.com
+      SocketInterrupted,   ///< Call was interrupted by a signal that was caught before a valid connection arrived.
+      SocketConnectionAborted,     ///< The connection has been aborted.
+      SocketProtocolError,         ///< Invalid protocol for operation.
+      SocketFirewallError,         ///< Firewall rules forbid connection.
+      SocketInvalidSocketBuffer,   ///< The receive buffer point outside the process's address space.
+      SocketConnectionReset,       ///< Connection was forcibly closed by the remote host.
+      SocketAddressInUse,          ///< Address already in use.
+      SocketInvalidPointer,        ///< Pointer type supplied as argument is invalid.
+      SocketInvalidOperation,      ///< An invalid argument was provide for the requested action.
+      SocketAlreadyConnected,      ///< A requested action was not possible because of socket state.
+      SocketRoutingError,          ///< OS could not resolve route for requested operation
+      SocketEunknown               ///< Unknown error please report to mark@carrierlabs.com
    };
 
 public:

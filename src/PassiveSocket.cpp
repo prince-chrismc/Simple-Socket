@@ -139,28 +139,28 @@ auto CPassiveSocket::Accept() -> std::unique_ptr<CActiveSocket>
 
    m_timer.SetStartTime();
 
-   //do
+   // do
    //{
-      socklen_t nSockAddrLen( SOCKET_ADDR_IN_SIZE );
-      const SOCKET socket = ACCEPT( m_socket, &m_stClientSockaddr, &nSockAddrLen );   // Wait for incoming connection.
+   socklen_t nSockAddrLen( SOCKET_ADDR_IN_SIZE );
+   const SOCKET socket = ACCEPT( m_socket, &m_stClientSockaddr, &nSockAddrLen );   // Wait for incoming connection.
 
-      if ( socket != INVALID_SOCKET )
-      {
-         pClientSocket->SetSocketHandle( socket );
-         pClientSocket->TranslateSocketError();
-         socketErrno = pClientSocket->GetSocketError();
+   if ( socket != INVALID_SOCKET )
+   {
+      pClientSocket->SetSocketHandle( socket );
+      pClientSocket->TranslateSocketError();
+      socketErrno = pClientSocket->GetSocketError();
 
-         // Store client and server IP and port information for this connection.
-         GETPEERNAME( m_socket, &pClientSocket->m_stClientSockaddr, &nSockAddrLen );
-         memcpy( &pClientSocket->m_stClientSockaddr, &m_stClientSockaddr, SOCKET_ADDR_IN_SIZE );
+      // Store client and server IP and port information for this connection.
+      GETPEERNAME( m_socket, &pClientSocket->m_stClientSockaddr, &nSockAddrLen );
+      memcpy( &pClientSocket->m_stClientSockaddr, &m_stClientSockaddr, SOCKET_ADDR_IN_SIZE );
 
-         GETSOCKNAME( m_socket, &pClientSocket->m_stServerSockaddr, &nSockAddrLen );
-      }
-      else
-      {
-         TranslateSocketError();
-         socketErrno = GetSocketError();
-      }
+      GETSOCKNAME( m_socket, &pClientSocket->m_stServerSockaddr, &nSockAddrLen );
+   }
+   else
+   {
+      TranslateSocketError();
+      socketErrno = GetSocketError();
+   }
    //} while ( socketErrno == CSimpleSocket::SocketInterrupted );
 
    m_timer.SetEndTime();

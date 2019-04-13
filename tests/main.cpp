@@ -84,7 +84,7 @@ TEST_CASE( "Valid sockets are created", "[Initialization]" )
       REQUIRE( socket.GetSendTimeoutUSec() == 0 );
 
       REQUIRE( socket.GetTotalTimeMs() == 0 );
-      REQUIRE( socket.GetTotalTimeUsec() > 0 ); // Timer tracked internal init from ctor
+      REQUIRE( socket.GetTotalTimeUsec() > 0 );   // Timer tracked internal init from ctor
 
       REQUIRE( socket.GetServerAddr() == "0.0.0.0" );
       REQUIRE( socket.GetServerPort() == 0 );
@@ -98,7 +98,7 @@ TEST_CASE( "Valid sockets are created", "[Initialization]" )
    SECTION( "Socket is invalid after being moved", "[TCP]" )
    {
       CSimpleSocket socket;
-      CSimpleSocket secondary = std::move(socket);
+      CSimpleSocket secondary = std::move( socket );
 
       REQUIRE_FALSE( socket.IsSocketValid() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
@@ -124,14 +124,14 @@ TEST_CASE( "Valid sockets are created", "[Initialization]" )
       REQUIRE( socket.GetSendTimeoutUSec() == 0 );
 
       REQUIRE( socket.GetTotalTimeMs() == 0 );
-      REQUIRE( socket.GetTotalTimeUsec() > 0 ); // Timer tracked internal init from ctor
+      REQUIRE( socket.GetTotalTimeUsec() > 0 );   // Timer tracked internal init from ctor
 
-      REQUIRE( socket.GetServerAddr() == CSimpleSocket::DescribeError(CSimpleSocket::SocketInvalidSocket) );
+      REQUIRE( socket.GetServerAddr() == CSimpleSocket::DescribeError( CSimpleSocket::SocketInvalidSocket ) );
       REQUIRE( socket.GetServerPort() == 0 );
 
-      REQUIRE( socket.GetClientAddr() == CSimpleSocket::DescribeError(CSimpleSocket::SocketInvalidSocket) );
+      REQUIRE( socket.GetClientAddr() == CSimpleSocket::DescribeError( CSimpleSocket::SocketInvalidSocket ) );
       REQUIRE( socket.GetClientPort() == 0 );
 
-      REQUIRE( socket.GetJoinedGroup() == CSimpleSocket::DescribeError(CSimpleSocket::SocketInvalidSocket) );
+      REQUIRE( socket.GetJoinedGroup() == CSimpleSocket::DescribeError( CSimpleSocket::SocketInvalidSocket ) );
    }
 }

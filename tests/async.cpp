@@ -107,7 +107,7 @@ TEST_CASE( "Sockets can be set to non-blocking", "[Initialization]" )
    SECTION( "Invalid socket can not be set to non-blocking", "[Async][TCP]" )
    {
       CSimpleSocket socket;
-      CSimpleSocket secondary = std::move(socket);
+      CSimpleSocket secondary = std::move( socket );
       
       REQUIRE_FALSE( socket.IsNonblocking() );
       REQUIRE_FALSE( socket.SetNonblocking() );
