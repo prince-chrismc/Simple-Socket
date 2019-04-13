@@ -1,4 +1,14 @@
 {
+  "name": "Simple-Socket",
+  "productName": "Simple-Socket",
+  "version": "2.0.0",
+  "description": "Light weight C++ transport layer socket with cross-platform abstraction",
+  "keywords": [
+    "C++",
+    "socket"
+  ],
+  "author": "cmcarthur",
+  "license": "MIT",
   "scripts": {
     "examples": "docusaurus-examples",
     "start": "docusaurus-start",
@@ -9,6 +19,6 @@
     "rename-version": "docusaurus-rename-version"
   },
   "devDependencies": {
-    "docusaurus": "^1.5.0"
+    "docusaurus": "^1.8.0"
   }
 }
