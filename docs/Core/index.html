@@ -1,0 +1,257 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Core Socket Functionality · Simple Socket</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="&lt;p&gt;&lt;code&gt;CSimpleSocket&lt;/code&gt; provides a platform independent class for application layer development. This class is designed to abstract socket communication development in a&lt;/p&gt;
+"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Core Socket Functionality · Simple Socket"/><meta property="og:type" content="website"/><meta property="og:url" content="https://prince-chrismc.github.com/Simple-Socket/"/><meta property="og:description" content="&lt;p&gt;&lt;code&gt;CSimpleSocket&lt;/code&gt; provides a platform independent class for application layer development. This class is designed to abstract socket communication development in a&lt;/p&gt;
+"/><meta name="twitter:card" content="summary"/><link rel="shortcut icon" href="/Simple-Socket/img/favicon/favicon.ico"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><link rel="stylesheet" href="/Simple-Socket/css/main.css"/><script src="/Simple-Socket/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/Simple-Socket/"><img class="logo" src="/Simple-Socket/img/rj45-512.gif" alt="Simple Socket"/><h2 class="headerTitleWithLogo">Simple Socket</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive"><a href="/Simple-Socket/docs/Intro" target="_self">Intro</a></li><li class="siteNavGroupActive"><a href="/Simple-Socket/docs/Getting-Started" target="_self">Getting Started</a></li><li class="siteNavGroupActive siteNavItemActive"><a href="/Simple-Socket/docs/Core" target="_self">API</a></li><li class=""><a href="https://github.com/prince-chrismc/Simple-Socket" target="_self">GitHub</a></li><li class=""><a href="/Simple-Socket/help" target="_self">Help</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="container docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><i></i></div><h2><i>›</i><span>API</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">Overview</h3><ul class=""><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Intro">Introduction</a></li><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Build">Building and Installation</a></li><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Getting-Started">Getting Started</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Examples</h3><ul class=""><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Examples">Application Specific Examples</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">API</h3><ul class=""><li class="navListItem navListItemActive"><a class="navItem" href="/Simple-Socket/docs/Core">Core Socket Functionality</a></li><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Generics">General Defitions</a></li><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Options">Common Socket Options</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              const headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                if (event.target.tagName === 'A') {
+                  document.body.classList.remove('tocActive');
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 class="postHeaderTitle">Core Socket Functionality</h1></header><article><div><span><p><code>CSimpleSocket</code> provides a platform independent class for application layer development. This class is designed to abstract socket communication development in a
+platform <em>and</em> protocol independent manner.</p>
+<h3><a class="anchor" aria-hidden="true" id="table-of-contents"></a><a href="#table-of-contents" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Table of Contents</h3>
+<ul>
+<li>Active Socket
+<ul>
+<li>Open</li>
+</ul></li>
+<li>Passive Socket
+<ul>
+<li>Listen</li>
+<li>Accept</li>
+</ul></li>
+<li>Functionality
+<ul>
+<li>Receive</li>
+<li>Get Data</li>
+<li>Shutdown</li>
+<li>Close</li>
+</ul></li>
+<li>Status
+<ul>
+<li>Is Socket Valid</li>
+<li>Select</li>
+<li>Describe Error</li>
+</ul></li>
+<li>Information
+<ul>
+<li>Get Client Address</li>
+<li>Get Server Address</li>
+<li>Get Joined Group</li>
+<li>Get Socket Error</li>
+<li>Get Bytes Received</li>
+<li>Get Bytes Sent</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="active-socket"></a><a href="#active-socket" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Active Socket</h2>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Provides a platform independent class to create an active socket.</span>
+<span class="hljs-comment">/// An active socket is used to create a socket which connects to a server.</span>
+<span class="hljs-comment">/// This type of object would be used when an application needs to send/receive</span>
+<span class="hljs-comment">/// data with a server.</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">CActiveSocket</span> :</span> <span class="hljs-keyword">public</span> CSimpleSocket
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="open"></a><a href="#open" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Open</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Established a connection to the address specified by pAddr.</span>
+<span class="hljs-comment">/// Connection-based protocol sockets (CSocket::SocketTypeTcp) may</span>
+<span class="hljs-comment">/// successfully call Open() only once, however; connectionless protocol</span>
+<span class="hljs-comment">/// sockets (CSocket::SocketTypeUdp) may use Open() multiple times to</span>
+<span class="hljs-comment">/// change their association.</span>
+<span class="hljs-comment">///  @param pAddr specifies the destination address to connect.</span>
+<span class="hljs-comment">///  @param nPort specifies the destination port.</span>
+<span class="hljs-comment">///  @return true if successful connection made, otherwise false.</span>
+<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-keyword">bool</span> <span class="hljs-title">Open</span><span class="hljs-params">( <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *pAddr, uint16 nPort )</span></span>;
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="passive-socket"></a><a href="#passive-socket" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Passive Socket</h2>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Provides a platform independent class to create a passive socket.</span>
+<span class="hljs-comment">/// A passive socket is used to create a "listening" socket.  This type</span>
+<span class="hljs-comment">/// of object would be used when an application needs to wait for</span>
+<span class="hljs-comment">/// inbound connections.  Support for CSimpleSocket::SocketTypeTcp,</span>
+<span class="hljs-comment">/// CSimpleSocket::SocketTypeUdp, and CSimpleSocket::SocketTypeRaw is handled</span>
+<span class="hljs-comment">/// in a similar fashion.  The big difference is that the method</span>
+<span class="hljs-comment">/// CPassiveSocket::Accept should not be called on the latter two socket</span>
+<span class="hljs-comment">/// types.</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">CPassiveSocket</span> :</span> <span class="hljs-keyword">public</span> CSimpleSocket
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="listen"></a><a href="#listen" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Listen</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Create a listening socket at local ip address 'x.x.x.x' or 'localhost'</span>
+<span class="hljs-comment">/// if pAddr is NULL or empty, use ANY_ADDR</span>
+<span class="hljs-comment">/// if nPort is 0, use any open port.</span>
+<span class="hljs-comment">/// <span class="hljs-doctag">NOTE:</span> This operation can only be called once!</span>
+<span class="hljs-comment">///</span>
+<span class="hljs-comment">///  @param pAddr specifies the IP address on which to listen.</span>
+<span class="hljs-comment">///  @param nPort specifies the port on which to listen.</span>
+<span class="hljs-comment">///  @param nConnectionBacklog specifies connection queue backlog (default 30,000)</span>
+<span class="hljs-comment">///  @return true if a listening socket was created.</span>
+<span class="hljs-comment">///      If not successful, the false is returned and one of the following error</span>
+<span class="hljs-comment">///      conditions will be set: CPassiveSocket::SocketAddressInUse, CPassiveSocket::SocketProtocolError,</span>
+<span class="hljs-comment">///      CPassiveSocket::SocketInvalidSocket.  The following socket errors are for Linux/Unix</span>
+<span class="hljs-comment">///      derived systems only: CPassiveSocket::SocketInvalidSocketBuffer</span>
+<span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">Listen</span><span class="hljs-params">( <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *pAddr, uint16 nPort, int32 nConnectionBacklog = <span class="hljs-number">30000</span> )</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="accept"></a><a href="#accept" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Accept</h3>
+<pre><code class="hljs css language-cpp">/// Extracts the first connection request on the queue of pending
+/// connections and creates a newly connected socket.  Used with
+/// CSocketType CSimpleSocket::SocketTypeTcp.  It is the responsibility of
+/// the caller to delete the returned object when finished.
+///  @template SmartPtr can be either std::shared_ptr or std::unique_ptr
+///  @template SocketBase can be either CSimpleSocket or CActiveSocket
+///  @return if successful a pointer to a newly created CActiveSocket object
+///          will be returned and the internal error condition of the CPassiveSocket
+///          object will be CPassiveSocket::SocketSuccess.  If an error condition was encountered
+///          the nullptr will be returned and one of the following error conditions will be set:
+///    CPassiveSocket::SocketEwouldblock, CPassiveSocket::SocketInvalidSocket,
+///    CPassiveSocket::SocketConnectionAborted, CPassiveSocket::SocketInterrupted
+///    CPassiveSocket::SocketProtocolError, CPassiveSocket::SocketFirewallError
+auto Accept()-&gt; std::unique_ptr&lt;CActiveSocket&gt;;
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="functionality"></a><a href="#functionality" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Functionality</h2>
+<h3><a class="anchor" aria-hidden="true" id="receive"></a><a href="#receive" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Receive</h3>
+<p>The internal buffer is only valid until the next call to Receive() returns, or until the object goes out of scope.</p>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Attempts to receive a block of data on an established connection.</span>
+<span class="hljs-comment">/// @param nMaxBytes maximum number of bytes to receive.</span>
+<span class="hljs-comment">/// @param pBuffer, memory where to receive the data,</span>
+<span class="hljs-comment">///        - NULL receives to internal buffer returned with GetData()</span>
+<span class="hljs-comment">///        - Non-NULL receives directly there, but GetData() will return empty!</span>
+<span class="hljs-comment">/// @return number of bytes actually received.</span>
+<span class="hljs-comment">/// @return of zero means the connection has been shutdown on the other side.</span>
+<span class="hljs-comment">/// @return of -1 means that an error has occurred.</span>
+<span class="hljs-function">int32 <span class="hljs-title">Receive</span><span class="hljs-params">(uint32 nMaxBytes = <span class="hljs-number">1</span>, uint8 * pBuffer = <span class="hljs-literal">nullptr</span>)</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="get-data"></a><a href="#get-data" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Data</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Get a pointer to internal receive buffer. This memory is managed</span>
+<span class="hljs-comment">/// internally by the CSocket class.</span>
+<span class="hljs-comment">/// @return copy of data if valid, else returns empty.</span>
+<span class="hljs-keyword">const</span> <span class="hljs-built_in">std</span>::<span class="hljs-function"><span class="hljs-built_in">string</span>&amp; <span class="hljs-title">GetData</span><span class="hljs-params">()</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="shutdown"></a><a href="#shutdown" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Shutdown</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Shutdown shutdown socket send and/or receive operations</span>
+<span class="hljs-comment">/// @param nShutdown specifies the type of shutdown.</span>
+<span class="hljs-comment">/// @return true if successfully shutdown otherwise returns false.</span>
+<span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">Shutdown</span><span class="hljs-params">(CShutdownMode nShutdown)</span></span>;
+</code></pre>
+<blockquote>
+<p>NOTE: this method is able to allowing blocking sockets to close <strong>ONLY</strong> if the socket currently is not in a blocking state; in other works if your application is waiting for a message close will most liekly be required to exit the blocking call.</p>
+</blockquote>
+<h3><a class="anchor" aria-hidden="true" id="close"></a><a href="#close" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Close</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Close socket</span>
+<span class="hljs-comment">/// @return true if successfully closed otherwise returns false.</span>
+<span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">Close</span><span class="hljs-params">()</span></span>;
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="status"></a><a href="#status" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Status</h2>
+<h3><a class="anchor" aria-hidden="true" id="is-socket-valid"></a><a href="#is-socket-valid" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Is Socket Valid</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Does the current instance of the socket object contain a valid socket</span>
+<span class="hljs-comment">/// descriptor.</span>
+<span class="hljs-comment">///  @return true if the socket object contains a valid socket descriptor.</span>
+<span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">IsSocketValid</span><span class="hljs-params">()</span> <span class="hljs-keyword">const</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="select"></a><a href="#select" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Select</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Examine the socket descriptor currently managed by this instance to see</span>
+<span class="hljs-comment">/// whether some of its file descriptors are ready for reading, for writing,</span>
+<span class="hljs-comment">/// or have an exceptional condition pending,</span>
+<span class="hljs-comment">/// @param nTimeoutSec timeout in seconds for select.</span>
+<span class="hljs-comment">/// @param nTimeoutUSec timeout in micro seconds for select.</span>
+<span class="hljs-comment">/// @return true if socket has data ready, or false if timed out or error pending.</span>
+<span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">Select</span><span class="hljs-params">(int32 nTimeoutSec, int32 nTimeoutUSec)</span></span>;
+</code></pre>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Block until an event happens on the managed socket descriptors.</span>
+<span class="hljs-comment">/// @return true if socket has data ready, or false if not ready or timed out.</span>
+<span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">Select</span><span class="hljs-params">()</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="describe-error"></a><a href="#describe-error" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Describe Error</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Returns a human-readable description of the last error code of a socket</span>
+<span class="hljs-built_in">std</span>::<span class="hljs-function"><span class="hljs-built_in">string</span> <span class="hljs-title">DescribeError</span><span class="hljs-params">()</span> <span class="hljs-keyword">const</span></span>;
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="information"></a><a href="#information" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Information</h2>
+<h3><a class="anchor" aria-hidden="true" id="get-socket-type"></a><a href="#get-socket-type" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Socket Type</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Return socket descriptor</span>
+<span class="hljs-comment">///  @return socket descriptor which is a signed 32 bit integer.</span>
+<span class="hljs-function">CSocketType <span class="hljs-title">GetSocketType</span><span class="hljs-params">()</span> <span class="hljs-keyword">const</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="get-client-address"></a><a href="#get-client-address" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Client Address</h3>
+<pre><code class="hljs css language-cpp"> <span class="hljs-comment">/// Returns clients Internet host address as a string in standard numbers-and-dots notation.</span>
+ <span class="hljs-comment">///  @return IP address or empty if invalid</span>
+<span class="hljs-built_in">std</span>::<span class="hljs-function"><span class="hljs-built_in">string</span> <span class="hljs-title">GetClientAddr</span><span class="hljs-params">()</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="get-client-port"></a><a href="#get-client-port" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Client Port</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Returns the port number on which the client is connected.</span>
+<span class="hljs-comment">///  @return client port number.</span>
+<span class="hljs-keyword">uint16_t</span> GetClientPort() <span class="hljs-keyword">const</span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="get-server-address"></a><a href="#get-server-address" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Server Address</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Returns server Internet host address as a string in standard numbers-and-dots notation.</span>
+<span class="hljs-comment">///  @return IP address or empty if invalid</span>
+<span class="hljs-built_in">std</span>::<span class="hljs-function"><span class="hljs-built_in">string</span> <span class="hljs-title">GetServerAddr</span><span class="hljs-params">()</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="get-server-port"></a><a href="#get-server-port" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Server Port</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Returns the port number on which the server is connected.</span>
+<span class="hljs-comment">///  @return server port number.</span>
+<span class="hljs-keyword">uint16_t</span> GetServerPort() <span class="hljs-keyword">const</span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="get-joined-group"></a><a href="#get-joined-group" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Joined Group</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Returns the multi-cast group's address as a string in standard numbers-and-dots notation.</span>
+<span class="hljs-comment">///  @return IP address or empty if invalid</span>
+<span class="hljs-built_in">std</span>::<span class="hljs-function"><span class="hljs-built_in">string</span> <span class="hljs-title">GetJoinedGroup</span><span class="hljs-params">()</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="get-socket-error"></a><a href="#get-socket-error" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Socket Error</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Returns the last error that occured for the instace of the CSimpleSocket</span>
+<span class="hljs-comment">/// instance.  This method should be called immediately to retrieve the</span>
+<span class="hljs-comment">/// error code for the failing mehtod call.</span>
+<span class="hljs-comment">///  @return last error that occured.</span>
+<span class="hljs-function">CSocketError <span class="hljs-title">GetSocketError</span><span class="hljs-params">()</span> <span class="hljs-keyword">const</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="get-bytes-received"></a><a href="#get-bytes-received" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Bytes Received</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Returns the number of bytes received on the last call to</span>
+<span class="hljs-comment">/// CSocket::Receive().</span>
+<span class="hljs-comment">/// @return number of bytes received.</span>
+<span class="hljs-function">int32 <span class="hljs-title">GetBytesReceived</span><span class="hljs-params">()</span> <span class="hljs-keyword">const</span></span>;
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="get-bytes-sent"></a><a href="#get-bytes-sent" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get Bytes Sent</h3>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Returns the number of bytes sent on the last call to</span>
+<span class="hljs-comment">/// CSocket::Send().</span>
+<span class="hljs-comment">/// @return number of bytes sent.</span>
+<span class="hljs-function">int32 <span class="hljs-title">GetBytesSent</span><span class="hljs-params">()</span> <span class="hljs-keyword">const</span></span>;
+</code></pre>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/Simple-Socket/docs/Examples"><span class="arrow-prev">← </span><span>Application Specific Examples</span></a><a class="docs-next button" href="/Simple-Socket/docs/Generics"><span>General Defitions</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#active-socket">Active Socket</a><ul class="toc-headings"><li><a href="#open">Open</a></li></ul></li><li><a href="#passive-socket">Passive Socket</a><ul class="toc-headings"><li><a href="#listen">Listen</a></li><li><a href="#accept">Accept</a></li></ul></li><li><a href="#functionality">Functionality</a><ul class="toc-headings"><li><a href="#receive">Receive</a></li><li><a href="#get-data">Get Data</a></li><li><a href="#shutdown">Shutdown</a></li><li><a href="#close">Close</a></li></ul></li><li><a href="#status">Status</a><ul class="toc-headings"><li><a href="#is-socket-valid">Is Socket Valid</a></li><li><a href="#select">Select</a></li><li><a href="#describe-error">Describe Error</a></li></ul></li><li><a href="#information">Information</a><ul class="toc-headings"><li><a href="#get-socket-type">Get Socket Type</a></li><li><a href="#get-client-address">Get Client Address</a></li><li><a href="#get-client-port">Get Client Port</a></li><li><a href="#get-server-address">Get Server Address</a></li><li><a href="#get-server-port">Get Server Port</a></li><li><a href="#get-joined-group">Get Joined Group</a></li><li><a href="#get-socket-error">Get Socket Error</a></li><li><a href="#get-bytes-received">Get Bytes Received</a></li><li><a href="#get-bytes-sent">Get Bytes Sent</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/Simple-Socket/" class="nav-home"><img src="/Simple-Socket/img/rj45-512.gif" alt="Simple Socket" width="66" height="58"/></a><div><h5>Docs</h5><a href="/Simple-Socket/docs/en/Intro">Overview</a><a href="/Simple-Socket/docs/en/Getting-Started">Getting Started</a><a href="/Simple-Socket/docs/en/CSimpleSocket">API Reference</a></div><div><h5>Community</h5><a href="http://stackoverflow.com/questions/tagged/" target="_blank" rel="noreferrer noopener">Stack Overflow</a></div><div><h5>More</h5><a href="/Simple-Socket/blog">Blog</a><a href="https://github.com/">GitHub</a><a class="github-button" data-icon="octicon-star" data-count-href="/facebook/docusaurus/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://code.facebook.com/projects/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/Simple-Socket/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2019 Christopher McArthur</section></footer></div></body></html>

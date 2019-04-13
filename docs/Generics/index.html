@@ -1,0 +1,129 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>General Defitions · Simple Socket</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="&lt;p&gt;General Defitions for the usage of and interaction with sockets.&lt;/p&gt;
+"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="General Defitions · Simple Socket"/><meta property="og:type" content="website"/><meta property="og:url" content="https://prince-chrismc.github.com/Simple-Socket/"/><meta property="og:description" content="&lt;p&gt;General Defitions for the usage of and interaction with sockets.&lt;/p&gt;
+"/><meta name="twitter:card" content="summary"/><link rel="shortcut icon" href="/Simple-Socket/img/favicon/favicon.ico"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><link rel="stylesheet" href="/Simple-Socket/css/main.css"/><script src="/Simple-Socket/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/Simple-Socket/"><img class="logo" src="/Simple-Socket/img/rj45-512.gif" alt="Simple Socket"/><h2 class="headerTitleWithLogo">Simple Socket</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive"><a href="/Simple-Socket/docs/Intro" target="_self">Intro</a></li><li class="siteNavGroupActive"><a href="/Simple-Socket/docs/Getting-Started" target="_self">Getting Started</a></li><li class="siteNavGroupActive"><a href="/Simple-Socket/docs/Core" target="_self">API</a></li><li class=""><a href="https://github.com/prince-chrismc/Simple-Socket" target="_self">GitHub</a></li><li class=""><a href="/Simple-Socket/help" target="_self">Help</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="container docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><i></i></div><h2><i>›</i><span>API</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">Overview</h3><ul class=""><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Intro">Introduction</a></li><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Build">Building and Installation</a></li><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Getting-Started">Getting Started</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Examples</h3><ul class=""><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Examples">Application Specific Examples</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">API</h3><ul class=""><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Core">Core Socket Functionality</a></li><li class="navListItem navListItemActive"><a class="navItem" href="/Simple-Socket/docs/Generics">General Defitions</a></li><li class="navListItem"><a class="navItem" href="/Simple-Socket/docs/Options">Common Socket Options</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              const headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                if (event.target.tagName === 'A') {
+                  document.body.classList.remove('tocActive');
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 class="postHeaderTitle">General Defitions</h1></header><article><div><span><p>General Defitions for the usage of and interaction with sockets.</p>
+<h3><a class="anchor" aria-hidden="true" id="table-of-contents"></a><a href="#table-of-contents" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Table of Contents</h3>
+<ul>
+<li>Functions
+<ul>
+<li>length</li>
+<li>DescribeError</li>
+</ul></li>
+<li>Enums
+<ul>
+<li>CShutdownMode</li>
+<li>CSocketType</li>
+<li>CSocketError</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="functions"></a><a href="#functions" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Functions</h2>
+<pre><code class="hljs css language-cpp">// Calculates the length of a C string at compilation
+auto constexpr length( const char* str )-&gt;long { return *str ? 1 + length( str + 1 ) : 0; }
+</code></pre>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Returns a human-readable description of the given error code</span>
+<span class="hljs-keyword">static</span> <span class="hljs-built_in">std</span>::<span class="hljs-function"><span class="hljs-built_in">string</span> <span class="hljs-title">DescribeError</span><span class="hljs-params">(CSocketError err)</span></span>;
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="enums"></a><a href="#enums" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Enums</h2>
+<h3><a class="anchor" aria-hidden="true" id="cshutdownmode"></a><a href="#cshutdownmode" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>CShutdownMode</h3>
+<p>Defines the three possible states for shuting down a socket.</p>
+<pre><code class="hljs css language-cpp"><span class="hljs-comment">/// Shutdown shut down socket send and receive operations</span>
+<span class="hljs-comment">///    CShutdownMode::Receives - Disables further receive operations.</span>
+<span class="hljs-comment">///    CShutdownMode::Sends    - Disables further send operations.</span>
+<span class="hljs-comment">///    CShutdownBoth::Both     - Disables further send and receive operations.</span>
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="csockettype"></a><a href="#csockettype" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>CSocketType</h3>
+<p>Defines the socket types recognized by CSimpleSocket class.</p>
+<table>
+<thead>
+<tr><th>Type</th><th>Description</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>SocketTypeInvalid</td><td>Invalid socket type.</td><td>-</td></tr>
+<tr><td>SocketTypeTcp</td><td>Defines socket as TCP socket.</td><td>-</td></tr>
+<tr><td>SocketTypeUdp</td><td>Defines socket as UDP socket.</td><td>-</td></tr>
+<tr><td>SocketTypeTcp6</td><td>Defines socket as IPv6 TCP socket.</td><td>Not Supported</td></tr>
+<tr><td>SocketTypeUdp6</td><td>Defines socket as IPv6 UDP socket.</td><td>Not Supported</td></tr>
+<tr><td>SocketTypeRaw</td><td>Provides raw network protocol access.</td><td>Linux Only</td></tr>
+</tbody>
+</table>
+<h3><a class="anchor" aria-hidden="true" id="csocketerror"></a><a href="#csocketerror" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>CSocketError</h3>
+<p>Defines all error codes handled by the CSimpleSocket class.</p>
+<table>
+<thead>
+<tr><th>Error</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td>SocketError</td><td>Generic socket error translates to error below.</td></tr>
+<tr><td>SocketSuccess</td><td>No socket error.</td></tr>
+<tr><td>SocketInvalidSocket</td><td>Invalid socket handle.</td></tr>
+<tr><td>SocketInvalidAddress</td><td>Invalid destination address specified.</td></tr>
+<tr><td>SocketInvalidPort</td><td>Invalid destination port specified.</td></tr>
+<tr><td>SocketConnectionRefused</td><td>No server is listening at remote address.</td></tr>
+<tr><td>SocketTimedout</td><td>Timed out while attempting operation.</td></tr>
+<tr><td>SocketEwouldblock</td><td>Operation would block if socket were blocking.</td></tr>
+<tr><td>SocketNotconnected</td><td>Currently not connected.</td></tr>
+<tr><td>SocketEinprogress</td><td>Socket is non-blocking and the connection cannot be completed immediately</td></tr>
+<tr><td>SocketInterrupted</td><td>Call was interrupted by a signal that was caught before a valid connection arrived.</td></tr>
+<tr><td>SocketConnectionAborted</td><td>The connection has been aborted.</td></tr>
+<tr><td>SocketProtocolError</td><td>Invalid protocol for operation.</td></tr>
+<tr><td>SocketFirewallError</td><td>Firewall rules forbid connection.</td></tr>
+<tr><td>SocketInvalidSocketBuffer</td><td>The receive buffer point outside the process's address space.</td></tr>
+<tr><td>SocketConnectionReset</td><td>Connection was forcibly closed by the remote host.</td></tr>
+<tr><td>SocketAddressInUse</td><td>Address already in use.</td></tr>
+<tr><td>SocketInvalidPointer</td><td>Pointer type supplied as argument is invalid.</td></tr>
+<tr><td>SocketInvalidOperation</td><td>An invalid argument was provide for the requested action.</td></tr>
+<tr><td>SocketAlreadyConnected</td><td>A requested action was not possible because of socket state.</td></tr>
+<tr><td>SocketRoutingError</td><td>OS could not resolve route for requested operation</td></tr>
+<tr><td>SocketEunknown</td><td>Unknown error please report to <a href="mailto:prince.chrismc@gmail.com">prince.chrismc@gmail.com</a></td></tr>
+</tbody>
+</table>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/Simple-Socket/docs/Core"><span class="arrow-prev">← </span><span>Core Socket Functionality</span></a><a class="docs-next button" href="/Simple-Socket/docs/Options"><span>Common Socket Options</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#functions">Functions</a></li><li><a href="#enums">Enums</a><ul class="toc-headings"><li><a href="#cshutdownmode">CShutdownMode</a></li><li><a href="#csockettype">CSocketType</a></li><li><a href="#csocketerror">CSocketError</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/Simple-Socket/" class="nav-home"><img src="/Simple-Socket/img/rj45-512.gif" alt="Simple Socket" width="66" height="58"/></a><div><h5>Docs</h5><a href="/Simple-Socket/docs/en/Intro">Overview</a><a href="/Simple-Socket/docs/en/Getting-Started">Getting Started</a><a href="/Simple-Socket/docs/en/CSimpleSocket">API Reference</a></div><div><h5>Community</h5><a href="http://stackoverflow.com/questions/tagged/" target="_blank" rel="noreferrer noopener">Stack Overflow</a></div><div><h5>More</h5><a href="/Simple-Socket/blog">Blog</a><a href="https://github.com/">GitHub</a><a class="github-button" data-icon="octicon-star" data-count-href="/facebook/docusaurus/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://code.facebook.com/projects/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/Simple-Socket/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2019 Christopher McArthur</section></footer></div></body></html>
