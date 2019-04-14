@@ -48,6 +48,111 @@ static constexpr auto DNS_QUERY_LENGTH = ( sizeof( DNS_QUERY ) / sizeof( DNS_QUE
 static constexpr auto TEXT_PACKET = "Test Packet"sv;
 static constexpr auto TEXT_PACKET_LENGTH = TEXT_PACKET.length();
 
+TEST_CASE( "Sockets can be bound certain interface", "[Bind]" )
+{
+   SECTION( "UDP" )
+   {
+      CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
+
+      REQUIRE( socket.IsSocketValid() );
+      REQUIRE( socket.GetClientAddr() == "0.0.0.0" );
+      REQUIRE( socket.GetClientPort() == 0 );
+
+      SECTION( "Bind nullptr" )
+      {
+         CHECK( socket.BindInterface( nullptr ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.GetClientAddr() == "0.0.0.0" );
+         CHECK_FALSE( socket.GetClientPort() == 0 );
+      }
+
+      SECTION( "Bind ANY_IP" )
+      {
+         CHECK( socket.BindInterface( "0.0.0.0" ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.GetClientAddr() == "0.0.0.0" );
+         CHECK_FALSE( socket.GetClientPort() == 0 );
+      }
+
+      SECTION( "Bind localhost" )
+      {
+         CHECK( socket.BindInterface( "127.0.0.1" ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.GetClientAddr() == "127.0.0.1" );
+         CHECK_FALSE( socket.GetClientPort() == 0 );
+      }
+
+      SECTION( "Cannot bind twice" )
+      {
+         CHECK( socket.BindInterface( "127.0.0.1" ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.GetClientAddr() == "127.0.0.1" );
+         CHECK_FALSE( socket.GetClientPort() == 0 );
+
+         CHECK_FALSE( socket.BindInterface( "0.0.0.0" ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidOperation );
+
+         CHECK( socket.GetClientAddr() == "127.0.0.1" );
+         CHECK_FALSE( socket.GetClientPort() == 0 );
+      }
+   }
+
+   SECTION( "TCP" )
+   {
+      CSimpleSocket socket;
+
+      REQUIRE( socket.IsSocketValid() );
+      REQUIRE( socket.GetClientAddr() == "0.0.0.0" );
+      REQUIRE( socket.GetClientPort() == 0 );
+
+      SECTION( "Bind nullptr" )
+      {
+         CHECK( socket.BindInterface( nullptr ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.GetClientAddr() == "0.0.0.0" );
+         CHECK_FALSE( socket.GetClientPort() == 0 );
+      }
+
+      SECTION( "Bind ANY_IP" )
+      {
+         CHECK( socket.BindInterface( "0.0.0.0" ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.GetClientAddr() == "0.0.0.0" );
+         CHECK_FALSE( socket.GetClientPort() == 0 );
+      }
+
+      SECTION( "Bind localhost" )
+      {
+         CHECK( socket.BindInterface( "127.0.0.1" ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.GetClientAddr() == "127.0.0.1" );
+         CHECK_FALSE( socket.GetClientPort() == 0 );
+      }
+
+      SECTION( "Cannot bind twice" )
+      {
+         CHECK( socket.BindInterface( "127.0.0.1" ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.GetClientAddr() == "127.0.0.1" );
+         CHECK_FALSE( socket.GetClientPort() == 0 );
+
+         CHECK_FALSE( socket.BindInterface( "0.0.0.0" ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidOperation );
+
+         CHECK( socket.GetClientAddr() == "127.0.0.1" );
+         CHECK_FALSE( socket.GetClientPort() == 0 );
+      }
+   }
+}
+
 TEST_CASE( "Open socket for communication", "[Open][UDP]" )
 {
    CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
@@ -1060,6 +1165,7 @@ TEST_CASE( "Sockets can be NIC specific", "[Bind][TCP]" )
 #ifdef _DARWIN
       int socketError = errno;
       CAPTURE( socketError );
+      REQUIRE_FALSE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 #endif
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidOperation );
    }

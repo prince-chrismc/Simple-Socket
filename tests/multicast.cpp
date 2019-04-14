@@ -130,18 +130,78 @@ TEST_CASE( "Sockets can Join from certain interface", "[Join][Bind]" )
 {
    CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
 
-   CHECK( socket.IsSocketValid() );
+   REQUIRE( socket.IsSocketValid() );
+   REQUIRE( socket.GetClientAddr() == "0.0.0.0" );
+   REQUIRE( socket.GetClientPort() == 0 );
 
    REQUIRE( socket.SetMulticast( true ) );
    REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    REQUIRE( socket.GetMulticast() );
 
-   REQUIRE( socket.BindInterface( "0.0.0.0" ) );
+   SECTION( "Bind nullptr" )
+   {
+      CHECK( socket.BindInterface( nullptr ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.JoinMulticast( "239.9.2.3", 12345 ) );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.GetClientAddr() == "0.0.0.0" );
+      CHECK( socket.GetClientPort() == 0 );
 
-   REQUIRE( socket.GetJoinedGroup() == "239.9.2.3" );
-   REQUIRE( socket.GetClientPort() == 12345 );
+      REQUIRE( socket.JoinMulticast( "239.9.2.3", 12345 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.GetJoinedGroup() == "239.9.2.3" );
+      REQUIRE( socket.GetClientPort() == 12345 );
+   }
+
+   SECTION( "Bind ANY_IP" )
+   {
+      CHECK( socket.BindInterface( "0.0.0.0" ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.GetClientAddr() == "0.0.0.0" );
+      CHECK( socket.GetClientPort() == 0 );
+
+      REQUIRE( socket.JoinMulticast( "239.9.2.3", 12345 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.GetJoinedGroup() == "239.9.2.3" );
+      REQUIRE( socket.GetClientPort() == 12345 );
+   }
+
+   SECTION( "Bind localhost" )
+   {
+      CHECK( socket.BindInterface( "127.0.0.1" ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.GetClientAddr() == "127.0.0.1" );
+      CHECK( socket.GetClientPort() == 0 );
+
+      REQUIRE( socket.JoinMulticast( "239.9.2.3", 12345 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.GetJoinedGroup() == "239.9.2.3" );
+      REQUIRE( socket.GetClientPort() == 12345 );
+   }
+
+   SECTION( "Can bind twice" )
+   {
+      CHECK( socket.BindInterface( "127.0.0.1" ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.GetClientAddr() == "127.0.0.1" );
+      CHECK( socket.GetClientPort() == 0 );
+
+      CHECK( socket.BindInterface( "0.0.0.0" ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.GetClientAddr() == "0.0.0.0" );
+      CHECK( socket.GetClientPort() == 0 );
+
+      REQUIRE( socket.JoinMulticast( "239.9.2.3", 12345 ) );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.GetJoinedGroup() == "239.9.2.3" );
+      REQUIRE( socket.GetClientPort() == 12345 );
+   }
 }

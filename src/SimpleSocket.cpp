@@ -152,14 +152,22 @@ bool CSimpleSocket::BindInterface( const char* pInterface )
 
 bool CSimpleSocket::BindUnicastInterface( const char* pInterface )
 {
-   bool bRetVal = ( pInterface != nullptr && pInterface[ 0 ] != '\0' );
+   bool bRetVal = true;
 
    if ( bRetVal )
    {
       sockaddr_in stInterfaceAddr{};
       // Set up the sockaddr structure
       stInterfaceAddr.sin_family = static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain );
-      inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.sin_addr.s_addr );
+      if ( pInterface == nullptr || strlen( pInterface ) == 0 )
+      {
+         // bind to all interfaces
+         stInterfaceAddr.sin_addr.s_addr = htonl( INADDR_ANY );
+      }
+      else
+      {
+         inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.sin_addr.s_addr );
+      }
       stInterfaceAddr.sin_port = 0;
 
       // Bind the socket using the such that it only use a specified interface
@@ -180,17 +188,33 @@ bool CSimpleSocket::BindUnicastInterface( const char* pInterface )
 
 bool CSimpleSocket::BindMulticastInterface( const char* pInterface )
 {
-   bool bRetVal = ( pInterface != nullptr && pInterface[ 0 ] != '\0' );
+   in_addr stInterfaceAddr{};
+   bool bRetVal = true;
 
    if ( bRetVal )
    {
-      in_addr stInterfaceAddr{};
-      memset( &stInterfaceAddr, 0, sizeof( stInterfaceAddr ) );
-      inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.s_addr );
+      // Set up the sockaddr structure
+      if ( pInterface == nullptr || strlen( pInterface ) == 0 )
+      {
+         // bind to all interfaces
+         stInterfaceAddr.s_addr = htonl( INADDR_ANY );
+      }
+      else
+      {
+         inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.s_addr );
+      }
 
       bRetVal = ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_MULTICAST_IF, &stInterfaceAddr, sizeof( stInterfaceAddr ) ) ==
                   SocketSuccess );
       TranslateSocketError();
+   }
+
+   // If successful then get a local copy of the address
+   if ( bRetVal )
+   {
+      socklen_t nSockLen = SOCKET_ADDR_IN_SIZE;
+      memset( &m_stClientSockaddr, 0, SOCKET_ADDR_IN_SIZE );
+      m_stClientSockaddr.sin_addr = stInterfaceAddr;
    }
 
    return bRetVal;
