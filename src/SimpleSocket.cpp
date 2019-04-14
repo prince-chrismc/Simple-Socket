@@ -789,7 +789,7 @@ int32_t CSimpleSocket::Receive( uint32_t nMaxBytes, uint8_t* pBuffer )
 {
    if ( !IsSocketValid() )
    {
-      SetSocketError( CSimpleSocket::SocketInvalidSocket );
+      SetSocketError( SocketInvalidSocket );
       m_nBytesReceived = SocketError;
       return m_nBytesReceived;
    }
@@ -823,13 +823,13 @@ int32_t CSimpleSocket::Receive( uint32_t nMaxBytes, uint8_t* pBuffer )
 
    do
    {
-      m_nBytesReceived = receivePacket();
+      m_nBytesReceived += receivePacket();
       TranslateSocketError();
-   } while ( GetSocketError() == CSimpleSocket::SocketInterrupted );
+   } while ( GetSocketError() == SocketInterrupted );
 
    m_timer.SetEndTime();
 
-   if ( m_nBytesReceived == CSimpleSocket::SocketError )
+   if ( m_nBytesReceived == SocketError )
    {
       // Clear the output buffer
       if ( pBuffer == nullptr )
