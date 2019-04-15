@@ -1,7 +1,10 @@
 dist: trusty
 language: cpp
 
-if: branch = master
+branches:
+  only:
+  - master
+  - greenkeeper/*
 
 before_install:
 - eval "${MATRIX_EVAL}"
