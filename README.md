@@ -1,0 +1,2 @@
+# Simple-Socket
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c4c19cf7d3cf4d118ff7eab14d172e0c)](https://app.codacy.com/app/prince-chrismc/Simple-Socket?utm_source=github.com&utm_medium=referral&utm_content=prince-chrismc/Simple-Socket&utm_campaign=Badge_Grade_Dashboard)
