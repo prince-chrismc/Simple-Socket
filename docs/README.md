@@ -5,6 +5,7 @@
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 [![Coverage Status](https://coveralls.io/repos/github/prince-chrismc/Simple-Socket/badge.svg?branch=master)](https://coveralls.io/github/prince-chrismc/Simple-Socket?branch=master)
 [![Slack Status](https://img.shields.io/badge/Slack-Join-blue.svg?logo=slack)](https://prince-chrismc.slack.com) [![Greenkeeper badge](https://badges.greenkeeper.io/prince-chrismc/Simple-Socket.svg)](https://greenkeeper.io/)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c4c19cf7d3cf4d118ff7eab14d172e0c)](https://app.codacy.com/app/prince-chrismc/Simple-Socket?utm_source=github.com&utm_medium=referral&utm_content=prince-chrismc/Simple-Socket&utm_campaign=Badge_Grade_Dashboard)
 
 This ~~fork~~ repository aims to have the original library compile and work reliably using modern c++ compilers ( MSVC 15.7 / GCC 7.3 / Clang 6.0 ) with a focus on
 the async and multicast functionality.
