@@ -5,6 +5,7 @@ branches:
   only:
   - master
   - greenkeeper/*
+  - /^greenkeeper/.*$/
 
 before_install:
 - eval "${MATRIX_EVAL}"
