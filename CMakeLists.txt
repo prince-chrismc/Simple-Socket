@@ -54,10 +54,11 @@ elseif(WIN32)
 endif()
 
 # Setup versioning.
-set(BUILD_MAJOR "2")
-set(BUILD_MINOR "0")
-set(BUILD_VERSION "0")
-set(BUILD_VERSION ${BUILD_MAJOR}.${BUILD_MINOR}.${BUILD_VERSION})
+set(SIMPLE_SOCKET_MAJOR_VERSION "2")
+set(SIMPLE_SOCKET_MINOR_VERSION "0")
+set(SIMPLE_SOCKET_PATCH_VERSION "0")
+set(SIMPLE_SOCKET_VERSION
+    ${SIMPLE_SOCKET_MAJOR_VERSION}.${SIMPLE_SOCKET_MINOR_VERSION}.${SIMPLE_SOCKET_PATCH_VERSION})
 
 # Setup source files
 include_directories(src)
@@ -87,11 +88,30 @@ if(SIMPLE_SOCKET_STRING_VIEW)
 endif()
 target_compile_options(Simple-Socket INTERFACE ${WARNING_FLAGS})
 target_link_libraries(Simple-Socket ${PROJECT_LIBS})
-set_target_properties(Simple-Socket PROPERTIES VERSION ${BUILD_VERSION} SOVERSION ${BUILD_MAJOR})
+set_target_properties(Simple-Socket PROPERTIES VERSION ${SIMPLE_SOCKET_VERSION} SOVERSION ${SIMPLE_SOCKET_MAJOR_VERSION})
+
+include(CMakePackageConfigHelpers)
+set(INCLUDE_INSTALL_DIR include/)
+set(LIBRARY_INSTALL_DIR lib/)
+configure_package_config_file(
+    ${PROJECT_SOURCE_DIR}/cmake/Simple-Socket-Config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/Simple-SocketConfig.cmake
+    INSTALL_DESTINATION cmake'
+    PATH_VARS INCLUDE_INSTALL_DIR LIBRARY_INSTALL_DIR)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/Simple-SocketConfigVersion.cmake
+    VERSION ${SIMPLE_SOCKET_VERSION}
+    COMPATIBILITY SameMajorVersion)
+
 install(TARGETS Simple-Socket
         RUNTIME DESTINATION bin
         ARCHIVE DESTINATION lib )
 install(FILES ${SIMPLE_SOCKET_HEADERS} DESTINATION include)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Simple-SocketConfig.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/Simple-SocketConfigVersion.cmake
+        DESTINATION cmake )
+
+export(PACKAGE Simple-Socket)
 
 if(SIMPLE_SOCKET_EXAMPLES)
     add_subdirectory(examples)

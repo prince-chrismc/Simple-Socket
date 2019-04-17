@@ -11,10 +11,14 @@ This ~~fork~~ repository aims to have the original library compile and work reli
 the async and multicast functionality.
 
 ### Table of Contents
-1. [History](#history)
-2. [Building and Installing](building-and-installing)
-3. [Class Overview](#class-overview)
-4. [Examples](#examples)
+- [Simple-Socket](#simple-socket)
+    - [Table of Contents](#table-of-contents)
+  - [History](#history)
+  - [Building and Installing](#building-and-installing)
+  - [Class Overview](#class-overview)
+  - [Examples](#examples)
+        - [Simple Active Socket](#simple-active-socket)
+        - [Simple Passive Socket](#simple-passive-socket)
 
 ## History
 Written by Mark Carrier to provide a mechanism for writing cross platform socket code. This library was originally written to only support blocking
@@ -39,7 +43,13 @@ To build and install, use CMake to generate the files required for your platform
 - Unix Systems: The command is `make` which produce a release and debug version depending on the `CMAKE_BUILD_TYPE` specified.
 - Windows Systems: The usual MSVC files can be build through the IDE or via command line interface.
 
-Installation can be achieved by adding the runing `make install` from your build folder.
+Installation can be achieved by adding the runing `make install` from your build folder. Doing so allows for the CMake `find_package()` to be used.
+```cmake
+find_package(Simple-Socket 2.0.0 REQUIRED)
+if(${Simple-Socket_FOUND})
+   message(STATUS "Found Simple-Socket with Version: ${Simple-Socket_VERSION}")
+endif()
+```
 
 ## Class Overview
 Network communications via sockets can be abstracted into two categories of functionality; the active socket and the passive socket.

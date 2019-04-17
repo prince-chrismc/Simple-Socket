@@ -1,0 +1,6 @@
+@PACKAGE_INIT@
+
+set_and_check(SIMPLE_SOCKET_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
+set_and_check(SIMPLE_SOCKET_LIBRARY_DIR "@PACKAGE_LIBRARY_INSTALL_DIR@")
+
+check_required_components(Simple-Socket)
