@@ -44,7 +44,7 @@ class AsyncMessage final
 
 public:
    AsyncMessage( const std::string& sMessage ) : m_sMessage( std::to_string( sMessage.size() ) + "\n" + sMessage ) {}
-   AsyncMessage( const AsyncMessage& oNewMessage ) { m_sMessage = oNewMessage.m_sMessage; }
+   AsyncMessage( const AsyncMessage& oNewMessage ) : m_sMessage ( oNewMessage.m_sMessage ) {}
    AsyncMessage( AsyncMessage&& oNewMessage ) noexcept { std::swap( m_sMessage, oNewMessage.m_sMessage ); }
    ~AsyncMessage() = default;
 
