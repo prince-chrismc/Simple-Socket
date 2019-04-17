@@ -191,23 +191,20 @@ bool CSimpleSocket::BindMulticastInterface( const char* pInterface )
    in_addr stInterfaceAddr{};
    bool bRetVal = true;
 
-   if ( bRetVal )
+   // Set up the sockaddr structure
+   if ( pInterface == nullptr || strlen( pInterface ) == 0 )
    {
-      // Set up the sockaddr structure
-      if ( pInterface == nullptr || strlen( pInterface ) == 0 )
-      {
-         // bind to all interfaces
-         stInterfaceAddr.s_addr = htonl( INADDR_ANY );
-      }
-      else
-      {
-         inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.s_addr );
-      }
-
-      bRetVal = ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_MULTICAST_IF, &stInterfaceAddr, sizeof( stInterfaceAddr ) ) ==
-                  SocketSuccess );
-      TranslateSocketError();
+      // bind to all interfaces
+      stInterfaceAddr.s_addr = htonl( INADDR_ANY );
    }
+   else
+   {
+      inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.s_addr );
+   }
+
+   bRetVal = ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_MULTICAST_IF, &stInterfaceAddr, sizeof( stInterfaceAddr ) ) ==
+               SocketSuccess );
+   TranslateSocketError();
 
    // If successful then get a local copy of the address
    if ( bRetVal )
