@@ -144,10 +144,10 @@ public:
    bool Select();
    bool Select( int32_t nTimeoutSec, int32_t nTimeoutUSec );
 
-   bool IsSocketValid() const { return ( m_socket != INVALID_SOCKET ); }
+   [[nodiscard]] bool IsSocketValid() const { return ( m_socket != INVALID_SOCKET ); }
 
    static std::string DescribeError( CSocketError err );
-   std::string DescribeError() const { return DescribeError( m_error ); }
+   [[nodiscard]] std::string DescribeError() const { return DescribeError( m_error ); }
 
    int32_t Receive( uint32_t nMaxBytes = 1, uint8_t* pBuffer = nullptr );
 
@@ -190,13 +190,13 @@ public:
    /// @return number of bytes written to the out socket descriptor.
    virtual int32_t SendFile( int32_t nOutFd, int32_t nInFd, off_t* pOffset, int32_t nCount );
 
-   bool IsNonblocking() const { return !m_bIsBlocking; }
+   [[nodiscard]] bool IsNonblocking() const { return !m_bIsBlocking; }
    bool SetBlocking();
    bool SetNonblocking();
 
-   const std::string& GetData() const { return m_sBuffer; }
-   int32_t GetBytesReceived() const { return m_nBytesReceived; }
-   int32_t GetBytesSent() const { return m_nBytesSent; }
+   [[nodiscard]] const std::string& GetData() const { return m_sBuffer; }
+   [[nodiscard]] int32_t GetBytesReceived() const { return m_nBytesReceived; }
+   [[nodiscard]] int32_t GetBytesSent() const { return m_nBytesSent; }
 
    /// IGMPv2 Join for a multicast group.This options is only valid for
    /// socket descriptors of type CSimpleSocket::SocketTypeUdp and
@@ -232,33 +232,33 @@ public:
    /// @return true if option successfully set
    bool SetOptionReuseAddr();
 
-   int32_t GetConnectTimeoutSec() const { return m_stConnectTimeout.tv_sec; }
-   int32_t GetConnectTimeoutUSec() const { return m_stConnectTimeout.tv_usec; }
+   [[nodiscard]] int32_t GetConnectTimeoutSec() const { return m_stConnectTimeout.tv_sec; }
+   [[nodiscard]] int32_t GetConnectTimeoutUSec() const { return m_stConnectTimeout.tv_usec; }
    void SetConnectTimeout( int32_t nConnectTimeoutSec, int32_t nConnectTimeoutUsec );
 
-   int32_t GetReceiveTimeoutSec() const { return m_stRecvTimeout.tv_sec; }
-   int32_t GetReceiveTimeoutUSec() const { return m_stRecvTimeout.tv_usec; }
+   [[nodiscard]] int32_t GetReceiveTimeoutSec() const { return m_stRecvTimeout.tv_sec; }
+   [[nodiscard]] int32_t GetReceiveTimeoutUSec() const { return m_stRecvTimeout.tv_usec; }
    bool SetReceiveTimeout( int32_t nRecvTimeoutSec, int32_t nRecvTimeoutUsec = 0 );
 
-   int32_t GetSendTimeoutSec() const { return m_stSendTimeout.tv_sec; }
-   int32_t GetSendTimeoutUSec() const { return m_stSendTimeout.tv_usec; }
+   [[nodiscard]] int32_t GetSendTimeoutSec() const { return m_stSendTimeout.tv_sec; }
+   [[nodiscard]] int32_t GetSendTimeoutUSec() const { return m_stSendTimeout.tv_usec; }
    bool SetSendTimeout( int32_t nSendTimeoutSec, int32_t nSendTimeoutUsec = 0 );
 
    bool SetMulticast( bool bEnable, uint8_t multicastTTL = 1 );
-   bool GetMulticast() const { return m_bIsMulticast; }
+   [[nodiscard]] bool GetMulticast() const { return m_bIsMulticast; }
 
    /// Get the total time the of the last operation in milliseconds.
    ///  @return number of milliseconds of last operation.
-   auto GetTotalTimeMs() const { return m_timer.GetMilliSeconds(); }
+   [[nodiscard]] auto GetTotalTimeMs() const { return m_timer.GetMilliSeconds(); }
 
    /// Get the total time the of the last operation in microseconds.
    ///  @return number of microseconds or last operation.
-   auto GetTotalTimeUsec() const { return m_timer.GetMicroSeconds(); }
+   [[nodiscard]] auto GetTotalTimeUsec() const { return m_timer.GetMicroSeconds(); }
 
    /// Return Differentiated Services Code Point (DSCP) value currently set on the socket object.
    /// @return DSCP for current socket object.
    /// <br><br> \b NOTE: Windows special notes http://support.microsoft.com/kb/248611.
-   int GetSocketDscp( void );
+   int GetSocketDscp( );
 
    /// Set Differentiated Services Code Point (DSCP) for socket object.
    ///  @param nDscp value of TOS setting which will be converted to DSCP
@@ -266,14 +266,14 @@ public:
    /// <br><br> \b NOTE: Windows special notes http://support.microsoft.com/kb/248611.
    bool SetSocketDscp( int nDscp );
 
-   CSocketError GetSocketError() const { return m_error; }
-   CSocketType GetSocketType() const { return m_nSocketType; }
+   [[nodiscard]] CSocketError GetSocketError() const { return m_error; }
+   [[nodiscard]] CSocketType GetSocketType() const { return m_nSocketType; }
 
    std::string GetClientAddr();
-   uint16_t GetClientPort() const { return ntohs( m_stClientSockaddr.sin_port ); }
+   [[nodiscard]] uint16_t GetClientPort() const { return ntohs( m_stClientSockaddr.sin_port ); }
 
    std::string GetServerAddr();
-   uint16_t GetServerPort() const { return ntohs( m_stServerSockaddr.sin_port ); }
+   [[nodiscard]] uint16_t GetServerPort() const { return ntohs( m_stServerSockaddr.sin_port ); }
 
    std::string GetJoinedGroup();
 
@@ -308,7 +308,7 @@ public:
 protected:
    /// Return socket descriptor
    ///  @return socket descriptor which is a signed 32 bit integer.
-   SOCKET GetSocketDescriptor() const { return m_socket; }
+   [[nodiscard]] SOCKET GetSocketDescriptor() const { return m_socket; }
 
    /// Errors : CSocket::SocketProtocolError, CSocket::SocketInvalidSocket,
    /// @return true if properly initialized.

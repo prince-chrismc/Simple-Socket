@@ -37,15 +37,15 @@ class CStatTimer
 public:
    CStatTimer() = default;
 
-   TimePoint GetStartTime() const { return m_startTime; }
+   [[nodiscard]] TimePoint GetStartTime() const { return m_startTime; }
    void SetStartTime() { m_startTime = GetTimeNow(); }
 
-   TimePoint GetEndTime() const { return m_endTime; }
+   [[nodiscard]] TimePoint GetEndTime() const { return m_endTime; }
    void SetEndTime() { m_endTime = GetTimeNow(); }
 
-   auto GetMilliSeconds() const { return duration_cast<std::chrono::milliseconds>( m_endTime - m_startTime ).count(); }
-   auto GetMicroSeconds() const { return duration_cast<std::chrono::microseconds>( m_endTime - m_startTime ).count(); }
-   auto GetSeconds() const { return duration_cast<std::chrono::seconds>( m_endTime - m_startTime ).count(); }
+   [[nodiscard]] auto GetMilliSeconds() const { return duration_cast<std::chrono::milliseconds>( m_endTime - m_startTime ).count(); }
+   [[nodiscard]] auto GetMicroSeconds() const { return duration_cast<std::chrono::microseconds>( m_endTime - m_startTime ).count(); }
+   [[nodiscard]] auto GetSeconds() const { return duration_cast<std::chrono::seconds>( m_endTime - m_startTime ).count(); }
 
    static TimePoint GetTimeNow() { return high_resolution_clock::now(); }
 

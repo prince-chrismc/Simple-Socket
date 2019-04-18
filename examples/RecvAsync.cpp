@@ -28,6 +28,7 @@ SOFTWARE.
 
 #include <future>
 #include <string>
+#include <utility>
 
 using namespace std::chrono_literals;
 
@@ -44,7 +45,7 @@ class AsyncMessage final
 
 public:
    AsyncMessage( const std::string& sMessage ) : m_sMessage( std::to_string( sMessage.size() ) + "\n" + sMessage ) {}
-   AsyncMessage( const AsyncMessage& oNewMessage ) : m_sMessage ( oNewMessage.m_sMessage ) {}
+   AsyncMessage( const AsyncMessage& oNewMessage )  = default;
    AsyncMessage( AsyncMessage&& oNewMessage ) noexcept { std::swap( m_sMessage, oNewMessage.m_sMessage ); }
    ~AsyncMessage() = default;
 
@@ -55,10 +56,10 @@ public:
       return *this;
    }
 
-   constexpr const std::string& ToString() const { return m_sMessage; }
+   [[nodiscard]] constexpr const std::string& ToString() const { return m_sMessage; }
 
-   const uint8_t* GetWireFormat() const { return reinterpret_cast<const uint8_t*>( m_sMessage.c_str() ); }
-   size_t GetWireFormatSize() const { return m_sMessage.size(); }
+   [[nodiscard]] const uint8_t* GetWireFormat() const { return reinterpret_cast<const uint8_t*>( m_sMessage.c_str() ); }
+   [[nodiscard]] size_t GetWireFormatSize() const { return m_sMessage.size(); }
 
 private:
    std::string m_sMessage;
@@ -68,7 +69,7 @@ class AsyncMessageBuilder final
 {
 public:
    AsyncMessageBuilder() : m_oMessage( "" ), m_iExpectedSize( incomplete ) { m_oMessage.m_sMessage.clear(); }
-   explicit AsyncMessageBuilder( const AsyncMessage& oMessage ) : m_oMessage( oMessage ), m_iExpectedSize( incomplete )
+   explicit AsyncMessageBuilder( AsyncMessage  oMessage ) : m_oMessage(std::move( oMessage )), m_iExpectedSize( incomplete )
    {
       _ParseMessage();
    }
@@ -81,7 +82,7 @@ public:
 
    static constexpr size_t incomplete = -1;
 
-   bool IsComplete() const { return m_iExpectedSize == m_oMessage.m_sMessage.length(); }
+   [[nodiscard]] bool IsComplete() const { return m_iExpectedSize == m_oMessage.m_sMessage.length(); }
 
    size_t Append( const std::string& sData )
    {

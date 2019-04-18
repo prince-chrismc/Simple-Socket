@@ -889,7 +889,7 @@ bool CSimpleSocket::SetNonblocking()
 // SetBlocking()
 //
 //-------------------------------------------------------------------------------------------------
-bool CSimpleSocket::SetBlocking( void )
+bool CSimpleSocket::SetBlocking( )
 {
    int32_t nCurFlags;
 
@@ -969,7 +969,7 @@ int32_t CSimpleSocket::SendFile( int32_t nOutFd, int32_t nInFd, off_t* pOffset, 
 // TranslateSocketError() -
 //
 //-------------------------------------------------------------------------------------------------
-void CSimpleSocket::TranslateSocketError( void )
+void CSimpleSocket::TranslateSocketError( )
 {
 #if defined( _LINUX ) || defined( _DARWIN )
    switch ( errno )
