@@ -33,7 +33,7 @@ using namespace std::chrono_literals;
 
 static constexpr const auto MAX_PACKET = 4096;
 
-int main( int argc, char** argv )
+int main()
 {
    CPassiveSocket oSocket;
    std::promise<void> oExitSignal;

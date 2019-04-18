@@ -113,7 +113,7 @@ private:
    }
 };
 
-int main( int argc, char** argv )
+int main()
 {
    std::promise<void> oExitSignal;
 

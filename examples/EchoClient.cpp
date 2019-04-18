@@ -32,7 +32,7 @@ static constexpr uint8_t TEST_PACKET[] = { 'T', 'e', 's', 't', ' ', 'P', 'a', 'c
 static constexpr int SIZEOF_TEST_PACKET = ( sizeof( TEST_PACKET ) / sizeof( TEST_PACKET[ 0 ] ) );
 static_assert( SIZEOF_TEST_PACKET == 11, "Failed to compute SIZEOF_TEST_PACKET" );
 
-int main( int argc, char** argv )
+int main()
 {
    CActiveSocket client;
 

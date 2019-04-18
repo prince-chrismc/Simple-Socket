@@ -29,7 +29,7 @@ SOFTWARE.
 #include "ActiveSocket.h"
 #include <iostream>
 
-int main( int argc, char** argv )
+int main()
 {
    CActiveSocket oClient;
    HttpResponseParserAdvance oParser;
