@@ -281,6 +281,10 @@ public:
    /// @return false if failed to set socket option otherwise return true;
    bool EnableNagleAlgoritm();
 
+   /// Flush the socket descriptor owned by the object.
+   /// @return true data was successfully sent, else return false;
+   bool Flush();
+   
 protected:
    /// Return socket descriptor
    ///  @return socket descriptor which is a signed 32 bit integer.
@@ -312,10 +316,6 @@ private:
    /// Generic function used to set the send/receive window size
    ///  @return zero on failure else the number of bytes of the TCP window size if successful.
    uint32_t SetWindowSize( uint32_t nOptionName, uint32_t nWindowSize );
-
-   /// Flush the socket descriptor owned by the object.
-   /// @return true data was successfully sent, else return false;
-   bool Flush();
 
    bool BindUnicastInterface( const char* pInterface );
    bool BindMulticastInterface( const char* pInterface );

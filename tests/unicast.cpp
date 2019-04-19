@@ -1269,11 +1269,12 @@ TEST_CASE( "Sockets clear buffer on Rx fail", "[Listen][Open][Accept][TCP]" )
 
 TEST_CASE( "Sockets can linger", "[Linger]" )
 {
-   auto time = GENERATE(range(5, 100, 15));
+   auto time = GENERATE( range( 5, 100, 15 ) );
    SECTION( "TCP" )
    {
       CActiveSocket socket;
       REQUIRE( socket.Open( "www.google.ca", 80 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
       SECTION( "Enable" )
       {
@@ -1312,6 +1313,7 @@ TEST_CASE( "Sockets can linger", "[Linger]" )
    {
       CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
       REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
       SECTION( "Enable" )
       {
@@ -1345,4 +1347,35 @@ TEST_CASE( "Sockets can linger", "[Linger]" )
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       CHECK_FALSE( socket.IsSocketValid() );
    }
+}
+
+TEST_CASE( "Sockets can be flushed", "[Flush]" )
+{
+   SECTION( "TCP" )
+   {
+      CActiveSocket socket;
+      REQUIRE( socket.Open( "www.google.ca", 80 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.Flush() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+
+#ifndef _DARWIN
+   SECTION( "UDP" )
+   {
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+      REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE_FALSE( socket.Flush() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+   }
+#endif
 }

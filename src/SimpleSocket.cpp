@@ -591,40 +591,42 @@ bool CSimpleSocket::Shutdown( CShutdownMode nShutdown )
 //-------------------------------------------------------------------------------------------------
 bool CSimpleSocket::Flush()
 {
-   int32_t nTcpNoDelay = 1;
-   int32_t nCurFlags = 0;
-   uint8_t tmpbuf = 0;
-   bool bRetVal = false;
-
-   //--------------------------------------------------------------------------
-   // Get the current setting of the TCP_NODELAY flag.
-   //--------------------------------------------------------------------------
-   if ( GETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nCurFlags, sizeof( int32_t ) ) == SocketSuccess )
+   if ( m_nSocketType != CSocketType::SocketTypeTcp )
    {
-      //----------------------------------------------------------------------
-      // Set TCP NoDelay flag
-      //----------------------------------------------------------------------
-      if ( SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nTcpNoDelay, sizeof( int32_t ) ) == SocketSuccess )
-      {
-         //------------------------------------------------------------------
-         // Send empty byte stream to flush the TCP send buffer
-         //------------------------------------------------------------------
-         if ( Send( &tmpbuf, 0 ) != CSimpleSocket::SocketError )
-         {
-            bRetVal = true;
-         }
+      SetSocketError( SocketProtocolError );
+      return false;
+   }
 
-         TranslateSocketError();
-      }
+   int32_t nCurFlags = 0;
+   socklen_t nLen = sizeof( int32_t );
 
-      //----------------------------------------------------------------------
-      // Reset the TCP_NODELAY flag to original state.
-      //----------------------------------------------------------------------
-      if ( SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nCurFlags, sizeof( int32_t ) ) == SocketSuccess )
+   // Get the current setting of the TCP_NODELAY flag.
+   bool bRetVal = GETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nCurFlags, &nLen ) == SocketSuccess;
+
+   if ( bRetVal )
+   {
+      int32_t nTcpNoDelay = 1;
+      if ( !nCurFlags )
       {
-         // TO DO
+         // Set TCP NoDelay flag
+         bRetVal = SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nTcpNoDelay, sizeof( int32_t ) ) == SocketSuccess;
       }
    }
+
+   if ( bRetVal )
+   {
+      // Send empty byte stream to flush the TCP send buffer
+      uint8_t tmpbuf = 0;
+      bRetVal = Send( &tmpbuf, sizeof( tmpbuf ) ) != CSimpleSocket::SocketError;
+   }
+
+   if ( bRetVal )
+   {
+      // Reset the TCP_NODELAY flag to original state.
+      bRetVal = SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nCurFlags, sizeof( int32_t ) ) == SocketSuccess;
+   }
+
+   if ( !bRetVal ) TranslateSocketError();
 
    return bRetVal;
 }
