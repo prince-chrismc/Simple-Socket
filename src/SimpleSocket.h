@@ -128,7 +128,7 @@ public:
    };
 
 public:
-   CSimpleSocket( CSocketType type = SocketTypeTcp );
+   explicit CSimpleSocket( CSocketType type = SocketTypeTcp );
    CSimpleSocket( const CSimpleSocket& ) = delete;
    CSimpleSocket( CSimpleSocket&& socket ) noexcept;
    virtual ~CSimpleSocket();

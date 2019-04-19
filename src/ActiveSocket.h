@@ -50,7 +50,7 @@ class CActiveSocket : public CSimpleSocket
 public:
    friend class CPassiveSocket;
 
-   CActiveSocket( CSocketType type = SocketTypeTcp );
+   explicit CActiveSocket( CSocketType type = SocketTypeTcp );
 
    bool Open( const char* pAddr, uint16_t nPort );
 
