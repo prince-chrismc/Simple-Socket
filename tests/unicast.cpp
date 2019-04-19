@@ -1266,3 +1266,83 @@ TEST_CASE( "Sockets clear buffer on Rx fail", "[Listen][Open][Accept][TCP]" )
    CHECK( server.Close() );
    CHECK_FALSE( server.IsSocketValid() );
 }
+
+TEST_CASE( "Sockets can linger", "[Linger]" )
+{
+   auto time = GENERATE(range(5, 100, 15));
+   SECTION( "TCP" )
+   {
+      CActiveSocket socket;
+      REQUIRE( socket.Open( "www.google.ca", 80 ) );
+
+      SECTION( "Enable" )
+      {
+         REQUIRE( socket.SetOptionLinger( true, time ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "Disable" )
+      {
+         REQUIRE( socket.SetOptionLinger( false, 0 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "Toggle" )
+      {
+         REQUIRE( socket.SetOptionLinger( false, 0 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.SetOptionLinger( true, time ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.SetOptionLinger( false, time ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.SetOptionLinger( true, 50 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+      CHECK( socket.Close() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK_FALSE( socket.IsSocketValid() );
+   }
+
+   SECTION( "UDP" )
+   {
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+      REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+
+      SECTION( "Enable" )
+      {
+         REQUIRE( socket.SetOptionLinger( true, time ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "Disable" )
+      {
+         REQUIRE( socket.SetOptionLinger( false, 0 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "Toggle" )
+      {
+         REQUIRE( socket.SetOptionLinger( false, 0 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.SetOptionLinger( true, time ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.SetOptionLinger( false, time ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.SetOptionLinger( true, 50 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+      CHECK( socket.Close() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK_FALSE( socket.IsSocketValid() );
+   }
+}
