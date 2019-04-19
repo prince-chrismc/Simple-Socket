@@ -869,47 +869,6 @@ bool CSimpleSocket::SetBlocking()
 
 //-------------------------------------------------------------------------------------------------
 //
-// SendFile() - stands-in for system provided sendfile
-//
-//-------------------------------------------------------------------------------------------------
-int32_t CSimpleSocket::SendFile( int32_t nOutFd, int32_t nInFd, off_t* pOffset, int32_t nCount )
-{
-   int32_t nOutCount = CSimpleSocket::SocketError;
-
-   static char szData[ SOCKET_SENDFILE_BLOCKSIZE ];
-
-   if ( SEEK( nInFd, *pOffset, SEEK_SET ) == -1 )
-   {
-      return -1;
-   }
-
-   while ( nOutCount < nCount )
-   {
-      int32_t nInCount =
-          ( nCount - nOutCount ) < SOCKET_SENDFILE_BLOCKSIZE ? ( nCount - nOutCount ) : SOCKET_SENDFILE_BLOCKSIZE;
-
-      if ( READ( nInFd, szData, nInCount ) != nInCount )
-      {
-         return -1;
-      }
-
-      if ( SEND( nOutFd, szData, nInCount, 0 ) != nInCount )
-      {
-         return -1;
-      }
-
-      nOutCount += nInCount;
-   }
-
-   *pOffset += nOutCount;
-
-   TranslateSocketError();
-
-   return nOutCount;
-}
-
-//-------------------------------------------------------------------------------------------------
-//
 // TranslateSocketError() -
 //
 //-------------------------------------------------------------------------------------------------

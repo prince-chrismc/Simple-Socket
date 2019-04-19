@@ -166,20 +166,6 @@ public:
    }
 #endif
 
-   /// Copies data between one file descriptor and another.
-   /// On some systems this copying is done within the kernel, and thus is
-   /// more efficient than the combination of CSimpleSocket::Send and
-   /// CSimpleSocket::Receive, which would require transferring data to and
-   /// from user space.
-   /// <br>\b Note: This is available on all implementations, but the kernel
-   /// implementation is only available on Unix type systems.
-   /// @param nOutFd descriptor opened for writing.
-   /// @param nInFd descriptor opened for reading.
-   /// @param pOffset from which to start reading data from input file.
-   /// @param nCount number of bytes to copy between file descriptors.
-   /// @return number of bytes written to the out socket descriptor.
-   virtual int32_t SendFile( int32_t nOutFd, int32_t nInFd, off_t* pOffset, int32_t nCount );
-
    [[nodiscard]] bool IsNonblocking() const { return !m_bIsBlocking; }
    bool SetBlocking();
    bool SetNonblocking();
@@ -200,7 +186,7 @@ public:
    bool BindInterface( const char* pInterface );
 
    /// Controls the actions taken when CSimpleSocket::Close is executed on a
-   /// socket object that has unsent data.  The default value for this option
+   /// socket object that has unsent data. The default value for this option
    /// is \b off.
    /// - Following are the three possible scenarios.
    ///  -# \b bEnable is false, CSimpleSocket::Close returns immediately, but
