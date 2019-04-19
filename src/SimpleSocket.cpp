@@ -877,7 +877,6 @@ int32_t CSimpleSocket::SendFile( int32_t nOutFd, int32_t nInFd, off_t* pOffset, 
    int32_t nOutCount = CSimpleSocket::SocketError;
 
    static char szData[ SOCKET_SENDFILE_BLOCKSIZE ];
-   int32_t nInCount = 0;
 
    if ( SEEK( nInFd, *pOffset, SEEK_SET ) == -1 )
    {
@@ -886,7 +885,7 @@ int32_t CSimpleSocket::SendFile( int32_t nOutFd, int32_t nInFd, off_t* pOffset, 
 
    while ( nOutCount < nCount )
    {
-      nInCount =
+      int32_t nInCount =
           ( nCount - nOutCount ) < SOCKET_SENDFILE_BLOCKSIZE ? ( nCount - nOutCount ) : SOCKET_SENDFILE_BLOCKSIZE;
 
       if ( READ( nInFd, szData, nInCount ) != nInCount )
