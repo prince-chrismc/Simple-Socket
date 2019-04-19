@@ -458,17 +458,15 @@ uint32_t CSimpleSocket::SetWindowSize( uint32_t nOptionName, uint32_t nWindowSiz
 //-------------------------------------------------------------------------------------------------
 bool CSimpleSocket::DisableNagleAlgoritm()
 {
-   bool bRetVal = false;
-   int32_t nTcpNoDelay = 1;
-
-   //----------------------------------------------------------------------
-   // Set TCP NoDelay flag to true
-   //----------------------------------------------------------------------
-   if ( SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nTcpNoDelay, sizeof( int32_t ) ) == 0 )
+   if ( m_nSocketType != CSocketType::SocketTypeTcp )
    {
-      bRetVal = true;
+      SetSocketError( SocketProtocolError );
+      return false;
    }
 
+   const int32_t nTcpNoDelay = 1;   // Set TCP NoDelay flag to true
+   const bool bRetVal =
+       SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nTcpNoDelay, sizeof( int32_t ) ) == SocketSuccess;
    TranslateSocketError();
 
    return bRetVal;
@@ -481,17 +479,15 @@ bool CSimpleSocket::DisableNagleAlgoritm()
 //-------------------------------------------------------------------------------------------------
 bool CSimpleSocket::EnableNagleAlgoritm()
 {
-   bool bRetVal = false;
-   int32_t nTcpNoDelay = 0;
-
-   //----------------------------------------------------------------------
-   // Set TCP NoDelay flag to false
-   //----------------------------------------------------------------------
-   if ( SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nTcpNoDelay, sizeof( int32_t ) ) == 0 )
+   if ( m_nSocketType != CSocketType::SocketTypeTcp )
    {
-      bRetVal = true;
+      SetSocketError( SocketProtocolError );
+      return false;
    }
 
+   const int32_t nTcpNoDelay = 0;   // Set TCP NoDelay flag to false
+   const bool bRetVal =
+       SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nTcpNoDelay, sizeof( int32_t ) ) == SocketSuccess;
    TranslateSocketError();
 
    return bRetVal;
@@ -603,27 +599,21 @@ bool CSimpleSocket::Flush()
    // Get the current setting of the TCP_NODELAY flag.
    bool bRetVal = GETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nCurFlags, &nLen ) == SocketSuccess;
 
-   if ( bRetVal )
+   if ( bRetVal && !nCurFlags )
    {
-      int32_t nTcpNoDelay = 1;
-      if ( !nCurFlags )
-      {
-         // Set TCP NoDelay flag
-         bRetVal = SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nTcpNoDelay, sizeof( int32_t ) ) == SocketSuccess;
-      }
+      bRetVal = DisableNagleAlgoritm();   // Set TCP NoDelay flag
    }
 
    if ( bRetVal )
    {
-      // Send empty byte stream to flush the TCP send buffer
+      // Send empty byte stream without Nagle to flush the TCP send buffer asap
       uint8_t tmpbuf = 0;
       bRetVal = Send( &tmpbuf, sizeof( tmpbuf ) ) != CSimpleSocket::SocketError;
    }
 
-   if ( bRetVal )
+   if ( bRetVal && nCurFlags )
    {
-      // Reset the TCP_NODELAY flag to original state.
-      bRetVal = SETSOCKOPT( m_socket, IPPROTO_TCP, TCP_NODELAY, &nCurFlags, sizeof( int32_t ) ) == SocketSuccess;
+      bRetVal = EnableNagleAlgoritm();   // Reset the TCP_NODELAY flag to original state.
    }
 
    if ( !bRetVal ) TranslateSocketError();
