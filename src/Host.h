@@ -128,4 +128,4 @@
 
 #endif
 
-#endif /* __HOST_H__ */
+#endif   // __HOST_H__

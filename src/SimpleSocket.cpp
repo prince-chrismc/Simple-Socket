@@ -152,28 +152,24 @@ bool CSimpleSocket::BindInterface( const char* pInterface )
 
 bool CSimpleSocket::BindUnicastInterface( const char* pInterface )
 {
-   bool bRetVal = true;
-
-   if ( bRetVal )
+   bool bRetVal = false;
+   sockaddr_in stInterfaceAddr{};
+   // Set up the sockaddr structure
+   stInterfaceAddr.sin_family = static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain );
+   if ( pInterface == nullptr || strlen( pInterface ) == 0 )
    {
-      sockaddr_in stInterfaceAddr{};
-      // Set up the sockaddr structure
-      stInterfaceAddr.sin_family = static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain );
-      if ( pInterface == nullptr || strlen( pInterface ) == 0 )
-      {
-         // bind to all interfaces
-         stInterfaceAddr.sin_addr.s_addr = htonl( INADDR_ANY );
-      }
-      else
-      {
-         inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.sin_addr.s_addr );
-      }
-      stInterfaceAddr.sin_port = 0;
-
-      // Bind the socket using the such that it only use a specified interface
-      bRetVal = ( BIND( m_socket, &stInterfaceAddr, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
-      TranslateSocketError();
+      // bind to all interfaces
+      stInterfaceAddr.sin_addr.s_addr = htonl( INADDR_ANY );
    }
+   else
+   {
+      inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.sin_addr.s_addr );
+   }
+   stInterfaceAddr.sin_port = 0;
+
+   // Bind the socket using the such that it only use a specified interface
+   bRetVal = ( BIND( m_socket, &stInterfaceAddr, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
+   TranslateSocketError();
 
    // If successful then get a local copy of the address
    if ( bRetVal )
@@ -635,57 +631,6 @@ bool CSimpleSocket::Flush()
 
 //-------------------------------------------------------------------------------------------------
 //
-// Writev -
-//
-//-------------------------------------------------------------------------------------------------
-int32_t CSimpleSocket::Writev( const struct iovec* pVector, size_t nCount )
-{
-   int32_t nBytes = 0;
-   int32_t nBytesSent = 0;
-   int32_t i = 0;
-
-   //--------------------------------------------------------------------------
-   // Send each buffer as a separate send, windows does not support this
-   // function call.
-   //--------------------------------------------------------------------------
-   for ( i = 0; i < (int32_t)nCount; i++ )
-   {
-      if ( ( nBytes = Send( (uint8_t*)pVector[ i ].iov_base, pVector[ i ].iov_len ) ) == CSimpleSocket::SocketError )
-      {
-         break;
-      }
-
-      nBytesSent += nBytes;
-   }
-
-   if ( i > 0 )
-   {
-      Flush();
-   }
-
-   return nBytesSent;
-}
-
-//-------------------------------------------------------------------------------------------------
-//
-// Send() - Send data on a valid socket via a vector of buffers.
-//
-//-------------------------------------------------------------------------------------------------
-int32_t CSimpleSocket::Send( const struct iovec* sendVector, int32_t nNumItems )
-{
-   SetSocketError( SocketSuccess );
-   m_nBytesSent = 0;
-
-   if ( ( m_nBytesSent = WRITEV( m_socket, sendVector, nNumItems ) ) == CSimpleSocket::SocketError )
-   {
-      TranslateSocketError();
-   }
-
-   return m_nBytesSent;
-}
-
-//-------------------------------------------------------------------------------------------------
-//
 // SetReceiveTimeout()
 //
 //-------------------------------------------------------------------------------------------------
@@ -889,7 +834,7 @@ bool CSimpleSocket::SetNonblocking()
 // SetBlocking()
 //
 //-------------------------------------------------------------------------------------------------
-bool CSimpleSocket::SetBlocking( )
+bool CSimpleSocket::SetBlocking()
 {
    int32_t nCurFlags;
 
@@ -969,7 +914,7 @@ int32_t CSimpleSocket::SendFile( int32_t nOutFd, int32_t nInFd, off_t* pOffset, 
 // TranslateSocketError() -
 //
 //-------------------------------------------------------------------------------------------------
-void CSimpleSocket::TranslateSocketError( )
+void CSimpleSocket::TranslateSocketError()
 {
 #if defined( _LINUX ) || defined( _DARWIN )
    switch ( errno )

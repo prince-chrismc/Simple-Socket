@@ -24,7 +24,9 @@ SOFTWARE.
 
 */
 
-#pragma once
+#ifndef __STATTIMER_H__
+#define __STATTIMER_H__
+
 #include <chrono>
 
 using std::chrono::duration_cast;
@@ -53,3 +55,5 @@ private:
    TimePoint m_startTime;
    TimePoint m_endTime;
 };
+
+#endif /* __STATTIMER_H__ */

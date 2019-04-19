@@ -64,4 +64,4 @@ private:
    sockaddr_in* GetUdpTxAddrBuffer() override;
 };
 
-#endif /*  __ACTIVESOCKET_H__  */
+#endif   //  __ACTIVESOCKET_H__

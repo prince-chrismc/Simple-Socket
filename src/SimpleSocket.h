@@ -166,16 +166,6 @@ public:
    }
 #endif
 
-   /// Attempts to send at most nNumItem blocks described by sendVector
-   /// to the socket descriptor associated with the socket object.
-   /// @param sendVector pointer to an array of iovec structures
-   /// @param nNumItems number of items in the vector to process
-   /// <br>\b NOTE: Buffers are processed in the order specified.
-   /// @return number of bytes actually sent, return of zero means the
-   /// connection has been shutdown on the other side, and a return of -1
-   /// means that an error has occurred.
-   virtual int32_t Send( const struct iovec* sendVector, int32_t nNumItems );
-
    /// Copies data between one file descriptor and another.
    /// On some systems this copying is done within the kernel, and thus is
    /// more efficient than the combination of CSimpleSocket::Send and
@@ -258,7 +248,7 @@ public:
    /// Return Differentiated Services Code Point (DSCP) value currently set on the socket object.
    /// @return DSCP for current socket object.
    /// <br><br> \b NOTE: Windows special notes http://support.microsoft.com/kb/248611.
-   int GetSocketDscp( );
+   int GetSocketDscp();
 
    /// Set Differentiated Services Code Point (DSCP) for socket object.
    ///  @param nDscp value of TOS setting which will be converted to DSCP
@@ -337,17 +327,6 @@ private:
    ///  @return zero on failure else the number of bytes of the TCP window size if successful.
    uint32_t SetWindowSize( uint32_t nOptionName, uint32_t nWindowSize );
 
-   /// Attempts to send at most nNumItem blocks described by sendVector
-   /// to the socket descriptor associated with the socket object.
-   /// @param sendVector pointer to an array of iovec structures
-   /// @param nNumItems number of items in the vector to process
-   /// <br>\b Note: This implementation is for systems that don't natively
-   /// support this functionality.
-   /// @return number of bytes actually sent, return of zero means the
-   /// connection has been shutdown on the other side, and a return of -1
-   /// means that an error has occurred.
-   int32_t Writev( const struct iovec* sendVector, size_t nNumItems );
-
    /// Flush the socket descriptor owned by the object.
    /// @return true data was successfully sent, else return false;
    bool Flush();
@@ -387,4 +366,4 @@ protected:
    fd_set m_errorFds = { 0, 0 };   /// error file descriptor set
 };
 
-#endif /*  __SOCKET_H__  */
+#endif   //  __SOCKET_H__
