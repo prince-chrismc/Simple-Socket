@@ -1,5 +1,23 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-project(Simple-Socket CXX)
+
+# Setup versioning.
+set(SIMPLE_SOCKET_MAJOR_VERSION "2")
+set(SIMPLE_SOCKET_MINOR_VERSION "0")
+set(SIMPLE_SOCKET_PATCH_VERSION "0")
+set(
+  SIMPLE_SOCKET_VERSION
+  ${SIMPLE_SOCKET_MAJOR_VERSION}.${SIMPLE_SOCKET_MINOR_VERSION}.${SIMPLE_SOCKET_PATCH_VERSION}
+  )
+
+project(
+  Simple-Socket
+  VERSION
+    ${SIMPLE_SOCKET_VERSION}
+    DESCRIPTION
+    "Simple-Socket is a lightweight socket library for IP programs at the transportation layer"
+    HOMEPAGE_URL
+    "https://github.com/prince-chrismc/Simple-Socket"
+  LANGUAGES CXX)
 
 # CMake Settings
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -55,15 +73,6 @@ elseif(WIN32)
   endif()
 endif()
 
-# Setup versioning.
-set(SIMPLE_SOCKET_MAJOR_VERSION "2")
-set(SIMPLE_SOCKET_MINOR_VERSION "0")
-set(SIMPLE_SOCKET_PATCH_VERSION "0")
-set(
-  SIMPLE_SOCKET_VERSION
-  ${SIMPLE_SOCKET_MAJOR_VERSION}.${SIMPLE_SOCKET_MINOR_VERSION}.${SIMPLE_SOCKET_PATCH_VERSION}
-  )
-
 # Setup source files
 include_directories(src)
 
@@ -86,21 +95,28 @@ option(SIMPLE_SOCKET_TEST "Build the tester" OFF)
 option(SIMPLE_SOCKET_COVERAGE "Build the tester for code coverage" OFF)
 mark_as_advanced(SIMPLE_SOCKET_TEST SIMPLE_SOCKET_COVERAGE)
 
-# Enable clang-tidy find_program(CLANG_TIDY_EXE NAMES "clang-tidy" "clang-
-# tidy-8" "clang-tidy-7" DOC "Path to clang-tidy executable")
+# Enable clang-tidy
+find_program(CLANG_TIDY_EXE
+             NAMES "clang-tidy" "clang-tidy-8" "clang-tidy-7"
+             DOC "Path to clang-tidy executable")
 
-# if (CLANG_TIDY_EXE) message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-# set(CLANG_TIDY_CHECKS "-*,modernize-*")
+if(CLANG_TIDY_EXE)
+  message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+else()
+  message(AUTHOR_WARNING "clang-tidy not found!")
+  set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE) # delete it
+endif()
+
 set(
   CMAKE_CXX_CLANG_TIDY
-  "${CLANG_TIDY_EXE};-p=${CMAKE_CURRENT_BINARY_DIR};-checks=*;${SIMPLE_SOCKET_SOURCES}"
+  "${CLANG_TIDY_EXE};-checks=modernize-*;-header-filter=${CMAKE_SOURCE_DIR};-p=${CMAKE_CURRENT_BINARY_DIR};"
   )
-# else() message(AUTHOR_WARNING "clang-tidy not found!")
-# set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE) # delete it endif()
+# set(CXX_CLANG_TIDY ${CMAKE_CXX_CLANG_TIDY} CACHE STRING "" FORCE)
 
 add_custom_target(clangformat
                   COMMAND ${CLANG_TIDY_EXE} -p=${CMAKE_CURRENT_BINARY_DIR}
-                          -checks=* ${SIMPLE_SOCKET_SOURCES})
+                          -checks=* -header-filter=${CMAKE_SOURCE_DIR}
+                          ${SIMPLE_SOCKET_SOURCES})
 add_custom_target(cppcheck
                   COMMAND "cppcheck" "--enable=all"
                           "--project=compile_commands.json" "--xml"
@@ -108,8 +124,8 @@ add_custom_target(cppcheck
                   COMMAND "cppcheck-htmlreport" "--file=report.xml"
                           "--report-dir=report" "--source-dir=..")
 
-set(CMAKE_CXX_CPPCHECK "cppcheck;--enable=all;--project=compile_commands.json")
-# set(CXX_CPPCHECK ${CMAKE_CXX_CPPCHECK})
+# set(CMAKE_CXX_CPPCHECK "cppcheck;--enable=all;--project=compile_commands.json")
+# set(CXX_CPPCHECK ${CMAKE_CXX_CPPCHECK} CACHE STRING "" FORCE)
 
 # Build the lib and install into configured prefix
 add_library(Simple-Socket ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
