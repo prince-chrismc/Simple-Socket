@@ -24,12 +24,11 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
   message(SEND_ERROR "In-source builds are not allowed.")
 endif()
-
-# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # OS and compiler checks.
 if(UNIX)
@@ -40,7 +39,7 @@ if(UNIX)
   set(WARNING_FLAGS -Wall -Wextra)
 
   if(CMAKE_BUILD_TYPE MATCHES Debug)
-    add_compile_options(-g -D_DEBUG)
+    add_compile_options(-D_DEBUG)
   elseif(CMAKE_BUILD_TYPE MATCHES Release)
     add_compile_options(-O3)
   else()
@@ -95,37 +94,7 @@ option(SIMPLE_SOCKET_TEST "Build the tester" OFF)
 option(SIMPLE_SOCKET_COVERAGE "Build the tester for code coverage" OFF)
 mark_as_advanced(SIMPLE_SOCKET_TEST SIMPLE_SOCKET_COVERAGE)
 
-# Enable clang-tidy
-find_program(CLANG_TIDY_EXE
-             NAMES "clang-tidy" "clang-tidy-8" "clang-tidy-7"
-             DOC "Path to clang-tidy executable")
-
-if(CLANG_TIDY_EXE)
-  message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-else()
-  message(AUTHOR_WARNING "clang-tidy not found!")
-  set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE) # delete it
-endif()
-
-set(
-  CMAKE_CXX_CLANG_TIDY
-  "${CLANG_TIDY_EXE};-checks=modernize-*;-header-filter=${CMAKE_SOURCE_DIR};-p=${CMAKE_CURRENT_BINARY_DIR};"
-  )
-# set(CXX_CLANG_TIDY ${CMAKE_CXX_CLANG_TIDY} CACHE STRING "" FORCE)
-
-add_custom_target(clangformat
-                  COMMAND ${CLANG_TIDY_EXE} -p=${CMAKE_CURRENT_BINARY_DIR}
-                          -checks=* -header-filter=${CMAKE_SOURCE_DIR}
-                          ${SIMPLE_SOCKET_SOURCES})
-add_custom_target(cppcheck
-                  COMMAND "cppcheck" "--enable=all"
-                          "--project=compile_commands.json" "--xml"
-                          "2> report.xml"
-                  COMMAND "cppcheck-htmlreport" "--file=report.xml"
-                          "--report-dir=report" "--source-dir=..")
-
-# set(CMAKE_CXX_CPPCHECK "cppcheck;--enable=all;--project=compile_commands.json")
-# set(CXX_CPPCHECK ${CMAKE_CXX_CPPCHECK} CACHE STRING "" FORCE)
+include(Simple-Socket-Linting)
 
 # Build the lib and install into configured prefix
 add_library(Simple-Socket ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
@@ -152,8 +121,7 @@ set_target_properties(Simple-Socket
                                  SOVERSION
                                  ${SIMPLE_SOCKET_MAJOR_VERSION})
 
-# Setup installation config
-include(Simple-Socket-Install)
+include(Simple-Socket-Install) # Setup installation config
 
 if(SIMPLE_SOCKET_EXAMPLES)
   add_subdirectory(examples)
