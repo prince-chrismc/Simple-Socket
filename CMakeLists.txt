@@ -91,6 +91,20 @@ target_compile_options(Simple-Socket INTERFACE ${WARNING_FLAGS})
 target_link_libraries(Simple-Socket ${PROJECT_LIBS})
 set_target_properties(Simple-Socket PROPERTIES VERSION ${SIMPLE_SOCKET_VERSION} SOVERSION ${SIMPLE_SOCKET_MAJOR_VERSION})
 
+# Enable clang-tidy
+find_program(CLANG_TIDY_EXE NAMES "clang-tidy" DOC "Path to clang-tidy executable")
+if(NOT CLANG_TIDY_EXE)
+  message(STATUS "clang-tidy not found.")
+else()
+  message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+  set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-checks=*,-clang-analyzer-alpha.*")
+endif()
+
+if(CLANG_TIDY_EXE)
+  set_target_properties(Simple-Socket PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
+endif()
+
+# Setup installation config
 include(CMakePackageConfigHelpers)
 set(INCLUDE_INSTALL_DIR include/)
 set(LIBRARY_INSTALL_DIR lib/)
