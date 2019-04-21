@@ -17,13 +17,14 @@ find_program(CPPCHECK_EXE NAMES "cppcheck" DOC "Path to cppcheck executable")
 
 if(CPPCHECK_EXE)
   message(AUTHOR_WARNING "cppcheck found: ${CPPCHECK_EXE}")
-  add_custom_target(cppcheck
-                    COMMAND "${CPPCHECK_EXE}" "-j4" "--enable=all" "--inconclusive"
-                            "--suppress=*:*catch.hpp" "--suppress=compareBoolExpressionWithInt:*tests/*.cpp"
-                            "--project=compile_commands.json" "--xml"
-                            "--output-file=report.xml"
-                    COMMAND "cppcheck-htmlreport" "--file=report.xml"
-                            "--report-dir=report" "--source-dir=..")
+  add_custom_target(
+    cppcheck
+    COMMAND "${CPPCHECK_EXE}" "-j4" "--enable=all" "--inconclusive"
+            "--suppress=*:*catch.hpp"
+            "--suppress=compareBoolExpressionWithInt:*tests/*.cpp"
+            "--project=compile_commands.json" "--xml" "--output-file=report.xml"
+    COMMAND "cppcheck-htmlreport" "--file=report.xml" "--report-dir=report"
+            "--source-dir=..")
 else()
   message(AUTHOR_WARNING "cppcheck not found!")
   # set(CXX_CPPCHECK "" CACHE STRING "" FORCE)
