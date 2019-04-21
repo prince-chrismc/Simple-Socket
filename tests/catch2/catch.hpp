@@ -2334,7 +2334,7 @@ namespace Catch {
             CATCH_INTERNAL_UNSUPPRESS_PARENTHESES_WARNINGS \
         } INTERNAL_CATCH_CATCH( catchAssertionHandler ) \
         INTERNAL_CATCH_REACT( catchAssertionHandler ) \
-    } while( (void)0, (false) && static_cast<bool>( !!(__VA_ARGS__) ) ) // the expression here is never evaluated at runtime but it forces the compiler to give it a look
+    } while( (void)0, (false) && static_cast<bool>( !!(__VA_ARGS__) ) ) // NOLINT // the expression here is never evaluated at runtime but it forces the compiler to give it a look
     // The double negation silences MSVC's C4800 warning, the static_cast forces short-circuit evaluation if the type has overloaded &&.
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3949,7 +3949,7 @@ namespace Catch {
     {
         if( !IMutableContext::currentContext )
             IMutableContext::createContext();
-        return *IMutableContext::currentContext;
+        return *IMutableContext::currentContext; // NOLINT
     }
 
     inline IContext& getCurrentContext()
@@ -10720,7 +10720,7 @@ namespace Catch {
     }
 
     IResultCapture& getResultCapture() {
-        if (auto* capture = getCurrentContext().getResultCapture())
+        if (auto* capture = getCurrentContext().getResultCapture()) // NOLINT
             return *capture;
         else
             CATCH_INTERNAL_ERROR("No result capture instance");
@@ -10733,7 +10733,7 @@ namespace Catch {
 
     Section::Section( SectionInfo const& info )
     :   m_info( info ),
-        m_sectionIncluded( getResultCapture().sectionStarted( m_info, m_assertions ) )
+        m_sectionIncluded( getResultCapture().sectionStarted( m_info, m_assertions ) ) // NOLINT
     {
         m_timer.start();
     }

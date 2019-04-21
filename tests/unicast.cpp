@@ -584,7 +584,7 @@ TEST_CASE( "Sockets are ctor moveable", "[Socket][TCP]" )
    CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
 
    CActiveSocket beta( std::move( alpha ) );
-   REQUIRE_FALSE( alpha.IsSocketValid() );   // NOLINT(hicpp-invalid-access-moved)
+   REQUIRE_FALSE( alpha.IsSocketValid() );   // NOLINT
    REQUIRE( beta.IsSocketValid() );
 
    REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
@@ -625,7 +625,7 @@ TEST_CASE( "Sockets are assign moveable", "[Socket=][TCP]" )
 
    beta = std::move( alpha );
 
-   REQUIRE_FALSE( alpha.IsSocketValid() );   // NOLINT(hicpp-invalid-access-moved)
+   REQUIRE_FALSE( alpha.IsSocketValid() );   // NOLINT
    REQUIRE( beta.IsSocketValid() );
 
    REQUIRE( beta.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );

@@ -7,7 +7,7 @@ if(CLANG_TIDY_EXE)
   message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
   set(
   CMAKE_CXX_CLANG_TIDY
-  "${CLANG_TIDY_EXE};-checks=modernize-*;-header-filter=${CMAKE_SOURCE_DIR};-p=${CMAKE_CURRENT_BINARY_DIR}"
+  "${CLANG_TIDY_EXE};-p=${CMAKE_CURRENT_BINARY_DIR};"
   )
   # set(CXX_CLANG_TIDY ${CMAKE_CXX_CLANG_TIDY} CACHE STRING "" FORCE)
 else()
