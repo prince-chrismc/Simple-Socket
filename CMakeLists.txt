@@ -129,14 +129,14 @@ add_custom_target(cppcheck
 
 # Build the lib and install into configured prefix
 add_library(Simple-Socket ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
-target_compile_features(Simple-Socket PUBLIC cxx_std_11)
+target_compile_features(Simple-Socket INTERFACE cxx_std_11)
 set_target_properties(Simple-Socket
                       PROPERTIES CXX_STANDARD
                                  11
                                  CXX_STANDARD_REQUIRED
                                  ON)
 if(SIMPLE_SOCKET_STRING_VIEW)
-  target_compile_features(Simple-Socket PUBLIC cxx_std_17)
+  target_compile_features(Simple-Socket INTERFACE cxx_std_17)
   set_target_properties(Simple-Socket
                         PROPERTIES CXX_STANDARD
                                    17
@@ -145,7 +145,7 @@ if(SIMPLE_SOCKET_STRING_VIEW)
   target_compile_options(Simple-Socket INTERFACE -DSTRING_VIEW)
 endif()
 target_compile_options(Simple-Socket INTERFACE ${WARNING_FLAGS})
-target_link_libraries(Simple-Socket ${PROJECT_LIBS})
+target_link_libraries(Simple-Socket INTERFACE ${PROJECT_LIBS})
 set_target_properties(Simple-Socket
                       PROPERTIES VERSION
                                  ${SIMPLE_SOCKET_VERSION}
