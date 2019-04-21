@@ -13,10 +13,6 @@ project(
   Simple-Socket
   VERSION
     ${SIMPLE_SOCKET_VERSION}
-    DESCRIPTION
-    "Simple-Socket is a lightweight socket library for IP programs at the transportation layer"
-    HOMEPAGE_URL
-    "https://github.com/prince-chrismc/Simple-Socket"
   LANGUAGES CXX)
 
 # CMake Settings
