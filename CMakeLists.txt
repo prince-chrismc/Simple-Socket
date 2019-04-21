@@ -92,17 +92,21 @@ target_link_libraries(Simple-Socket ${PROJECT_LIBS})
 set_target_properties(Simple-Socket PROPERTIES VERSION ${SIMPLE_SOCKET_VERSION} SOVERSION ${SIMPLE_SOCKET_MAJOR_VERSION})
 
 # Enable clang-tidy
-find_program(CLANG_TIDY_EXE NAMES "clang-tidy" DOC "Path to clang-tidy executable")
-if(NOT CLANG_TIDY_EXE)
-  message(STATUS "clang-tidy not found.")
-else()
-  message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-  set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-checks=*,-clang-analyzer-alpha.*")
-endif()
+#find_program(CLANG_TIDY_EXE NAMES "clang-tidy" "clang-tidy-8" "clang-tidy-7" DOC "Path to clang-tidy executable")
 
-if(CLANG_TIDY_EXE)
-  set_target_properties(Simple-Socket PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
-endif()
+#if (CLANG_TIDY_EXE)
+#  set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
+#  message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+#  set(CLANG_TIDY_CHECKS "-*,modernize-*")
+  #set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-p=.;-checks=${CLANG_TIDY_CHECKS};-fix" CACHE STRING "" FORCE)
+#else()
+#  message(AUTHOR_WARNING "clang-tidy not found!")
+#  set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE) # delete it
+#endif()
+
+#add_custom_target(lint COMMAND "${CLANG_TIDY_EXE}" "-p=${CMAKE_CURRENT_BINARY_DIR}" "-checks=*,-clang-analyzer-alpha.*,-modernize")
+add_custom_target(lint COMMAND "cppcheck" "--enable=all" "--project=compile_commands.json" "--xml" "2> report.xml"
+  COMMAND "cppcheck-htmlreport" "--file=report.xml" "--report-dir=report" "--source-dir=..")
 
 # Setup installation config
 include(CMakePackageConfigHelpers)
