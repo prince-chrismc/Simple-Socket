@@ -79,11 +79,6 @@ bool CActiveSocket::Validate( const char* pAddr, uint16_t nPort )
 //------------------------------------------------------------------------------
 bool CActiveSocket::PreConnect( const char* pAddr, uint16_t nPort )
 {
-   bool bRetVal = false;
-
-   memset( &m_stServerSockaddr, 0, SOCKET_ADDR_IN_SIZE );
-   m_stServerSockaddr.sin_family = static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain );
-
    addrinfo hints{ AI_ALL, m_nSocketDomain, 0, 0, 0, nullptr, nullptr, nullptr };
    addrinfo* pResult = nullptr;
 
@@ -98,13 +93,19 @@ bool CActiveSocket::PreConnect( const char* pAddr, uint16_t nPort )
    }
    else
    {
-      m_stServerSockaddr.sin_addr = reinterpret_cast<sockaddr_in*>( pResult->ai_addr )->sin_addr;
-      m_stServerSockaddr.sin_port = htons( nPort );
+      // sockaddr_in addr{};
+      // memcpy(&addr, pResult->ai_addr, sizeof(addr));
+      // m_stServerSockaddr.sin_addr = addr.sin_addr;
+      m_stServerSockaddr = {
+         static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain ),
+         htons( nPort ),
+         reinterpret_cast<sockaddr_in*>( pResult->ai_addr )->sin_addr   // NOLINT
+      };
       freeaddrinfo( pResult );
-      bRetVal = true;
+      return true;
    }
 
-   return bRetVal;
+   return false;
 }
 
 //------------------------------------------------------------------------------
