@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-project(Simple-Socket)
+project(Simple-Socket CXX)
 
 # CMake Settings
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -54,9 +54,9 @@ elseif(WIN32)
   endif()
 endif()
 
-set(DATA_FILE docs/README.md)
-file(GLOB SIMPLE_SOCKET_HEADERS "src/*.h")
-file(GLOB SIMPLE_SOCKET_SOURCES "src/*.cpp")
+set(SIMPLE_SOCKET_DOCS "docs/README.md")
+set(SIMPLE_SOCKET_HEADERS "src/StatTimer.h" "src/Hosts.h" "src/SimpleSocket.h" "src/ActiveSocket.h" "src/PassiveSocket.h")
+set(SIMPLE_SOCKET_SOURCES "src/SimpleSocket.cpp" "src/ActiveSocket.cpp" "src/PassiveSocket.cpp")
 list(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS})
 
 # Project Options
@@ -79,7 +79,7 @@ if(SIMPLE_SOCKET_LINT)
 endif()
 
 # Build the lib and install into configured prefix
-add_library(Simple-Socket ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
+add_library(Simple-Socket ${SIMPLE_SOCKET_SOURCES} ${SIMPLE_SOCKET_DOCS})
 target_compile_features(Simple-Socket INTERFACE cxx_std_11)
 target_compile_options(Simple-Socket INTERFACE ${WARNING_FLAGS})
 target_link_libraries(Simple-Socket INTERFACE ${PROJECT_LIBS})
