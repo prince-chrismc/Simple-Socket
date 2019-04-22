@@ -1,19 +1,5 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-
-# Setup versioning.
-set(SIMPLE_SOCKET_MAJOR_VERSION "2")
-set(SIMPLE_SOCKET_MINOR_VERSION "0")
-set(SIMPLE_SOCKET_PATCH_VERSION "0")
-set(
-  SIMPLE_SOCKET_VERSION
-  ${SIMPLE_SOCKET_MAJOR_VERSION}.${SIMPLE_SOCKET_MINOR_VERSION}.${SIMPLE_SOCKET_PATCH_VERSION}
-  )
-
-project(
-  Simple-Socket
-  VERSION
-    ${SIMPLE_SOCKET_VERSION}
-  LANGUAGES CXX)
+project(Simple-Socket)
 
 # CMake Settings
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -114,6 +100,15 @@ if(SIMPLE_SOCKET_STRING_VIEW)
                                    ON)
   target_compile_options(Simple-Socket INTERFACE -DSTRING_VIEW)
 endif()
+
+# Setup versioning.
+set(SIMPLE_SOCKET_MAJOR_VERSION "2")
+set(SIMPLE_SOCKET_MINOR_VERSION "0")
+set(SIMPLE_SOCKET_PATCH_VERSION "0")
+set(
+  SIMPLE_SOCKET_VERSION
+  ${SIMPLE_SOCKET_MAJOR_VERSION}.${SIMPLE_SOCKET_MINOR_VERSION}.${SIMPLE_SOCKET_PATCH_VERSION}
+  )
 set_target_properties(Simple-Socket
                       PROPERTIES VERSION
                                  ${SIMPLE_SOCKET_VERSION}
