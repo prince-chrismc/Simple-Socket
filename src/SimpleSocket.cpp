@@ -248,7 +248,9 @@ bool CSimpleSocket::JoinMulticast( const char* pGroup, uint16_t nPort )
 
    if ( bRetVal )
    {
-      m_stMulticastGroup = { AF_INET, htons( nPort ), htonl( INADDR_ANY ) };
+      m_stMulticastGroup.sin_family = AF_INET;
+      m_stMulticastGroup.sin_port = htons( nPort );
+      m_stMulticastGroup.sin_addr.s_addr = htonl( INADDR_ANY ),
 
       // Bind to the specified port
       bRetVal = ( BIND( m_socket, &m_stMulticastGroup, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
