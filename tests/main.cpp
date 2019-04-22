@@ -26,43 +26,15 @@ SOFTWARE.
 
 #define CATCH_CONFIG_MAIN   // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch2/catch.hpp"
-#include "SimpleSocket.h"
+#include "PassiveSocket.h"
 
-TEST_CASE( "Valid sockets are created", "[Initialization]" )
+namespace
 {
-   SECTION( "TCP socket instantiation", "[TCP]" )
+   void SocketHasDefaultValues( CSimpleSocket&& socket, CSimpleSocket::CSocketType type )
    {
-      const CSimpleSocket socket;
-
-      REQUIRE( socket.IsSocketValid() );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-      REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
-   }
-
-   SECTION( "UDP socket instantiation", "[UDP]" )
-   {
-      const CSimpleSocket socket( CSimpleSocket::SocketTypeUdp );
-
-      REQUIRE( socket.IsSocketValid() );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-      REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeUdp );
-   }
-
-   SECTION( "Invalid socket instantiation", "[TCP][UDP][INVALID]" )
-   {
-      REQUIRE_NOTHROW( CSimpleSocket{} );
-      REQUIRE_NOTHROW( CSimpleSocket{ CSimpleSocket::SocketTypeTcp } );
-      REQUIRE_NOTHROW( CSimpleSocket{ CSimpleSocket::SocketTypeUdp } );
-      REQUIRE_THROWS_AS( CSimpleSocket{ CSimpleSocket::SocketTypeInvalid }, std::runtime_error );
-   }
-
-   SECTION( "Socket instantiated with default zero values", "[TCP]" )
-   {
-      CSimpleSocket socket;
-
       CHECK( socket.IsSocketValid() );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-      CHECK( socket.GetSocketType() == CSimpleSocket::SocketTypeTcp );
+      CHECK( socket.GetSocketType() == type );
 
       REQUIRE_FALSE( socket.IsNonblocking() );
       REQUIRE_FALSE( socket.GetMulticast() );
@@ -95,11 +67,8 @@ TEST_CASE( "Valid sockets are created", "[Initialization]" )
       REQUIRE( socket.GetJoinedGroup() == "0.0.0.0" );
    }
 
-   SECTION( "Socket is invalid after being moved", "[TCP]" )
+   void SocketHasInvalidValues( CSimpleSocket& socket )
    {
-      CSimpleSocket socket;
-      CSimpleSocket secondary = std::move( socket );
-
       REQUIRE_FALSE( socket.IsSocketValid() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
       REQUIRE( socket.GetSocketType() == CSimpleSocket::SocketTypeInvalid );
@@ -134,5 +103,120 @@ TEST_CASE( "Valid sockets are created", "[Initialization]" )
       REQUIRE( socket.GetClientPort() == 0 );
 
       REQUIRE( socket.GetJoinedGroup() == CSimpleSocket::DescribeError( CSimpleSocket::SocketInvalidSocket ) );
+   }
+
+   /*template<class SOCKET>
+   void SocketInitTest( CSimpleSocket::CSocketType type )
+   {
+      const SOCKET socket( type );
+      REQUIRE( socket.IsSocketValid() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.GetSocketType() == type );
+   }*/
+}
+
+TEST_CASE( "socket constructors", "[Initialization][TCP][UDP]" )
+{
+   auto tcp = CSimpleSocket::SocketTypeTcp;
+   auto udp = CSimpleSocket::SocketTypeUdp;
+   auto type = GENERATE( as<CSimpleSocket::CSocketType>{}, CSimpleSocket::SocketTypeTcp, CSimpleSocket::SocketTypeUdp );
+
+   SECTION( "exceptions" )
+   {
+      SECTION( "Simple Socket" )
+      {
+         REQUIRE_NOTHROW( CSimpleSocket{} );
+         REQUIRE_NOTHROW( CSimpleSocket{ tcp } );
+         REQUIRE_NOTHROW( CSimpleSocket{ udp } );
+         REQUIRE_THROWS_AS( CSimpleSocket{ CSimpleSocket::SocketTypeInvalid }, std::runtime_error );
+      }
+
+      SECTION( "Active Socket" )
+      {
+         REQUIRE_NOTHROW( CActiveSocket{} );
+         REQUIRE_NOTHROW( CActiveSocket{ tcp } );
+         REQUIRE_NOTHROW( CActiveSocket{ udp } );
+         REQUIRE_THROWS_AS( CActiveSocket{ CSimpleSocket::SocketTypeInvalid }, std::runtime_error );
+      }
+
+      SECTION( "Passive Socket" )
+      {
+         REQUIRE_NOTHROW( CPassiveSocket{} );
+         REQUIRE_NOTHROW( CPassiveSocket{ tcp } );
+         REQUIRE_NOTHROW( CPassiveSocket{ udp } );
+         REQUIRE_THROWS_AS( CPassiveSocket{ CSimpleSocket::SocketTypeInvalid }, std::runtime_error );
+      }
+   }
+
+   SECTION( "valid handle" )
+   {
+      SECTION( "Simple Socket" )
+      {
+         const CSimpleSocket socket( type );
+         REQUIRE( socket.IsSocketValid() );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+         REQUIRE( socket.GetSocketType() == type );
+      }
+
+      SECTION( "Active Socket" )
+      {
+         const CActiveSocket socket( type );
+         REQUIRE( socket.IsSocketValid() );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+         REQUIRE( socket.GetSocketType() == type );
+      }
+
+      SECTION( "Passive Socket" )
+      {
+         const CPassiveSocket socket( type );
+         REQUIRE( socket.IsSocketValid() );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+         REQUIRE( socket.GetSocketType() == type );
+      }
+   }
+
+   SECTION( "default values" )
+   {
+      SECTION( "Simple Socket" )
+      {
+         CHECK_NOTHROW( SocketHasDefaultValues( CSimpleSocket{}, tcp ) );
+         CHECK_NOTHROW( SocketHasDefaultValues( CSimpleSocket{ type }, type ) );
+      }
+
+      SECTION( "Active Socket" )
+      {
+         CHECK_NOTHROW( SocketHasDefaultValues( CActiveSocket{}, tcp ) );
+         CHECK_NOTHROW( SocketHasDefaultValues( CActiveSocket{ type }, type ) );
+      }
+
+      SECTION( "Passive Socket" )
+      {
+         CHECK_NOTHROW( SocketHasDefaultValues( CPassiveSocket{}, tcp ) );
+         CHECK_NOTHROW( SocketHasDefaultValues( CPassiveSocket{ type }, type ) );
+      }
+   }
+
+   SECTION( "invalid after moved" )
+   {
+      SECTION( "Simple Socket" )
+      {
+         CSimpleSocket socket( type );
+         CSimpleSocket secondary = std::move( socket );
+         CHECK_NOTHROW( SocketHasInvalidValues( socket ) );
+      }
+
+      SECTION( "Active Socket" )
+      {
+         CActiveSocket socket( type );
+         CActiveSocket secondary = std::move( socket );
+         CHECK_NOTHROW( SocketHasInvalidValues( socket ) );
+      }
+
+      SECTION( "Passive Socket" )
+      {
+         CPassiveSocket socket( type );
+         CPassiveSocket secondary = std::move( socket );
+         CHECK_NOTHROW( SocketHasInvalidValues( socket ) );
+      }
    }
 }
