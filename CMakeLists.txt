@@ -88,9 +88,12 @@ option(SIMPLE_SOCKET_STRING_VIEW
 option(SIMPLE_SOCKET_EXAMPLES "Build the examples" ON)
 option(SIMPLE_SOCKET_TEST "Build the tester" OFF)
 option(SIMPLE_SOCKET_COVERAGE "Build the tester for code coverage" OFF)
-mark_as_advanced(SIMPLE_SOCKET_TEST SIMPLE_SOCKET_COVERAGE)
+option(SIMPLE_SOCKET_LINT "Check each compilational unit against clang-tidy" OFF)
+mark_as_advanced(SIMPLE_SOCKET_TEST SIMPLE_SOCKET_COVERAGE SIMPLE_SOCKET_LINT)
 
-include(Simple-Socket-Linting)
+if(SIMPLE_SOCKET_LINT)
+  include(Simple-Socket-Linting)
+endif()
 
 # Build the lib and install into configured prefix
 add_library(Simple-Socket ${SIMPLE_SOCKET_SOURCES} ${DATA_FILE})
