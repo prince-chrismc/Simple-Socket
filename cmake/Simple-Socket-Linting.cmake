@@ -5,7 +5,7 @@ find_program(CLANG_TIDY_EXE
 
 if(CLANG_TIDY_EXE)
   message(AUTHOR_WARNING "clang-tidy found: ${CLANG_TIDY_EXE}")
-  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-p=${CMAKE_CURRENT_BINARY_DIR};")
+  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-p=${CMAKE_CURRENT_BINARY_DIR}")
   # set(CXX_CLANG_TIDY ${CMAKE_CXX_CLANG_TIDY} CACHE STRING "" FORCE)
 else()
   message(AUTHOR_WARNING "clang-tidy not found!")
