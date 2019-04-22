@@ -45,7 +45,7 @@
 
 #include <cstdlib>
 #include <functional>
-#include <stdexcept>
+#include <array>
 
 #if defined( _LINUX ) || defined( _DARWIN )
 #include <fcntl.h>
@@ -302,15 +302,14 @@ bool CSimpleSocket::JoinMulticast( const char* pGroup, uint16_t nPort )
 //-------------------------------------------------------------------------------------------------
 std::string CSimpleSocket::GetClientAddr()
 {
-   char buff[ INET_ADDRSTRLEN + 1 ] = { '\0' };
-
-   if ( inet_ntop( m_nSocketDomain, &m_stClientSockaddr.sin_addr, buff, INET_ADDRSTRLEN ) == nullptr )
+   std::array<char, INET_ADDRSTRLEN + 1> buff = { '\0' };
+   if ( inet_ntop( m_nSocketDomain, &m_stClientSockaddr.sin_addr, buff.data(), INET_ADDRSTRLEN ) == nullptr )
    {
       TranslateSocketError();
       return DescribeError();
    }
 
-   return buff;
+   return buff.data();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -320,15 +319,14 @@ std::string CSimpleSocket::GetClientAddr()
 //-------------------------------------------------------------------------------------------------
 std::string CSimpleSocket::GetServerAddr()
 {
-   char buff[ INET_ADDRSTRLEN + 1 ] = { '\0' };
-
-   if ( inet_ntop( m_nSocketDomain, &m_stServerSockaddr.sin_addr, buff, INET_ADDRSTRLEN ) == nullptr )
+   std::array<char, INET_ADDRSTRLEN + 1> buff = { '\0' };
+   if ( inet_ntop( m_nSocketDomain, &m_stServerSockaddr.sin_addr, buff.data(), INET_ADDRSTRLEN ) == nullptr )
    {
       TranslateSocketError();
       return DescribeError();
    }
 
-   return buff;
+   return buff.data();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -338,15 +336,14 @@ std::string CSimpleSocket::GetServerAddr()
 //-------------------------------------------------------------------------------------------------
 std::string CSimpleSocket::GetJoinedGroup()
 {
-   char buff[ INET_ADDRSTRLEN + 1 ] = { '\0' };
-
-   if ( inet_ntop( m_nSocketDomain, &m_stMulticastGroup.sin_addr, buff, INET_ADDRSTRLEN ) == nullptr )
+   std::array<char, INET_ADDRSTRLEN + 1> buff = { '\0' };
+   if ( inet_ntop( m_nSocketDomain, &m_stMulticastGroup.sin_addr, buff.data(), INET_ADDRSTRLEN ) == nullptr )
    {
       TranslateSocketError();
       return DescribeError();
    }
 
-   return buff;
+   return buff.data();
 }
 
 //-------------------------------------------------------------------------------------------------
