@@ -596,7 +596,7 @@ bool CSimpleSocket::Flush()
       bRetVal = Send( &tmpbuf, sizeof( tmpbuf ) ) != CSimpleSocket::SocketError;
    }
 
-   if ( bRetVal && nCurFlags )
+   if ( bRetVal && !nCurFlags )
    {
       bRetVal = EnableNagleAlgoritm();   // Reset the TCP_NODELAY flag to original state.
    }
