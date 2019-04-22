@@ -45,6 +45,7 @@
 
 #include <cstdlib>
 #include <functional>
+#include <stdexcept>
 #include <array>
 
 #if defined( _LINUX ) || defined( _DARWIN )
@@ -57,8 +58,6 @@
 #include <io.h>
 static constexpr auto IPTOS_LOWDELAY = 0x10;
 #endif
-
-static constexpr auto SOCKET_SENDFILE_BLOCKSIZE = 8192;
 
 CSimpleSocket::CSimpleSocket( CSocketType nType ) : m_nSocketType( nType )
 {
@@ -88,7 +87,7 @@ CSimpleSocket& CSimpleSocket::operator=( CSimpleSocket&& other ) noexcept
 CSimpleSocket::~CSimpleSocket()
 {
    Close();   // Checks internally if socket is valid
-   // TO DO DEBATE: Should this terminate if Close failed?
+   // TO DO: DEBATE: Should this terminate if Close failed?
 }
 
 void swap( CSimpleSocket& lhs, CSimpleSocket& rhs ) noexcept
@@ -129,10 +128,7 @@ bool CSimpleSocket::ObtainNewHandle()
 #endif
 
    m_timer.SetStartTime();
-
-   // TO DO : Zero may not work with SOCK_RAW
    m_socket = socket( m_nSocketDomain, m_nSocketType, 0 );   // Create the basic Socket Handle
-
    m_timer.SetEndTime();
 
    TranslateSocketError();
@@ -152,23 +148,19 @@ bool CSimpleSocket::BindInterface( const char* pInterface )
 
 bool CSimpleSocket::BindUnicastInterface( const char* pInterface )
 {
-   bool bRetVal = false;
-   sockaddr_in stInterfaceAddr{};
    // Set up the sockaddr structure
-   stInterfaceAddr.sin_family = static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain );
+   sockaddr_in stInterfaceAddr = { static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain ), 0 };
    if ( pInterface == nullptr || strlen( pInterface ) == 0 )
    {
-      // bind to all interfaces
-      stInterfaceAddr.sin_addr.s_addr = htonl( INADDR_ANY );
+      stInterfaceAddr.sin_addr.s_addr = htonl( INADDR_ANY );   // bind to all interfaces
    }
    else
    {
       inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.sin_addr.s_addr );
    }
-   stInterfaceAddr.sin_port = 0;
 
    // Bind the socket using the such that it only use a specified interface
-   bRetVal = ( BIND( m_socket, &stInterfaceAddr, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
+   const bool bRetVal = ( BIND( m_socket, &stInterfaceAddr, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
    TranslateSocketError();
 
    // If successful then get a local copy of the address
@@ -184,22 +176,19 @@ bool CSimpleSocket::BindUnicastInterface( const char* pInterface )
 
 bool CSimpleSocket::BindMulticastInterface( const char* pInterface )
 {
-   in_addr stInterfaceAddr{};
-   bool bRetVal = true;
-
-   // Set up the sockaddr structure
+   in_addr stInterfaceAddr{};   // Set up the sockaddr structure
    if ( pInterface == nullptr || strlen( pInterface ) == 0 )
    {
-      // bind to all interfaces
-      stInterfaceAddr.s_addr = htonl( INADDR_ANY );
+      stInterfaceAddr.s_addr = htonl( INADDR_ANY );   // bind to all interfaces
    }
    else
    {
       inet_pton( m_nSocketDomain, pInterface, &stInterfaceAddr.s_addr );
    }
 
-   bRetVal = ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_MULTICAST_IF, &stInterfaceAddr, sizeof( stInterfaceAddr ) ) ==
-               SocketSuccess );
+   const bool bRetVal =
+       ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_MULTICAST_IF, &stInterfaceAddr, sizeof( stInterfaceAddr ) ) ==
+         SocketSuccess );
    TranslateSocketError();
 
    // If successful then get a local copy of the address
@@ -259,10 +248,7 @@ bool CSimpleSocket::JoinMulticast( const char* pGroup, uint16_t nPort )
 
    if ( bRetVal )
    {
-      memset( &m_stMulticastGroup, 0, sizeof( m_stMulticastGroup ) );
-      m_stMulticastGroup.sin_family = AF_INET;
-      m_stMulticastGroup.sin_addr.s_addr = htonl( INADDR_ANY );
-      m_stMulticastGroup.sin_port = htons( nPort );
+      m_stMulticastGroup = { AF_INET, htons( nPort ), htonl( INADDR_ANY ) };
 
       // Bind to the specified port
       bRetVal = ( BIND( m_socket, &m_stMulticastGroup, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
