@@ -54,9 +54,6 @@ elseif(WIN32)
   endif()
 endif()
 
-# Setup source files
-include_directories(src)
-
 set(DATA_FILE docs/README.md)
 file(GLOB SIMPLE_SOCKET_HEADERS "src/*.h")
 file(GLOB SIMPLE_SOCKET_SOURCES "src/*.cpp")
