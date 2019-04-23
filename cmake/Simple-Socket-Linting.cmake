@@ -4,7 +4,7 @@ find_program(CLANG_TIDY_EXE
              DOC "Path to clang-tidy executable")
 
 if(CLANG_TIDY_EXE)
-  message(AUTHOR_WARNING "clang-tidy found: ${CLANG_TIDY_EXE}")
+  message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
   set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-p=${CMAKE_CURRENT_BINARY_DIR}")
   # set(CXX_CLANG_TIDY ${CMAKE_CXX_CLANG_TIDY} CACHE STRING "" FORCE)
 else()
@@ -16,7 +16,7 @@ endif()
 find_program(CPPCHECK_EXE NAMES "cppcheck" DOC "Path to cppcheck executable")
 
 if(CPPCHECK_EXE)
-  message(AUTHOR_WARNING "cppcheck found: ${CPPCHECK_EXE}")
+  message(STATUS "cppcheck found: ${CPPCHECK_EXE}")
   add_custom_target(
     cppcheck
     COMMAND "${CPPCHECK_EXE}" "-j4" "--enable=all" "--inconclusive"

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-project(Simple-Socket CXX)
+project(Simple-Socket)
 
 # CMake Settings
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -55,7 +55,7 @@ elseif(WIN32)
 endif()
 
 set(SIMPLE_SOCKET_DOCS "docs/README.md")
-set(SIMPLE_SOCKET_HEADERS "src/StatTimer.h" "src/Hosts.h" "src/SimpleSocket.h" "src/ActiveSocket.h" "src/PassiveSocket.h")
+set(SIMPLE_SOCKET_HEADERS "src/StatTimer.h" "src/Host.h" "src/SimpleSocket.h" "src/ActiveSocket.h" "src/PassiveSocket.h")
 set(SIMPLE_SOCKET_SOURCES "src/SimpleSocket.cpp" "src/ActiveSocket.cpp" "src/PassiveSocket.cpp")
 list(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS})
 
