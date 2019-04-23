@@ -55,8 +55,16 @@ elseif(WIN32)
 endif()
 
 set(SIMPLE_SOCKET_DOCS "docs/README.md")
-set(SIMPLE_SOCKET_HEADERS "src/StatTimer.h" "src/Host.h" "src/SimpleSocket.h" "src/ActiveSocket.h" "src/PassiveSocket.h")
-set(SIMPLE_SOCKET_SOURCES "src/SimpleSocket.cpp" "src/ActiveSocket.cpp" "src/PassiveSocket.cpp")
+set(SIMPLE_SOCKET_HEADERS
+    "${PROJECT_SOURCE_DIR}/src/StatTimer.h"
+    "${PROJECT_SOURCE_DIR}/src/Host.h"
+    "${PROJECT_SOURCE_DIR}/src/SimpleSocket.h"
+    "${PROJECT_SOURCE_DIR}/src/ActiveSocket.h"
+    "${PROJECT_SOURCE_DIR}/src/PassiveSocket.h")
+set(SIMPLE_SOCKET_SOURCES
+    "${PROJECT_SOURCE_DIR}/src/SimpleSocket.cpp"
+    "${PROJECT_SOURCE_DIR}/src/ActiveSocket.cpp"
+    "${PROJECT_SOURCE_DIR}/src/PassiveSocket.cpp")
 list(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS})
 
 # Project Options
@@ -71,7 +79,8 @@ option(SIMPLE_SOCKET_STRING_VIEW
 option(SIMPLE_SOCKET_EXAMPLES "Build the examples" ON)
 option(SIMPLE_SOCKET_TEST "Build the tester" OFF)
 option(SIMPLE_SOCKET_COVERAGE "Build the tester for code coverage" OFF)
-option(SIMPLE_SOCKET_LINT "Check each compilational unit against clang-tidy" OFF)
+option(SIMPLE_SOCKET_LINT "Check each compilational unit against clang-tidy"
+       OFF)
 mark_as_advanced(SIMPLE_SOCKET_TEST SIMPLE_SOCKET_COVERAGE SIMPLE_SOCKET_LINT)
 
 if(SIMPLE_SOCKET_LINT)
