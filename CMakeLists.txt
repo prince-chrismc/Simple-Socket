@@ -55,16 +55,8 @@ elseif(WIN32)
 endif()
 
 set(SIMPLE_SOCKET_DOCS "docs/README.md")
-set(SIMPLE_SOCKET_HEADERS
-    "${PROJECT_SOURCE_DIR}/src/StatTimer.h"
-    "${PROJECT_SOURCE_DIR}/src/Host.h"
-    "${PROJECT_SOURCE_DIR}/src/SimpleSocket.h"
-    "${PROJECT_SOURCE_DIR}/src/ActiveSocket.h"
-    "${PROJECT_SOURCE_DIR}/src/PassiveSocket.h")
-set(SIMPLE_SOCKET_SOURCES
-    "${PROJECT_SOURCE_DIR}/src/SimpleSocket.cpp"
-    "${PROJECT_SOURCE_DIR}/src/ActiveSocket.cpp"
-    "${PROJECT_SOURCE_DIR}/src/PassiveSocket.cpp")
+file(GLOB SIMPLE_SOCKET_HEADERS "src/*.h")
+file(GLOB SIMPLE_SOCKET_SOURCES "src/*.cpp")
 list(APPEND SIMPLE_SOCKET_SOURCES ${SIMPLE_SOCKET_HEADERS})
 
 # Project Options
