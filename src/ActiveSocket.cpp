@@ -94,8 +94,8 @@ bool CActiveSocket::PreConnect( const char* pAddr, uint16_t nPort )
    else
    {
       m_stServerSockaddr.sin_family = static_cast<decltype( m_stServerSockaddr.sin_family )>( m_nSocketDomain ),
+      m_stServerSockaddr.sin_addr = reinterpret_cast<sockaddr_in*>( pResult->ai_addr )->sin_addr;   // NOLINT
       m_stServerSockaddr.sin_port = htons( nPort ),
-      memcpy(&m_stServerSockaddr.sin_addr, pResult->ai_addr, pResult->ai_addrlen);
       freeaddrinfo( pResult );
       return true;
    }
