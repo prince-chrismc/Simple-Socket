@@ -154,6 +154,7 @@ bool CActiveSocket::ConnectDatagramSocket()
 //------------------------------------------------------------------------------
 bool CActiveSocket::Open( const char* pAddr, uint16_t nPort )
 {
+   const auto stCurrentServerInfo = m_stServerSockaddr;
    bool bRetVal = Validate( pAddr, nPort );
 
    // Preconnection setup that must be preformed
@@ -178,6 +179,10 @@ bool CActiveSocket::Open( const char* pAddr, uint16_t nPort )
 
       memset( &m_stClientSockaddr, 0, SOCKET_ADDR_IN_SIZE );
       GETSOCKNAME( m_socket, &m_stClientSockaddr, &nSockLen );
+   }
+   else
+   {
+      m_stServerSockaddr = stCurrentServerInfo;
    }
 
    return bRetVal;

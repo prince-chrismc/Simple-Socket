@@ -153,84 +153,261 @@ TEST_CASE( "Sockets can be bound certain interface", "[Bind]" )
    }
 }
 
-TEST_CASE( "Open socket for communication", "[Open][UDP]" )
+TEST_CASE( "Establish connection to remote host", "[Open][TCP][UDP]" )
 {
-   CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
-
-   CHECK( socket.GetServerAddr() == "0.0.0.0" );
-   CHECK( socket.GetServerPort() == 0 );
-
-   REQUIRE( socket.Open( "8.8.8.8", 53 ) );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-   CHECK( socket.GetServerAddr() == "8.8.8.8" );
-   CHECK( socket.GetServerPort() == 53 );
-}
-
-TEST_CASE( "Establish connection to remote host", "[Open][TCP]" )
-{
-   CActiveSocket socket;
-
-   CHECK( socket.GetServerAddr() == "0.0.0.0" );
-   CHECK( socket.GetServerPort() == 0 );
-
-   SECTION( "Bad Port" )
+   SECTION( "TCP" )
    {
-      CHECK_FALSE( socket.Open( "www.google.ca", 0 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidPort );
+      CActiveSocket socket;
+
+      REQUIRE( socket.IsSocketValid() );
+      CHECK( socket.GetServerAddr() == "0.0.0.0" );
+      CHECK( socket.GetServerPort() == 0 );
+
+      SECTION( "Bad Port" )
+      {
+         CHECK_FALSE( socket.Open( "www.google.ca", 0 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidPort );
+         CHECK( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 0 );
+      }
+
+      SECTION( "No Address" )
+      {
+         CHECK_FALSE( socket.Open( nullptr, 35345 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
+         CHECK( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 0 );
+      }
+
+      SECTION( "Bad Address" )
+      {
+         CHECK_FALSE( socket.Open( "132.354.134.546", 35345 ) );
+         auto errnoCapture = int{ errno };
+         CAPTURE( errnoCapture );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
+         CHECK( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 0 );
+      }
+
+      SECTION( "Unknow Host name" )
+      {
+         CHECK_FALSE( socket.Open( "xyz.allphebties.cool", 34867 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
+         CHECK( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 0 );
+      }
+
+      SECTION( "No Handle" )
+      {
+         CHECK( socket.Close() );
+         CHECK_FALSE( socket.IsSocketValid() );
+         CHECK_FALSE( socket.Open( "www.google.ca", 80 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+         CHECK( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 0 );
+      }
+
+      SECTION( "Connection Timeout" )
+      {
+         CHECK_FALSE( socket.Open( "www.google.ca", 34867 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
+         CHECK( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 0 );
+      }
+
+      SECTION( "Connection Refused" )
+      {
+         CHECK_FALSE( socket.Open( "127.0.0.1", 34867 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketConnectionRefused );
+         CHECK( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 0 );
+      }
+
+      SECTION( "No effect with invalid" )
+      {
+         CActiveSocket secondary = std::move( socket );
+         REQUIRE_FALSE( socket.IsSocketValid() );
+         CHECK_FALSE( socket.Open( "127.0.0.1", 34867 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+         CHECK( socket.GetServerAddr() == CSimpleSocket::DescribeError( CSimpleSocket::SocketInvalidSocket ) );
+         CHECK( socket.GetServerPort() == 0 );
+      }
+
+      SECTION( "To Google" )
+      {
+         REQUIRE( socket.Open( "www.google.ca", 80 ) );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+         CHECK_FALSE( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 80 );
+      }
+
+      SECTION( "Double Connect" )
+      {
+         REQUIRE( socket.Open( "www.google.ca", 80 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+
+         CHECK( socket.Receive( 17 ) == 17 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         std::string httpResponse = socket.GetData();
+
+         CAPTURE( httpResponse );
+
+         CHECK( httpResponse.length() > 0 );
+         CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
+
+         REQUIRE_FALSE( socket.Open( "github.com", 80 ) );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketAlreadyConnected );
+      }
    }
 
-   SECTION( "No Address" )
+   SECTION( "UDP" )
    {
-      CHECK_FALSE( socket.Open( nullptr, 35345 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
-   }
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
 
-   SECTION( "Bad Address" )
-   {
-      CHECK_FALSE( socket.Open( "132.354.134.546", 35345 ) );
-      auto errnoCapture = int{ errno };
-      CAPTURE( errnoCapture );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
-   }
+      REQUIRE( socket.IsSocketValid() );
+      CHECK( socket.GetServerAddr() == "0.0.0.0" );
+      CHECK( socket.GetServerPort() == 0 );
 
-   SECTION( "Unknow Host name" )
-   {
-      CHECK_FALSE( socket.Open( "xyz.allphebties.cool", 34867 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
-   }
+      SECTION( "Bad Port" )
+      {
+         CHECK_FALSE( socket.Open( "8.8.8.8", 0 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidPort );
+         CHECK( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 0 );
+      }
 
-   SECTION( "No Handle" )
-   {
-      CHECK( socket.Close() );
-      CHECK_FALSE( socket.IsSocketValid() );
-      CHECK_FALSE( socket.Open( "www.google.ca", 80 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
-   }
+      SECTION( "No Address" )
+      {
+         CHECK_FALSE( socket.Open( nullptr, 53 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
+         CHECK( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 0 );
+      }
 
-   SECTION( "Connection Timeout" )
-   {
-      CHECK_FALSE( socket.Open( "www.google.ca", 34867 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketTimedout );
-   }
+      SECTION( "Bad Address" )
+      {
+         CHECK_FALSE( socket.Open( "132.354.134.546", 53 ) );
+         auto errnoCapture = int{ errno };
+         CAPTURE( errnoCapture );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
+         CHECK( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 0 );
+      }
 
-   SECTION( "Connection Refused" )
-   {
-      CHECK_FALSE( socket.Open( "127.0.0.1", 34867 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketConnectionRefused );
-   }
+      SECTION( "Unknow Host name" )
+      {
+         CHECK_FALSE( socket.Open( "xyz.allphebties.cool", 34867 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidAddress );
+         CHECK( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 0 );
+      }
 
-   SECTION( "No effect with invalid" )
-   {
-      CActiveSocket secondary = std::move( socket );
-      CHECK_FALSE( socket.Open( "127.0.0.1", 34867 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
-   }
+      SECTION( "No Handle" )
+      {
+         CHECK( socket.Close() );
+         CHECK_FALSE( socket.IsSocketValid() );
+         CHECK_FALSE( socket.Open( "www.google.ca", 80 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+         CHECK( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 0 );
+      }
 
-   SECTION( "To Google" )
-   {
-      REQUIRE( socket.Open( "www.google.ca", 80 ) );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      SECTION( "Connection Random A" )
+      {
+         // in UDP there's no check if someone is on the other end
+         //so it should always work.
+         CHECK( socket.Open( "www.google.ca", 34867 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+         CHECK_FALSE( socket.GetServerAddr() == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 34867 );
+      }
+
+      SECTION( "Connection Random B" )
+      {
+         // in UDP there's no check if someone is on the other end
+         // so it should always work.
+         CHECK( socket.Open( "127.0.0.1", 34867 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+         CHECK( socket.GetServerAddr() == "127.0.0.1" );
+         CHECK( socket.GetServerPort() == 34867 );
+      }
+
+      SECTION( "No effect with invalid" )
+      {
+         CActiveSocket secondary = std::move( socket );
+         REQUIRE_FALSE( socket.IsSocketValid() );
+         CHECK_FALSE( socket.Open( "127.0.0.1", 34867 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+         CHECK( socket.GetServerAddr() == CSimpleSocket::DescribeError( CSimpleSocket::SocketInvalidSocket ) );
+         CHECK( socket.GetServerPort() == 0 );
+      }
+
+      SECTION( "To Google" )
+      {
+         REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.GetServerAddr() == "8.8.8.8" );
+         CHECK( socket.GetServerPort() == 53 );
+      }
+
+      SECTION( "Double Connect" )
+      {
+#ifndef _DARWIN
+         REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.GetServerAddr() == "8.8.8.8" );
+         REQUIRE( socket.GetServerPort() == 53 );
+
+         CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.Receive( 1024 ) == 45 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         const std::string googleDnsResponse = socket.GetData();
+         CAPTURE( googleDnsResponse );
+
+         CHECK( googleDnsResponse.length() == 45 );
+         CHECK_THAT( googleDnsResponse,
+                     Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
+                                        "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
+                                        "\x01\x00\x01\x00\x00"s ) );
+         CHECK_THAT( googleDnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
+
+         REQUIRE( socket.Open( "1.1.1.1", 53 ) );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.GetServerAddr() == "1.1.1.1" );
+         CHECK( socket.GetServerPort() == 53 );
+
+         CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.Receive( 1024 ) == 45 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         const std::string cloudfareDnsResponse = socket.GetData();
+         CAPTURE( cloudfareDnsResponse );
+
+         CHECK( cloudfareDnsResponse.length() == 45 );
+         REQUIRE_THAT( cloudfareDnsResponse,
+                       Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
+                                          "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
+                                          "\x01\x00\x01\x00\x00"s ) );
+         REQUIRE_THAT( cloudfareDnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
+
+         CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+         CHECK( socket.Close() );
+         CHECK_FALSE( socket.IsSocketValid() );
+
+         REQUIRE_FALSE( googleDnsResponse == cloudfareDnsResponse );
+#endif
+      }
    }
 }
 
@@ -1007,99 +1184,6 @@ TEST_CASE( "Sockets can echo", "[Listen][Open][Accept][TCP]" )
    CHECK_FALSE( server.IsSocketValid() );
 }
 
-TEST_CASE( "Sockets connect twice", "[Open]" )
-{
-   SECTION( "Stream sockets FAIL to connect again", "[TCP]" )
-   {
-      CActiveSocket socket;
-
-      REQUIRE( socket.Open( "www.google.ca", 80 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-      CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
-
-      CHECK( socket.Receive( 17 ) == 17 );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-      std::string httpResponse = socket.GetData();
-
-      CAPTURE( httpResponse );
-
-      CHECK( httpResponse.length() > 0 );
-      CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
-
-      REQUIRE_FALSE( socket.Open( "github.com", 80 ) );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketAlreadyConnected );
-
-      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
-      CHECK( socket.Close() );
-      CHECK_FALSE( socket.IsSocketValid() );
-   }
-}
-
-#ifndef _DARWIN
-TEST_CASE( "Sockets opening twice", "[Open]" )
-{
-   SECTION( "Datagram sockets ARE able to open", "[UDP]" )
-   {
-      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
-
-      CHECK( socket.GetServerAddr() == "0.0.0.0" );
-      CHECK( socket.GetServerPort() == 0 );
-
-      REQUIRE( socket.Open( "8.8.8.8", 53 ) );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-      REQUIRE( socket.GetServerAddr() == "8.8.8.8" );
-      REQUIRE( socket.GetServerPort() == 53 );
-
-      CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-      CHECK( socket.Receive( 1024 ) == 45 );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-      const std::string googleDnsResponse = socket.GetData();
-      CAPTURE( googleDnsResponse );
-
-      CHECK( googleDnsResponse.length() == 45 );
-      CHECK_THAT( googleDnsResponse,
-                  Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
-                                     "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
-                                     "\x01\x00\x01\x00\x00"s ) );
-      CHECK_THAT( googleDnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
-
-      REQUIRE( socket.Open( "1.1.1.1", 53 ) );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-      REQUIRE( socket.GetServerAddr() == "1.1.1.1" );
-      CHECK( socket.GetServerPort() == 53 );
-
-      CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-      CHECK( socket.Receive( 1024 ) == 45 );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-      const std::string cloudfareDnsResponse = socket.GetData();
-      CAPTURE( cloudfareDnsResponse );
-
-      CHECK( cloudfareDnsResponse.length() == 45 );
-      REQUIRE_THAT( cloudfareDnsResponse,
-                    Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
-                                       "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
-                                       "\x01\x00\x01\x00\x00"s ) );
-      REQUIRE_THAT( cloudfareDnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
-
-      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
-      CHECK( socket.Close() );
-      CHECK_FALSE( socket.IsSocketValid() );
-
-      REQUIRE_FALSE( googleDnsResponse == cloudfareDnsResponse );
-   }
-}
-#endif
-
 TEST_CASE( "Sockets can be NIC specific", "[Bind][TCP]" )
 {
    CActiveSocket socket;
@@ -1349,34 +1433,30 @@ TEST_CASE( "Sockets can linger", "[Linger]" )
    }
 }
 
-TEST_CASE( "Sockets can be flushed", "[Flush]" )
-{
-   SECTION( "TCP" )
-   {
-      CActiveSocket socket;
-      REQUIRE( socket.Open( "www.google.ca", 80 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+TEST_CASE( "Sockets can be flushed", "[Flush]" ){ SECTION( "TCP" ){ CActiveSocket socket;
+REQUIRE( socket.Open( "www.google.ca", 80 ) );
+CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-      CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-      REQUIRE( socket.Flush() );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-   }
+REQUIRE( socket.Flush() );
+CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+}
 
 #ifndef _DARWIN
-   SECTION( "UDP" )
-   {
-      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
-      REQUIRE( socket.Open( "8.8.8.8", 53 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+SECTION( "UDP" )
+{
+   CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+   REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-      CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-      REQUIRE_FALSE( socket.Flush() );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
-   }
+   REQUIRE_FALSE( socket.Flush() );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+}
 #endif
 }
 
