@@ -34,6 +34,7 @@ jobs:
     
   - os: linux
     dist: xenial
+    compiler: clang
     env:
     - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
     
