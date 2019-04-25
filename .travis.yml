@@ -33,17 +33,7 @@ jobs:
     - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
     
   - os: linux
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        - llvm-toolchain-trusty-7
-        packages:
-        - clang-7
-        - lldb-7
-        - lld-7
-        - libc++-7-dev
-        - libc++abi-7-dev
+    dist: xenial
     env:
     - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
     
@@ -138,14 +128,15 @@ jobs:
     - echo "TO DO"
 
   - stage: Legacy
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-5
-    env:
-    - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+    dist: trusty
+    script:
+    - mkdir build-travis
+    - cd build-travis
+    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF
+      -DSIMPLE_SOCKET_STRING_VIEW=OFF
+
+  - stage: Legacy
+    dist: xenial
     script:
     - mkdir build-travis
     - cd build-travis
