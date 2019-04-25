@@ -1379,3 +1379,56 @@ TEST_CASE( "Sockets can be flushed", "[Flush]" )
    }
 #endif
 }
+
+TEST_CASE( "Sockets can set nagle on/off", "[Nagle]" )
+{
+   SECTION( "TCP" )
+   {
+      CActiveSocket socket;
+      REQUIRE( socket.Open( "www.google.ca", 80 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      SECTION( "Disable" )
+      {
+         REQUIRE( socket.DisableNagleAlgoritm() );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "Disable" )
+      {
+         REQUIRE( socket.EnableNagleAlgoritm() );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.Flush() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+
+   SECTION( "UDP" )
+   {
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+      REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      SECTION( "Disable" )
+      {
+         REQUIRE_FALSE( socket.DisableNagleAlgoritm() );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+      }
+
+      SECTION( "Disable" )
+      {
+         REQUIRE_FALSE( socket.EnableNagleAlgoritm() );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+      }
+
+      CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE_FALSE( socket.Flush() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+   }
+}
