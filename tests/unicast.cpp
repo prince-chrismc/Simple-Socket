@@ -1188,19 +1188,12 @@ TEST_CASE( "Sockets can be NIC specific", "[Bind][TCP]" )
 {
    CActiveSocket socket;
 
-   SECTION( "Regular Bind before use" )
-   {
-      REQUIRE( socket.BindInterface( "127.0.0.1" ) );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-      REQUIRE( socket.GetClientAddr() == "127.0.0.1" );
-   }
+   REQUIRE( socket.BindInterface( "127.0.0.1" ) );
+   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   CHECK( socket.GetClientAddr() == "127.0.0.1" );
 
    SECTION( "Sockets communication while bound" )
    {
-      REQUIRE( socket.BindInterface( "127.0.0.1" ) );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
       CPassiveSocket server;
 
       REQUIRE( server.Listen( "127.0.0.1", 26148 ) );
@@ -1239,11 +1232,6 @@ TEST_CASE( "Sockets can be NIC specific", "[Bind][TCP]" )
 
    SECTION( "Cannot connet to outside network" )
    {
-      REQUIRE( socket.BindInterface( "127.0.0.1" ) );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-      CHECK( socket.GetClientAddr() == "127.0.0.1" );
-
       REQUIRE_FALSE( socket.Open( "www.google.ca", 80 ) );
 
       int socketError = errno;
