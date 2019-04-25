@@ -1,4 +1,3 @@
-dist: trusty
 language: cpp
 
 branches:
@@ -49,6 +48,18 @@ jobs:
     - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
     
   - os: linux
+    dist: trusty
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-7
+    env:
+    - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    
+  - os: linux
+    dist: xenial
     addons:
       apt:
         sources:
@@ -103,7 +114,29 @@ jobs:
     - gem install coveralls-lcov
     - coveralls-lcov coverage.info.cleaned
     - curl -X PURGE https://camo.githubusercontent.com/17f413e2bbe682cd351ce70ca2f36765393e99f5/68747470733a2f2f636f766572616c6c732e696f2f7265706f732f6769746875622f7072696e63652d63687269736d632f53696d706c652d536f636b65742f62616467652e7376673f6272616e63683d6d6173746572
-    
+
+  - stage: Lint
+    addons:
+      apt:
+        sources:
+        - llvm-toolchain-trusty-8
+        packages:
+        - clang-8
+        - clang-tidy-8
+        - lldb-8
+        - lld-8
+        - libc++-8-dev
+        - libc++abi-8-dev
+    script:
+    - pip install cmake-format
+    - cmake-format CMakeLists.txt
+    - mkdir build-travis
+    - cd build-travis
+    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=Debug
+      -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_COVERAGE=OFF -DSIMPLE_SOCKET_TEST=ON -DSIMPLE_SOCKET_LINT=ON
+    after_success:
+    - echo "TO DO"
+
   - stage: Legacy
     addons:
       apt:
@@ -137,7 +170,7 @@ jobs:
     - cd build-travis
     - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DUSE_LIBCXX=ON -DSIMPLE_SOCKET_EXAMPLES=OFF
       -DSIMPLE_SOCKET_STRING_VIEW=OFF
-      
+
   - stage: Legacy
     os: osx
     osx_image: xcode7.3
