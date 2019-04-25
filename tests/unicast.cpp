@@ -318,7 +318,7 @@ TEST_CASE( "Establish connection to remote host", "[Open][TCP][UDP]" )
       SECTION( "Connection Random A" )
       {
          // in UDP there's no check if someone is on the other end
-         //so it should always work.
+         // so it should always work.
          CHECK( socket.Open( "www.google.ca", 34867 ) );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
          CHECK_FALSE( socket.GetServerAddr() == "0.0.0.0" );
@@ -1246,12 +1246,14 @@ TEST_CASE( "Sockets can be NIC specific", "[Bind][TCP]" )
 
       REQUIRE_FALSE( socket.Open( "www.google.ca", 80 ) );
 
-#ifdef _DARWIN
       int socketError = errno;
       CAPTURE( socketError );
+
+#ifdef _DARWIN
       REQUIRE_FALSE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-#endif
+#else
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidOperation );
+#endif
    }
 }
 
@@ -1433,31 +1435,35 @@ TEST_CASE( "Sockets can linger", "[Linger]" )
    }
 }
 
-TEST_CASE( "Sockets can be flushed", "[Flush]" ){ SECTION( "TCP" ){ CActiveSocket socket;
-REQUIRE( socket.Open( "www.google.ca", 80 ) );
-CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+TEST_CASE( "Sockets can be flushed", "[Flush]" )
+{
+   SECTION( "TCP" )
+   {
+      CActiveSocket socket;
+      REQUIRE( socket.Open( "www.google.ca", 80 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
-CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-REQUIRE( socket.Flush() );
-CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-}
+      REQUIRE( socket.Flush() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+
+   SECTION( "UDP" )
+   {
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+      REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
 #ifndef _DARWIN
-SECTION( "UDP" )
-{
-   CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
-   REQUIRE( socket.Open( "8.8.8.8", 53 ) );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-   CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-   REQUIRE_FALSE( socket.Flush() );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
-}
+      CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 #endif
+
+      REQUIRE_FALSE( socket.Flush() );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+   }
 }
 
 TEST_CASE( "Sockets can set nagle on/off", "[Nagle]" )
