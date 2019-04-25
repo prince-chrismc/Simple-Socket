@@ -1269,7 +1269,7 @@ TEST_CASE( "Sockets clear buffer on Rx fail", "[Listen][Open][Accept][TCP]" )
 
 TEST_CASE( "Sockets can linger", "[Linger]" )
 {
-   auto time = GENERATE( range( 5, 100, 15 ) );
+   auto time = GENERATE( range<uint16_t>( 5, 100, 15 ) );
    SECTION( "TCP" )
    {
       CActiveSocket socket;
