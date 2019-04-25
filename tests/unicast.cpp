@@ -1425,8 +1425,10 @@ TEST_CASE( "Sockets can set nagle on/off", "[Nagle]" )
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
       }
 
+#ifndef _DARWIN
       CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+#endif
 
       REQUIRE_FALSE( socket.Flush() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
