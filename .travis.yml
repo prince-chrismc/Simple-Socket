@@ -38,8 +38,6 @@ jobs:
     env:
     - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
     script:
-    - which clang
-    - whereis clang++
     - clang++ --version
     - ls -la /usr/bin | grep clang
     - sudo apt-get install clang++
