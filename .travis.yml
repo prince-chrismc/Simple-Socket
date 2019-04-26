@@ -21,6 +21,7 @@ jobs:
     addons:
       apt:
         sources:
+        - ubuntu-toolchain-r-test
         - llvm-toolchain-trusty-8
         packages:
         - clang-8
@@ -115,6 +116,7 @@ jobs:
     addons:
       apt:
         sources:
+        - ubuntu-toolchain-r-test
         - llvm-toolchain-trusty-8
         packages:
         - clang-8
