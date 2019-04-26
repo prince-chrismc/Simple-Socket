@@ -35,11 +35,6 @@ jobs:
   - os: linux
     dist: xenial
     compiler: clang
-    addons:
-      apt:
-        packages:
-        - which
-        - whereis
     env:
     - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
     script:
