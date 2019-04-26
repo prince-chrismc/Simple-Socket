@@ -34,13 +34,8 @@ jobs:
     
   - os: linux
     dist: xenial
-    compiler: clang
     env:
-    - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-    script:
-    - clang++ --version
-    - ls -la /usr/bin | grep clang
-    - sudo apt-get install clang++
+    - MATRIX_EVAL="CC=clang && CXX=clang++"
     
   - os: linux
     dist: trusty
