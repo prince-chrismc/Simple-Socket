@@ -21,7 +21,6 @@ jobs:
     addons:
       apt:
         sources:
-        - ubuntu-toolchain-r-test
         - llvm-toolchain-trusty-8
         packages:
         - clang-8
@@ -34,6 +33,13 @@ jobs:
     
   - os: linux
     dist: xenial
+    addons:
+      apt:
+        sources:
+        - llvm-toolchain-trusty-7
+        packages:
+        - libc++-7-dev
+        - libc++abi-7-dev
     env:
     - MATRIX_EVAL="CC=clang && CXX=clang++"
     
