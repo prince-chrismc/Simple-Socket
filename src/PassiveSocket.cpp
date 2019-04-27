@@ -43,8 +43,6 @@
 
 #include "PassiveSocket.h"
 
-#include <memory>
-
 #ifdef _WIN32
 #include <Ws2tcpip.h>
 #elif defined( _LINUX ) || defined( _DARWIN )
