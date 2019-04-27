@@ -25,8 +25,6 @@ jobs:
         - llvm-toolchain-trusty-8
         packages:
         - clang-8
-        - lldb-8
-        - lld-8
         - libc++-8-dev
         - libc++abi-8-dev
     env:
@@ -119,14 +117,13 @@ jobs:
         - ubuntu-toolchain-r-test
         - llvm-toolchain-trusty-8
         packages:
+        - cppcheck
         - clang-8
         - clang-tidy-8
-        - lldb-8
-        - lld-8
         - libc++-8-dev
         - libc++abi-8-dev
     script:
-    - pip install cmake-format
+    - sudo pip install cmake-format
     - cmake-format CMakeLists.txt
     - mkdir build-travis
     - cd build-travis
