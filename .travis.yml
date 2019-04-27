@@ -111,6 +111,7 @@ jobs:
     - curl -X PURGE https://camo.githubusercontent.com/17f413e2bbe682cd351ce70ca2f36765393e99f5/68747470733a2f2f636f766572616c6c732e696f2f7265706f732f6769746875622f7072696e63652d63687269736d632f53696d706c652d536f636b65742f62616467652e7376673f6272616e63683d6d6173746572
 
   - stage: Lint
+    dist: xenial
     addons:
       apt:
         sources:
@@ -132,17 +133,15 @@ jobs:
     - cmake-format CMakeLists.txt > CMakeLists.txt.format
     - mv CMakeLists.txt CMakeLists.txt.old
     - mv CMakeLists.txt.format CMakeLists.txt
-    - git diff
     - git commit -a -m "cmake-formatted by ci"
-    - git remote add origin-ci https://${GH_TOKEN}@github.com/prince-chrismc/Simple-Socket.git
-    - git push --set-upstream origin-ci
     - mkdir build-travis
     - cd build-travis
     - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_LINT=ON
     - make
-    - make cppcheck
+    - make cppcheck # incorrect version gets installed
     after_success:
-    - echo "TO DO"
+    - git remote add origin-ci https://${GH_TOKEN}@github.com/prince-chrismc/Simple-Socket.git
+    - git push --set-upstream origin-ci
 
   - stage: Legacy
     dist: trusty
