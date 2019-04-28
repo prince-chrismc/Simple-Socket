@@ -254,10 +254,6 @@ TEST_CASE( "Establish connection to remote host", "[Open][TCP][UDP]" )
          CHECK( socket.GetServerAddr() == googlesAddres );
          CHECK( socket.GetServerPort() == 80 );
       }
-
-      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
-      CHECK( socket.Close() );
-      CHECK_FALSE( socket.IsSocketValid() );
    }
 
    SECTION( "UDP" )
@@ -365,10 +361,6 @@ TEST_CASE( "Establish connection to remote host", "[Open][TCP][UDP]" )
          REQUIRE( socket.GetServerAddr() == "1.1.1.1" );
          CHECK( socket.GetServerPort() == 53 );
       }
-
-      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
-      CHECK( socket.Close() );
-      CHECK_FALSE( socket.IsSocketValid() );
    }
 }
 
@@ -377,7 +369,6 @@ TEST_CASE( "Sockets can send", "[Send][TCP][UDP]" )
    SECTION( "TCP" )
    {
       CActiveSocket socket;
-
       CHECK( socket.Open( "www.google.ca", 80 ) );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
@@ -433,9 +424,6 @@ TEST_CASE( "Sockets can send", "[Send][TCP][UDP]" )
 
       SECTION( "Multiple servers Connect" )
       {
-         REQUIRE( socket.Open( "www.google.ca", 80 ) );
-         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
          CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
 
          CHECK( socket.Receive( 17 ) == 17 );
@@ -563,101 +551,143 @@ TEST_CASE( "Sockets can send", "[Send][TCP][UDP]" )
 #endif
 }
 
-#ifndef _DARWIN
-TEST_CASE( "Sockets can read", "[Receive][UDP]" )
+TEST_CASE( "Sockets can receive", "[Receive][TCP][UDP]" )
 {
-   CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+#ifndef _DARWIN
+   SECTION( "UDP" )
+   {
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
 
-   CHECK( socket.Open( "8.8.8.8", 53 ) );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Receive( 1024 ) == 45 );
-   REQUIRE( socket.GetBytesReceived() == 45 );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.GetBytesReceived() == CSimpleSocket::SocketError );
 
-   const std::string dnsResponse = socket.GetData();
+      SECTION( "No Handle" )
+      {
+         CHECK( socket.Close() );
+         CHECK_FALSE( socket.IsSocketValid() );
+         CHECK( socket.Receive( 2048 ) == CSimpleSocket::SocketError );
+         CHECK( socket.GetBytesReceived() == CSimpleSocket::SocketError );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      }
 
-   REQUIRE( dnsResponse.length() == 45 );
-   REQUIRE_THAT( dnsResponse,
-                 Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
-                                    "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
-                                    "\x01\x00\x01\x00\x00"s ) );
-   REQUIRE_THAT( dnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
-}
+      SECTION( "Nothing ???" )
+      {
+         CHECK( socket.Receive( 0 ) == 0 );
+         CHECK( socket.GetBytesReceived() == 0 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "Using interal buffer" )
+      {
+         CHECK( socket.Receive( 1024 ) == 45 );
+         CHECK( socket.GetBytesReceived() == 45 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         const std::string dnsResponse = socket.GetData();
+
+         CHECK( dnsResponse.length() == 45 );
+         CHECK_THAT( dnsResponse,
+                     Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
+                                        "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
+                                        "\x01\x00\x01\x00\x00"s ) );
+         CHECK_THAT( dnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
+      }
+
+      SECTION( "Using external buffer" )
+      {
+         uint8_t buffer[ 1024 ];
+         CHECK( socket.Receive( 1024, buffer ) == 45 );
+         CHECK( socket.GetBytesReceived() == 45 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         const std::string dnsResponse( reinterpret_cast<const char*>( buffer ), socket.GetBytesReceived() );
+
+         CHECK( dnsResponse.length() == 45 );
+         CHECK_THAT( dnsResponse,
+                     Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
+                                        "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
+                                        "\x01\x00\x01\x00\x00"s ) );
+         CHECK_THAT( dnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
+      }
+   }
 #endif
 
-TEST_CASE( "Sockets can receive", "[Receive][TCP]" )
-{
-   CActiveSocket socket;
-
-   CHECK( socket.Open( "www.google.ca", 80 ) );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-   CHECK( socket.GetBytesReceived() == CSimpleSocket::SocketError );
-
-   SECTION( "No Handle" )
+   SECTION( "[TCP]" )
    {
-      CHECK( socket.Close() );
-      CHECK_FALSE( socket.IsSocketValid() );
-      CHECK( socket.Receive( 2048 ) == CSimpleSocket::SocketError );
+      CActiveSocket socket;
+
+      REQUIRE( socket.Open( "www.google.ca", 80 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
       CHECK( socket.GetBytesReceived() == CSimpleSocket::SocketError );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
-   }
 
-   SECTION( "Nothing ???" )
-   {
-      CHECK( socket.Receive( 0 ) == 0 );
-      CHECK( socket.GetBytesReceived() == 0 );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-   }
+      SECTION( "No Handle" )
+      {
+         CHECK( socket.Close() );
+         CHECK_FALSE( socket.IsSocketValid() );
+         CHECK( socket.Receive( 2048 ) == CSimpleSocket::SocketError );
+         CHECK( socket.GetBytesReceived() == CSimpleSocket::SocketError );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      }
 
-   SECTION( "Using interal buffer" )
-   {
-      REQUIRE( socket.Receive( 1368 ) == 1368 );
-      REQUIRE( socket.GetBytesReceived() == 1368 );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      SECTION( "Nothing ???" )
+      {
+         CHECK( socket.Receive( 0 ) == 0 );
+         CHECK( socket.GetBytesReceived() == 0 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
 
-      const std::string httpResponse = socket.GetData();
+      SECTION( "Using interal buffer" )
+      {
+         CHECK( socket.Receive( 1368 ) == 1368 );
+         CHECK( socket.GetBytesReceived() == 1368 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-      REQUIRE( httpResponse.length() > 0 );
-      REQUIRE_THAT( httpResponse,
-                    Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) );
-   }
+         const std::string httpResponse = socket.GetData();
 
-   SECTION( "Using external buffer" )
-   {
-      uint8_t buffer[ 1368 ];
-      REQUIRE( socket.Receive( 1368, buffer ) == 1368 );
-      REQUIRE( socket.GetBytesReceived() == 1368 );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+         CHECK( httpResponse.length() > 0 );
+         CHECK_THAT( httpResponse,
+                     Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) );
+      }
 
-      const std::string httpResponse( reinterpret_cast<const char*>( buffer ), socket.GetBytesReceived() );
+      SECTION( "Using external buffer" )
+      {
+         uint8_t buffer[ 1368 ];
+         CHECK( socket.Receive( 1368, buffer ) == 1368 );
+         CHECK( socket.GetBytesReceived() == 1368 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-      REQUIRE( httpResponse.length() > 0 );
-      REQUIRE_THAT( httpResponse,
-                    Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) );
-   }
+         const std::string httpResponse( reinterpret_cast<const char*>( buffer ), socket.GetBytesReceived() );
 
-   SECTION( "external buffer is too small" )
-   {
-      // sadly this test is not valid https://github.com/catchorg/Catch2/issues/553
-      // uint8_t buffer[ 512 ];
-      // CHECK( socket.Receive( 1024, buffer ) == CSimpleSocket::SocketError );
-      // CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidPointer );
+         CHECK( httpResponse.length() > 0 );
+         CHECK_THAT( httpResponse,
+                     Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) );
+      }
+
+      SECTION( "external buffer is too small" )
+      {
+         // sadly this test is not valid https://github.com/catchorg/Catch2/issues/553
+         // uint8_t buffer[ 512 ];
+         // CHECK( socket.Receive( 1024, buffer ) == CSimpleSocket::SocketError );
+         // CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidPointer );
+      }
    }
 }
 
+// Kept seperate since it can fail depending on network conditions
 TEST_CASE( "Receive a huge message", "[!mayfail][TCP]" )
 {
    CActiveSocket socket;
 
-   CHECK( socket.Open( "www.google.ca", 80 ) );
+   REQUIRE( socket.Open( "www.google.ca", 80 ) );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
@@ -667,7 +697,7 @@ TEST_CASE( "Receive a huge message", "[!mayfail][TCP]" )
 
    // Testing with values above 1368 is risky because the
    // internet might fragment packets and fail the test
-   REQUIRE( socket.Receive( 8420 ) > 1024 );
+   CHECK( socket.Receive( 8420 ) > 1024 );
 
    // This list of values are ones I've seen and make sence based on the OS
    // And network enviroment... DISCLAIMER: It's very subjective!
@@ -679,13 +709,13 @@ TEST_CASE( "Receive a huge message", "[!mayfail][TCP]" )
    };
    CHECK_THAT( accpetedValues, Catch::VectorContains( socket.GetBytesReceived() ) );
 
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    const std::string httpResponse = socket.GetData();
 
-   REQUIRE( httpResponse.length() > 0 );
-   REQUIRE_THAT( httpResponse,
-                 Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) );
+   CHECK( httpResponse.length() > 0 );
+   CHECK_THAT( httpResponse,
+               Catch::StartsWith( "HTTP/1.0 200 OK\r\n" ) && Catch::Contains( "\r\n\r\n<!doctype html>" ) );
 }
 
 TEST_CASE( "Sockets have remotes information", "[!mayfail][TCP]" )
@@ -696,7 +726,9 @@ TEST_CASE( "Sockets have remotes information", "[!mayfail][TCP]" )
    CHECK( socket.GetServerPort() == 0 );
 
    REQUIRE( socket.Open( "www.google.ca", 80 ) );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+   REQUIRE( socket.GetServerPort() == 80 );
 
    SECTION( "Socket.GetServerAddr" )
    {
@@ -718,17 +750,15 @@ TEST_CASE( "Sockets have remotes information", "[!mayfail][TCP]" )
 
       // This may fail because the DNS lookup intentionally does bandwidth throttling
       // and returns different adress
-      REQUIRE( googlesAddr == socket.GetServerAddr() );
+      CHECK( googlesAddr == socket.GetServerAddr() );
    }
-
-   SECTION( "Socket.GetServerPort" ) { REQUIRE( socket.GetServerPort() == 80 ); }
 }
 
 TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
 {
    CActiveSocket socket;
 
-   CHECK( socket.Open( "www.google.ca", 80 ) );
+   REQUIRE( socket.Open( "www.google.ca", 80 ) );
    CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
    REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
@@ -1564,5 +1594,29 @@ TEST_CASE( "Sockets can set nagle on/off", "[Nagle]" )
 
       REQUIRE_FALSE( socket.Flush() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+   }
+}
+
+TEST_CASE( "Sockets can be shutdown", "[!mayfail][TCP][UDP]" )
+{
+   SECTION( "TCP" )
+   {
+      CActiveSocket socket;
+      REQUIRE( socket.Open( "www.google.ca", 80 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+      CHECK( socket.Close() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK_FALSE( socket.IsSocketValid() );
+   }
+   SECTION( "UDP" )
+   {
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+      REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+      CHECK( socket.Close() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK_FALSE( socket.IsSocketValid() );
    }
 }

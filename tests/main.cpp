@@ -221,3 +221,9 @@ TEST_CASE( "socket constructors", "[Initialization][TCP][UDP]" )
       }
    }
 }
+
+TEST_CASE( "Socket not copyable" ) {}
+
+TEST_CASE( "Sockets are moveable" ) {}
+
+TEST_CASE( "Sockets dont leak" ) {}
