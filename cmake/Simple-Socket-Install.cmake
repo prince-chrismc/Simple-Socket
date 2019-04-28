@@ -1,5 +1,5 @@
 include(CMakePackageConfigHelpers)
-set(INCLUDE_INSTALL_DIR include/)
+set(INCLUDE_INSTALL_DIR include/Simple-Socket)
 set(LIBRARY_INSTALL_DIR lib/)
 configure_package_config_file(
   ${PROJECT_SOURCE_DIR}/cmake/Simple-Socket-Config.cmake.in
@@ -15,7 +15,7 @@ write_basic_package_version_file(
   COMPATIBILITY SameMajorVersion)
 
 install(TARGETS Simple-Socket RUNTIME DESTINATION bin ARCHIVE DESTINATION lib)
-install(FILES ${SIMPLE_SOCKET_HEADERS} DESTINATION include)
+install(FILES ${SIMPLE_SOCKET_HEADERS} DESTINATION include/Simple-Socket)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Simple-SocketConfig.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/Simple-SocketConfigVersion.cmake
         DESTINATION cmake)

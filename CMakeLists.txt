@@ -79,7 +79,7 @@ if(SIMPLE_SOCKET_LINT)
   include(Simple-Socket-Linting)
 endif()
 
-# Build the lib and install into configured prefix
+# Define the library
 add_library(Simple-Socket ${SIMPLE_SOCKET_SOURCES} ${SIMPLE_SOCKET_DOCS})
 target_compile_features(Simple-Socket INTERFACE cxx_std_11)
 target_compile_options(Simple-Socket INTERFACE ${WARNING_FLAGS})
