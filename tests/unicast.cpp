@@ -226,7 +226,7 @@ TEST_CASE( "Establish connection to remote host", "[Open][TCP][UDP]" )
       SECTION( "No effect with invalid" )
       {
          CActiveSocket secondary = std::move( socket );
-         REQUIRE_FALSE( socket.IsSocketValid() );
+         REQUIRE_FALSE( socket.IsSocketValid() );   // NOLINT
          CHECK_FALSE( socket.Open( "127.0.0.1", 34867 ) );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
          CHECK( socket.GetServerAddr() == CSimpleSocket::DescribeError( CSimpleSocket::SocketInvalidSocket ) );
@@ -245,22 +245,19 @@ TEST_CASE( "Establish connection to remote host", "[Open][TCP][UDP]" )
       {
          REQUIRE( socket.Open( "www.google.ca", 80 ) );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-         CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
-
-         CHECK( socket.Receive( 17 ) == 17 );
-         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-         std::string httpResponse = socket.GetData();
-
-         CAPTURE( httpResponse );
-
-         CHECK( httpResponse.length() > 0 );
-         CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
+         std::string googlesAddres = socket.GetServerAddr();
+         CHECK_FALSE( googlesAddres == "0.0.0.0" );
+         CHECK( socket.GetServerPort() == 80 );
 
          REQUIRE_FALSE( socket.Open( "github.com", 80 ) );
          REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketAlreadyConnected );
+         CHECK( socket.GetServerAddr() == googlesAddres );
+         CHECK( socket.GetServerPort() == 80 );
       }
+
+      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+      CHECK( socket.Close() );
+      CHECK_FALSE( socket.IsSocketValid() );
    }
 
    SECTION( "UDP" )
@@ -354,9 +351,168 @@ TEST_CASE( "Establish connection to remote host", "[Open][TCP][UDP]" )
          CHECK( socket.GetServerPort() == 53 );
       }
 
+      SECTION( "Double Open" )
+      {
+         REQUIRE( socket.Open( "8.8.8.8", 53 ) );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.GetServerAddr() == "8.8.8.8" );
+         REQUIRE( socket.GetServerPort() == 53 );
+
+         REQUIRE( socket.Open( "1.1.1.1", 53 ) );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.GetServerAddr() == "1.1.1.1" );
+         CHECK( socket.GetServerPort() == 53 );
+      }
+
+      CHECK( socket.Shutdown( CSimpleSocket::Both ) );
+      CHECK( socket.Close() );
+      CHECK_FALSE( socket.IsSocketValid() );
+   }
+}
+
+TEST_CASE( "Sockets can send", "[Send][TCP][UDP]" )
+{
+   SECTION( "TCP" )
+   {
+      CActiveSocket socket;
+
+      CHECK( socket.Open( "www.google.ca", 80 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      SECTION( "Plain send" )
+      {
+         REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+         REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "Send from invalid socket" )
+      {
+         CActiveSocket secondary = std::move( socket );
+
+         REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == CSimpleSocket::SocketError );   // NOLINT
+         REQUIRE( socket.GetBytesSent() == CSimpleSocket::SocketError );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      }
+
+      SECTION( "Send 2.5s timeout" )
+      {
+         REQUIRE( socket.SetSendTimeout( 2, 500 ) );
+
+         REQUIRE( socket.GetSendTimeoutSec() == 2 );
+         REQUIRE( socket.GetSendTimeoutUSec() == 500 );
+
+         REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+
+         CAPTURE( "Send (ms)", socket.GetTotalTimeMs(), "Send (us)", socket.GetTotalTimeUsec() );
+         CHECK( socket.GetTotalTimeMs() == 0 );
+         CHECK_FALSE( socket.GetTotalTimeUsec() == 0 );
+
+         REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "Send 0.1s timeout" )
+      {
+         REQUIRE( socket.SetSendTimeout( 0, 100 ) );
+
+         REQUIRE( socket.GetSendTimeoutSec() == 0 );
+         REQUIRE( socket.GetSendTimeoutUSec() == 100 );
+
+         REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+
+         CAPTURE( "Send (ms)", socket.GetTotalTimeMs(), "Send (us)", socket.GetTotalTimeUsec() );
+         CHECK( socket.GetTotalTimeMs() == 0 );
+         CHECK_FALSE( socket.GetTotalTimeUsec() == 0 );
+
+         REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "Multiple servers Connect" )
+      {
+         REQUIRE( socket.Open( "www.google.ca", 80 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+
+         CHECK( socket.Receive( 17 ) == 17 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         std::string httpResponse = socket.GetData();
+
+         CAPTURE( httpResponse );
+
+         CHECK( httpResponse.length() > 0 );
+         CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
+
+         REQUIRE_FALSE( socket.Open( "github.com", 80 ) );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketAlreadyConnected );
+      }
+   }
+
+#ifndef _DARWIN
+   SECTION( "UDP" )
+   {
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+
+      CHECK( socket.Open( "8.8.8.8", 53 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+      SECTION( "plain Send" )
+      {
+         REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+         REQUIRE( socket.GetBytesSent() == DNS_QUERY_LENGTH );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "Send from invalid socket" )
+      {
+         CActiveSocket secondary = std::move( socket );
+
+         REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == CSimpleSocket::SocketError );   // NOLINT
+         REQUIRE( socket.GetBytesSent() == CSimpleSocket::SocketError );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      }
+
+      SECTION( "Send 2.5s timeout" )
+      {
+         REQUIRE( socket.SetSendTimeout( 2, 500 ) );
+
+         REQUIRE( socket.GetSendTimeoutSec() == 2 );
+         REQUIRE( socket.GetSendTimeoutUSec() == 500 );
+
+         REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+
+         CAPTURE( "Send (ms)", socket.GetTotalTimeMs(), "Send (us)", socket.GetTotalTimeUsec() );
+         CHECK( socket.GetTotalTimeMs() == 0 );
+         CHECK_FALSE( socket.GetTotalTimeUsec() == 0 );
+
+         REQUIRE( socket.GetBytesSent() == DNS_QUERY_LENGTH );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "Send 0.1s timeout" )
+      {
+         REQUIRE( socket.SetSendTimeout( 0, 100 ) );
+
+         REQUIRE( socket.GetSendTimeoutSec() == 0 );
+         REQUIRE( socket.GetSendTimeoutUSec() == 100 );
+
+         REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+
+         CAPTURE( "Send (ms)", socket.GetTotalTimeMs(), "Send (us)", socket.GetTotalTimeUsec() );
+         CHECK( socket.GetTotalTimeMs() == 0 );
+         CHECK_FALSE( socket.GetTotalTimeUsec() == 0 );
+
+         REQUIRE( socket.GetBytesSent() == DNS_QUERY_LENGTH );
+         REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
       SECTION( "Double Connect" )
       {
-#ifndef _DARWIN
          REQUIRE( socket.Open( "8.8.8.8", 53 ) );
          REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
@@ -401,128 +557,10 @@ TEST_CASE( "Establish connection to remote host", "[Open][TCP][UDP]" )
                                           "\x01\x00\x01\x00\x00"s ) );
          REQUIRE_THAT( cloudfareDnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
 
-         CHECK( socket.Shutdown( CSimpleSocket::Both ) );
-         CHECK( socket.Close() );
-         CHECK_FALSE( socket.IsSocketValid() );
-
          REQUIRE_FALSE( googleDnsResponse == cloudfareDnsResponse );
-#endif
       }
    }
-}
-
-#ifndef _DARWIN
-TEST_CASE( "Sockets can send", "[Send][UDP]" )
-{
-   CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
-
-   CHECK( socket.Open( "8.8.8.8", 53 ) );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-   SECTION( "plain Send" )
-   {
-      REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
-      REQUIRE( socket.GetBytesSent() == DNS_QUERY_LENGTH );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-   }
-
-   SECTION( "Send from invalid socket" )
-   {
-      CActiveSocket secondary = std::move( socket );
-
-      REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == CSimpleSocket::SocketError );
-      REQUIRE( socket.GetBytesSent() == CSimpleSocket::SocketError );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
-   }
-
-   SECTION( "Send 2.5s timeout" )
-   {
-      REQUIRE( socket.SetSendTimeout( 2, 500 ) );
-
-      REQUIRE( socket.GetSendTimeoutSec() == 2 );
-      REQUIRE( socket.GetSendTimeoutUSec() == 500 );
-
-      REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
-
-      CAPTURE( "Send (ms)", socket.GetTotalTimeMs(), "Send (us)", socket.GetTotalTimeUsec() );
-      CHECK( socket.GetTotalTimeMs() == 0 );
-
-      REQUIRE( socket.GetBytesSent() == DNS_QUERY_LENGTH );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-   }
-
-   SECTION( "Send 0.1s timeout" )
-   {
-      REQUIRE( socket.SetSendTimeout( 0, 100 ) );
-
-      REQUIRE( socket.GetSendTimeoutSec() == 0 );
-      REQUIRE( socket.GetSendTimeoutUSec() == 100 );
-
-      REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
-
-      CAPTURE( "Send (ms)", socket.GetTotalTimeMs(), "Send (us)", socket.GetTotalTimeUsec() );
-      CHECK( socket.GetTotalTimeMs() == 0 );
-
-      REQUIRE( socket.GetBytesSent() == DNS_QUERY_LENGTH );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-   }
-}
 #endif
-
-TEST_CASE( "Sockets can transfer", "[Send][TCP]" )
-{
-   CActiveSocket socket;
-
-   CHECK( socket.Open( "www.google.ca", 80 ) );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-   SECTION( "Plain send" )
-   {
-      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
-      REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-   }
-
-   SECTION( "Send from invalid socket" )
-   {
-      CActiveSocket secondary = std::move( socket );
-
-      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == CSimpleSocket::SocketError );
-      REQUIRE( socket.GetBytesSent() == CSimpleSocket::SocketError );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
-   }
-
-   SECTION( "Send 2.5s timeout" )
-   {
-      REQUIRE( socket.SetSendTimeout( 2, 500 ) );
-
-      REQUIRE( socket.GetSendTimeoutSec() == 2 );
-      REQUIRE( socket.GetSendTimeoutUSec() == 500 );
-
-      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
-
-      CAPTURE( "Send (ms)", socket.GetTotalTimeMs(), "Send (us)", socket.GetTotalTimeUsec() );
-      CHECK( socket.GetTotalTimeMs() == 0 );
-
-      REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-   }
-
-   SECTION( "Send 0.1s timeout" )
-   {
-      REQUIRE( socket.SetSendTimeout( 0, 100 ) );
-
-      REQUIRE( socket.GetSendTimeoutSec() == 0 );
-      REQUIRE( socket.GetSendTimeoutUSec() == 100 );
-
-      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
-
-      CAPTURE( "Send (ms)", socket.GetTotalTimeMs(), "Send (us)", socket.GetTotalTimeUsec() );
-      CHECK( socket.GetTotalTimeMs() == 0 );
-
-      REQUIRE( socket.GetBytesSent() == HTTP_GET_ROOT_REQUEST.length() );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-   }
 }
 
 #ifndef _DARWIN
