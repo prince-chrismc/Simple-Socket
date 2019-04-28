@@ -1343,7 +1343,7 @@ TEST_CASE( "Sockets clear buffer on Rx fail", "[Listen][Open][Accept][TCP]" )
 
 TEST_CASE( "Sockets can linger", "[Linger]" )
 {
-   auto time = GENERATE( range<uint16_t>( 5, 100, 15 ) );
+   auto time = GENERATE( range<uint16_t>( 0, 90, 15 ) );
    SECTION( "TCP" )
    {
       CActiveSocket socket;
@@ -1426,6 +1426,12 @@ TEST_CASE( "Sockets can linger", "[Linger]" )
       SECTION( "Disable" )
       {
          REQUIRE_FALSE( socket.SetOptionLinger( false, 0 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+      }
+
+      SECTION( "Disable with timeout" )
+      {
+         REQUIRE_FALSE( socket.SetOptionLinger( false, time ) );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
       }
 #endif
