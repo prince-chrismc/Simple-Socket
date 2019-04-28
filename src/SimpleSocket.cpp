@@ -944,8 +944,11 @@ void CSimpleSocket::TranslateSocketError()
    case WSAEAFNOSUPPORT:
    case WSAEMFILE:
    case WSAENOBUFS:
-   case WSAEPROTONOSUPPORT:
       SetSocketError( CSimpleSocket::SocketInvalidSocket );
+      break; 
+   case WSAEPROTONOSUPPORT:
+   case WSAENOPROTOOPT:
+      SetSocketError( CSimpleSocket::SocketProtocolError );
       break;
    case WSAECONNREFUSED:
       SetSocketError( CSimpleSocket::SocketConnectionRefused );

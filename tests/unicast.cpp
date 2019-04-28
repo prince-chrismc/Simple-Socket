@@ -1389,6 +1389,7 @@ TEST_CASE( "Sockets can linger", "[Linger]" )
       REQUIRE( socket.Open( "8.8.8.8", 53 ) );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
+#ifdef _LINUX
       SECTION( "Enable" )
       {
          REQUIRE( socket.SetOptionLinger( true, time ) );
@@ -1415,6 +1416,19 @@ TEST_CASE( "Sockets can linger", "[Linger]" )
          REQUIRE( socket.SetOptionLinger( true, 50 ) );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       }
+#elif _WIN32
+      SECTION( "Enable" )
+      {
+         REQUIRE_FALSE( socket.SetOptionLinger( true, time ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+      }
+
+      SECTION( "Disable" )
+      {
+         REQUIRE_FALSE( socket.SetOptionLinger( false, 0 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+      }
+#endif
 
       CHECK( socket.Shutdown( CSimpleSocket::Both ) );
       CHECK( socket.Close() );
