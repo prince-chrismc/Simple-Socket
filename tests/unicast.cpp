@@ -424,6 +424,9 @@ TEST_CASE( "Sockets can send", "[Send][TCP][UDP]" )
 
       SECTION( "Multiple servers Connect" )
       {
+         REQUIRE( socket.Open( "www.google.ca", 80 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
          CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
 
          CHECK( socket.Receive( 17 ) == 17 );
@@ -744,6 +747,8 @@ TEST_CASE( "Sockets have remotes information", "[!mayfail][TCP]" )
       char buff[ 16 ];
       std::string googlesAddr =
           inet_ntop( AF_INET, &reinterpret_cast<sockaddr_in*>( pResult->ai_addr )->sin_addr, buff, 16 );
+
+      auto knownPossibleMatches = { "108.177.111.94", "74.125.124.94" };
 
       CAPTURE( buff );
       CAPTURE( socket.GetServerAddr() );
