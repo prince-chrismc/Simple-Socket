@@ -424,16 +424,12 @@ TEST_CASE( "Sockets can send", "[Send][TCP][UDP]" )
 
       SECTION( "Multiple servers Connect" )
       {
-         REQUIRE( socket.Open( "www.google.ca", 80 ) );
-         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
          CHECK( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
 
          CHECK( socket.Receive( 17 ) == 17 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
          std::string httpResponse = socket.GetData();
-
          CAPTURE( httpResponse );
 
          CHECK( httpResponse.length() > 0 );
