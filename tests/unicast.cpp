@@ -755,65 +755,68 @@ TEST_CASE( "Sockets have remotes information", "[!mayfail][TCP]" )
    }
 }
 
-TEST_CASE( "Sockets can disconnect", "[Close][TCP]" )
+TEST_CASE( "Sockets can be closed", "[Close][TCP][UDP]" )
 {
-   CActiveSocket socket;
+   SECTION( "TCP" )
+   {
+      CActiveSocket socket;
 
-   REQUIRE( socket.Open( "www.google.ca", 80 ) );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.Open( "www.google.ca", 80 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
+      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == HTTP_GET_ROOT_REQUEST.length() );
 
-   CHECK( socket.Receive( 17 ) == 17 );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.Receive( 17 ) == 17 );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   std::string httpResponse = socket.GetData();
+      std::string httpResponse = socket.GetData();
 
-   CAPTURE( httpResponse );
+      CAPTURE( httpResponse );
 
-   CHECK( httpResponse.length() > 0 );
-   CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
+      CHECK( httpResponse.length() > 0 );
+      CHECK( httpResponse == "HTTP/1.0 200 OK\r\n" );
 
-   REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
-   REQUIRE( socket.Close() );
-   REQUIRE_FALSE( socket.IsSocketValid() );
+      REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
+      REQUIRE( socket.Close() );
+      REQUIRE_FALSE( socket.IsSocketValid() );
 
-   REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == CSimpleSocket::SocketError );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
-}
+      REQUIRE( socket.Send( HTTP_GET_ROOT_REQUEST ) == CSimpleSocket::SocketError );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+   }
 
 #ifndef _DARWIN
-TEST_CASE( "Sockets can close", "[Close][UDP]" )
-{
-   CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+   SECTION( "UDP" )
+   {
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
 
-   CHECK( socket.Open( "8.8.8.8", 53 ) );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.Open( "8.8.8.8", 53 ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == DNS_QUERY_LENGTH );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   CHECK( socket.Receive( 1024 ) == 45 );
-   CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.Receive( 1024 ) == 45 );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-   const std::string dnsResponse = socket.GetData();
-   CAPTURE( dnsResponse );
+      const std::string dnsResponse = socket.GetData();
+      CAPTURE( dnsResponse );
 
-   CHECK( dnsResponse.length() == 45 );
-   CHECK_THAT( dnsResponse,
-               Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
-                                  "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
-                                  "\x01\x00\x01\x00\x00"s ) );
-   CHECK_THAT( dnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
+      CHECK( dnsResponse.length() == 45 );
+      CHECK_THAT( dnsResponse,
+                  Catch::StartsWith( "\x12\x34\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x07\x65\x78\x61"s +
+                                     "\x6d\x70\x6c\x65\x03\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00"s +
+                                     "\x01\x00\x01\x00\x00"s ) );
+      CHECK_THAT( dnsResponse, Catch::EndsWith( "\x00\x04\x5d\xb8\xd8\x22"s ) );
 
-   REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
-   REQUIRE( socket.Close() );
-   REQUIRE_FALSE( socket.IsSocketValid() );
+      REQUIRE( socket.Shutdown( CSimpleSocket::Both ) );
+      REQUIRE( socket.Close() );
+      REQUIRE_FALSE( socket.IsSocketValid() );
 
-   REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == CSimpleSocket::SocketError );
-   REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
-}
+      REQUIRE( socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ) == CSimpleSocket::SocketError );
+      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+   }
 #endif
+}
 
 TEST_CASE( "Sockets are ctor moveable", "[Socket][TCP]" )
 {
