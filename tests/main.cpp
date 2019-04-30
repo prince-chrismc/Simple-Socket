@@ -204,6 +204,7 @@ TEST_CASE( "socket constructors", "[Initialization][TCP][UDP]" )
          CSimpleSocket socket( type );
          CSimpleSocket secondary = std::move( socket );
          CHECK_NOTHROW( SocketHasInvalidValues( socket ) );
+         CHECK_NOTHROW( SocketHasDefaultValues( std::move( secondary ), type ) );
       }
 
       SECTION( "Active Socket" )
@@ -211,6 +212,7 @@ TEST_CASE( "socket constructors", "[Initialization][TCP][UDP]" )
          CActiveSocket socket( type );
          CActiveSocket secondary = std::move( socket );
          CHECK_NOTHROW( SocketHasInvalidValues( socket ) );
+         CHECK_NOTHROW( SocketHasDefaultValues( std::move( secondary ), type ) );
       }
 
       SECTION( "Passive Socket" )
@@ -218,6 +220,7 @@ TEST_CASE( "socket constructors", "[Initialization][TCP][UDP]" )
          CPassiveSocket socket( type );
          CPassiveSocket secondary = std::move( socket );
          CHECK_NOTHROW( SocketHasInvalidValues( socket ) );
+         CHECK_NOTHROW( SocketHasDefaultValues( std::move( secondary ), type ) );
       }
    }
 }
