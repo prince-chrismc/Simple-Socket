@@ -112,6 +112,9 @@ jobs:
 
   - stage: Lint
     dist: xenial
+    language: python
+    python:
+    - "3.7"
     addons:
       apt:
         sources:
@@ -129,7 +132,7 @@ jobs:
     - git config --global user.email "travis@travis-ci.org"
     - git config --global user.name "Travis CI"
     - git checkout -b travis/${TRAVIS_BRANCH}_${TRAVIS_BUILD_NUMBER}
-    - sudo -H pip3 install cmake-format
+    - sudo -H pip install cmake-format
     - cmake-format CMakeLists.txt > CMakeLists.txt.format
     - mv CMakeLists.txt CMakeLists.txt.old
     - mv CMakeLists.txt.format CMakeLists.txt
