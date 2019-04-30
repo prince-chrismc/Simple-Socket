@@ -1,6 +1,6 @@
 # Enable clang-tidy
 find_program(CLANG_TIDY_EXE
-             NAMES "clang-tidy" "clang-tidy-8" "clang-tidy-7"
+             NAMES "clang-tidy-8" "clang-tidy-7" "clang-tidy"
              DOC "Path to clang-tidy executable")
 
 if(CLANG_TIDY_EXE)
