@@ -16,15 +16,21 @@ endif()
 find_program(CPPCHECK_EXE NAMES "cppcheck" DOC "Path to cppcheck executable")
 
 if(CPPCHECK_EXE)
-  message(STATUS "cppcheck found: ${CPPCHECK_EXE}")
-  add_custom_target(
-    cppcheck
-    COMMAND "${CPPCHECK_EXE}" "-j4" "--enable=all" "--inconclusive"
-            "--suppress=*:*catch.hpp"
-            "--suppress=compareBoolExpressionWithInt:*tests/*.cpp"
-            "--project=compile_commands.json" "--xml" "--output-file=report.xml"
-    COMMAND "cppcheck-htmlreport" "--file=report.xml" "--report-dir=report"
-            "--source-dir=..")
+  exec_program(${CPPCHECK_EXE} ARGS "--version" OUTPUT_VARIABLE CPPCHECK_VERSION)
+  string(REPLACE "Cppcheck " "" CPPCHECK_VERSION ${CPPCHECK_VERSION})
+  message(STATUS "cppcheck found: ${CPPCHECK_EXE} ${CPPCHECK_VERSION}")
+  if(${CPPCHECK_VERSION} VERSION_LESS "1.76")
+    message(AUTHOR_WARNING "cppcheck ${CPPCHECK_VERSION} is insufficent!")
+  else()
+    add_custom_target(
+      cppcheck
+      COMMAND "${CPPCHECK_EXE}" "-j4" "--enable=all" "--inconclusive"
+      "--suppress=*:*catch.hpp"
+      "--suppress=compareBoolExpressionWithInt:*tests/*.cpp"
+      "--project=compile_commands.json" "--xml" "--output-file=report.xml"
+      COMMAND "cppcheck-htmlreport" "--file=report.xml" "--report-dir=report"
+      "--source-dir=..")
+  endif()
 else()
   message(AUTHOR_WARNING "cppcheck not found!")
   # set(CXX_CPPCHECK "" CACHE STRING "" FORCE)
