@@ -225,8 +225,31 @@ TEST_CASE( "socket constructors", "[Initialization][TCP][UDP]" )
    }
 }
 
-TEST_CASE( "Socket not copyable" ) {}
+TEST_CASE( "Sockets dont leak" )
+{
+   auto type = GENERATE( as<CSimpleSocket::CSocketType>{}, CSimpleSocket::SocketTypeTcp, CSimpleSocket::SocketTypeUdp );
 
-TEST_CASE( "Sockets are moveable" ) {}
+   SECTION( "Simple Socket" )
+   {
+      CSimpleSocket socket( type );
+      REQUIRE( socket.Close() );
+      REQUIRE_FALSE( socket.IsSocketValid() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
 
-TEST_CASE( "Sockets dont leak" ) {}
+   SECTION( "Active Socket" )
+   {
+      CActiveSocket socket( type );
+      REQUIRE( socket.Close() );
+      REQUIRE_FALSE( socket.IsSocketValid() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+
+   SECTION( "Passive Socket" )
+   {
+      CPassiveSocket socket( type );
+      REQUIRE( socket.Close() );
+      REQUIRE_FALSE( socket.IsSocketValid() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+   }
+}
