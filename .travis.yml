@@ -141,7 +141,7 @@ jobs:
     - cd build-travis
     - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_LINT=ON
     - make
-    - make cppcheck # incorrect version gets installed
+    #- make cppcheck # incorrect version gets installed
     after_success:
     - git remote add origin-ci https://${GH_TOKEN}@github.com/prince-chrismc/Simple-Socket.git
     - git push --set-upstream origin-ci
