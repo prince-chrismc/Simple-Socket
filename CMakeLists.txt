@@ -80,7 +80,7 @@ if(SIMPLE_SOCKET_LINT)
 endif()
 
 # Define the library
-add_library(Simple-Socket ${SIMPLE_SOCKET_SOURCES} ${SIMPLE_SOCKET_DOCS})
+add_library(Simple-Socket ${SIMPLE_SOCKET_DOCS} ${SIMPLE_SOCKET_SOURCES})
 target_compile_features(Simple-Socket INTERFACE cxx_std_11)
 target_compile_options(Simple-Socket INTERFACE ${WARNING_FLAGS})
 target_link_libraries(Simple-Socket INTERFACE ${PROJECT_LIBS})
