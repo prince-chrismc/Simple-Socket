@@ -129,17 +129,14 @@ jobs:
     env:
     - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
     script:
-    - git config --global user.email "travis@travis-ci.org"
-    - git config --global user.name "Travis CI"
+    - git config --global user.email "travis@travis-ci.org" && git config --global user.name "Travis CI"
     - git checkout -b travis/${TRAVIS_BRANCH}_${TRAVIS_BUILD_NUMBER}
     - sudo -H pip install cmake-format
     - cmake-format CMakeLists.txt > CMakeLists.txt.format
-    - mv CMakeLists.txt CMakeLists.txt.old
-    - mv CMakeLists.txt.format CMakeLists.txt
-    - git add .
+    - rm CMakeLists.txt CMakeLists.txt.old && mv CMakeLists.txt.format CMakeLists.txt
+    - git add -u
     - git diff-index --quiet HEAD || git commit -m "cmake-formatted by ci"
-    - mkdir build-travis
-    - cd build-travis
+    - mkdir build-travis && cd build-travis
     - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_LINT=ON
     - make
     #- make cppcheck # incorrect version gets installed
@@ -152,16 +149,14 @@ jobs:
     script:
     - mkdir build-travis
     - cd build-travis
-    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF
-      -DSIMPLE_SOCKET_STRING_VIEW=OFF
+    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_STRING_VIEW=OFF
 
   - stage: Legacy
     dist: xenial
     script:
     - mkdir build-travis
     - cd build-travis
-    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF
-      -DSIMPLE_SOCKET_STRING_VIEW=OFF
+    - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_STRING_VIEW=OFF
       
   - stage: Legacy
     addons:
