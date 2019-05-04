@@ -136,7 +136,8 @@ jobs:
     - cmake-format CMakeLists.txt > CMakeLists.txt.format
     - mv CMakeLists.txt CMakeLists.txt.old
     - mv CMakeLists.txt.format CMakeLists.txt
-    - git commit -a -m "cmake-formatted by ci"
+    - git add .
+    - git diff-index --quiet HEAD || git commit -m "cmake-formatted by ci"
     - mkdir build-travis
     - cd build-travis
     - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_LINT=ON
