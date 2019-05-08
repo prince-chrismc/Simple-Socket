@@ -116,7 +116,6 @@ jobs:
         - ubuntu-toolchain-r-test
         - llvm-toolchain-trusty-8
         packages:
-        - cppcheck
         - clang-8
         - clang-tidy-8
         - libc++-8-dev
@@ -131,10 +130,14 @@ jobs:
     - rm CMakeLists.txt && mv CMakeLists.txt.format CMakeLists.txt
     - git add -u
     - git diff-index --quiet HEAD || git commit -m "cmake-formatted by ci"
+    - wget https://sourceforge.net/projects/cppcheck/files/cppcheck/1.87/cppcheck-1.87.tar.bz2/download -o cppcheck-1.87.tar.bz2
+    - tar -xvf cppcheck-1.87.tar.bz2
+    - cd cppcheck-1.87
+    - sudo make install
     - mkdir build-travis && cd build-travis
     - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_LINT=ON
     - make
-    #- make cppcheck # incorrect version gets installed
+    - make cppcheck
     after_success:
     - git remote add origin-ci https://${GH_TOKEN}@github.com/prince-chrismc/Simple-Socket.git
     - git push --set-upstream origin-ci
