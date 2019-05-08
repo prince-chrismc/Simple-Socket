@@ -133,7 +133,7 @@ jobs:
     - git checkout -b travis/${TRAVIS_BRANCH}_${TRAVIS_BUILD_NUMBER}
     - sudo -H pip install cmake-format
     - cmake-format CMakeLists.txt > CMakeLists.txt.format
-    - rm CMakeLists.txt CMakeLists.txt.old && mv CMakeLists.txt.format CMakeLists.txt
+    - rm CMakeLists.txt && mv CMakeLists.txt.format CMakeLists.txt
     - git add -u
     - git diff-index --quiet HEAD || git commit -m "cmake-formatted by ci"
     - mkdir build-travis && cd build-travis
