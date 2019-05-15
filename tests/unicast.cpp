@@ -1616,6 +1616,8 @@ TEST_CASE( "Sockets can be shutdown", "[!mayfail][TCP][UDP]" )
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       CHECK_FALSE( socket.IsSocketValid() );
    }
+
+   SECTION( "No Handle" ) {}
 }
 
 TEST_CASE( "Sockets can set type of service", "[!mayfail][TCP][UDP]" )
