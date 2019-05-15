@@ -1645,6 +1645,8 @@ TEST_CASE( "Sockets can set type of service", "[!mayfail][TCP][UDP]" )
          REQUIRE( socket.GetSocketDscp() == IPTOS_LOWDELAY );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       }
+
+      SECTION( "No Handle" ) {}
    }
 
    SECTION( "UDP" )
@@ -1668,5 +1670,113 @@ TEST_CASE( "Sockets can set type of service", "[!mayfail][TCP][UDP]" )
          REQUIRE( socket.GetSocketDscp() == IPTOS_LOWDELAY );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       }
+
+      SECTION( "No Handle" ) {}
+   }
+}
+
+TEST_CASE( "Sockets can set tcp rx windows size", "[!mayfail][TCP][UDP]" )
+{
+   SECTION( "TCP" )
+   {
+      CActiveSocket socket;
+
+      SECTION( "GET" )
+      {
+         REQUIRE( socket.GetReceiveWindowSize() == 8192 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "SET" )
+      {
+         REQUIRE( socket.GetReceiveWindowSize() == 8192 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.SetReceiveWindowSize( 8192 * 2 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.GetReceiveWindowSize() == 8192 * 2 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "No Handle" ) {}
+   }
+
+   SECTION( "UDP" )
+   {
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+
+      SECTION( "GET" )
+      {
+         REQUIRE( socket.GetReceiveWindowSize() == 8192 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "SET" )
+      {
+         REQUIRE( socket.GetReceiveWindowSize() == 8192 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.SetReceiveWindowSize( 8192 * 2 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.GetReceiveWindowSize() == 8192 * 2 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "No Handle" ) {}
+   }
+}
+
+TEST_CASE( "Sockets can set tcp tx windows size", "[!mayfail][TCP][UDP]" )
+{
+   SECTION( "TCP" )
+   {
+      CActiveSocket socket;
+
+      SECTION( "GET" )
+      {
+         REQUIRE( socket.GetReceiveWindowSize() == 8192 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "SET" )
+      {
+         REQUIRE( socket.GetReceiveWindowSize() == 8192 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.SetReceiveWindowSize( 8192 * 2 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.GetReceiveWindowSize() == 8192 * 2 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "No Handle" ) {}
+   }
+
+   SECTION( "UDP" )
+   {
+      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+
+      SECTION( "GET" )
+      {
+         REQUIRE( socket.GetSendWindowSize() == 8192 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "SET" )
+      {
+         REQUIRE( socket.GetSendWindowSize() == 8192 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.SetSendWindowSize( 8192 * 2 ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+
+         REQUIRE( socket.GetSendWindowSize() == 8192 * 2 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      }
+
+      SECTION( "No Handle" ) {}
    }
 }
