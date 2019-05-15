@@ -342,7 +342,7 @@ std::string CSimpleSocket::GetJoinedGroup()
 int32_t CSimpleSocket::GetSocketDscp()
 {
    int32_t nTempVal = 0;
-   socklen_t nLen = 0;
+   socklen_t nLen = sizeof( nTempVal );
 
    if ( IsSocketValid() )
    {
