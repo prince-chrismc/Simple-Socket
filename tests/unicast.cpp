@@ -34,6 +34,7 @@ SOFTWARE.
 #include <Ws2tcpip.h>
 #elif defined( _LINUX ) || defined( _DARWIN )
 #include <netdb.h>
+#include <netinet/ip.h>
 #endif
 
 using namespace std::chrono_literals;
