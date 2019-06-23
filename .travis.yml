@@ -1,10 +1,5 @@
 language: cpp
 
-branches:
-  only:
-  - master
-  - /^greenkeeper/.*$/
-
 before_install:
 - eval "${MATRIX_EVAL}"
 
