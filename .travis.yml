@@ -131,7 +131,7 @@ jobs:
     script:
     - git config --global user.email "travis@travis-ci.org" && git config --global user.name "Travis CI"
     - git checkout -b travis/${TRAVIS_BRANCH}_${TRAVIS_BUILD_NUMBER}
-    - sudo -H pip install cmake-format
+    - sudo -H pip3 install cmake-format
     - cmake-format CMakeLists.txt > CMakeLists.txt.format
     - rm CMakeLists.txt && mv CMakeLists.txt.format CMakeLists.txt
     - git add -u
