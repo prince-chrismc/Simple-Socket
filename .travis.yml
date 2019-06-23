@@ -129,6 +129,12 @@ jobs:
     - sudo -H pip install cmake-format
     - cmake-format CMakeLists.txt > CMakeLists.txt.format
     - rm CMakeLists.txt && mv CMakeLists.txt.format CMakeLists.txt
+    - cd tests
+    - cmake-format CMakeLists.txt > CMakeLists.txt.format
+    - rm CMakeLists.txt && mv CMakeLists.txt.format CMakeLists.txt
+    - cd ../examples
+    - cmake-format CMakeLists.txt > CMakeLists.txt.format
+    - rm CMakeLists.txt && mv CMakeLists.txt.format CMakeLists.txt
     - git add -u
     - git diff-index --quiet HEAD || git commit -m "cmake-formatted by ci"
     - mkdir build-travis && cd build-travis
