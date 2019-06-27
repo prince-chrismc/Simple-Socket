@@ -138,7 +138,7 @@ jobs:
     - git add -u
     - git diff-index --quiet HEAD || ( git commit -m "cmake-formatted by ci"
       && git remote add origin-ci https://${GH_TOKEN}@github.com/prince-chrismc/Simple-Socket.git
-      && push --set-upstream origin-ci )
+      && git push --set-upstream origin-ci )
     - mkdir build-travis && cd build-travis
     - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_LINT=ON
     - make
