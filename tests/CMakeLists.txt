@@ -11,6 +11,9 @@ set(SIMPLE_SOCKET_STRING_VIEW
     ON
     CACHE BOOL "Required by tester and coverage" FORCE)
 
+include(CTest)
+include(Catch)
+
 # Tester
 if(SIMPLE_SOCKET_TEST)
     add_executable(${TESTER} ${TESTER_SOURCES})
