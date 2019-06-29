@@ -17,12 +17,11 @@ the async and multicast functionality.
   - [Building and Installing](#building-and-installing)
   - [Class Overview](#class-overview)
   - [Examples](#examples)
-        - [Simple Active Socket](#simple-active-socket)
-        - [Simple Passive Socket](#simple-passive-socket)
+    - [Simple Active Socket](#simple-active-socket)
+    - [Simple Passive Socket](#simple-passive-socket)
 
 ## History
-Written by Mark Carrier to provide a mechanism for writing cross platform socket code. This library was originally written to only support blocking
-TCP sockets. Over the years it has been extended to support UDP and RAW sockets as well with many contribution from the Dwarf Fortress community.
+Written by Mark Carrier to provide a mechanism for writing cross platform socket code; this library was originally intended to only support blocking TCP sockets. However, over the years it has been extended to support UDP and RAW sockets as well many other contributions from the Dwarf Fortress community.
 This library supports:
 * Cross platform abstraction
    * Windows
