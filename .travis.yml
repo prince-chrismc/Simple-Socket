@@ -130,10 +130,11 @@ jobs:
     - rm CMakeLists.txt && mv CMakeLists.txt.format CMakeLists.txt
     - git add -u
     - git diff-index --quiet HEAD || git commit -m "cmake-formatted by ci"
-    - wget https://sourceforge.net/projects/cppcheck/files/cppcheck/1.87/cppcheck-1.87.tar.bz2/download -o cppcheck-1.87.tar.bz2
-    - tar -xvf cppcheck-1.87.tar.bz2
-    - cd cppcheck-1.87
+    - wget https://github.com/danmar/cppcheck/archive/1.88.tar.gz
+    - tar -xvf 1.88.tar.gz
+    - cd cppcheck-1.88
     - sudo make install
+    - cd ..
     - mkdir build-travis && cd build-travis
     - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_LINT=ON
     - make
