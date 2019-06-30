@@ -130,10 +130,15 @@ jobs:
     - rm CMakeLists.txt && mv CMakeLists.txt.format CMakeLists.txt
     - git add -u
     - git diff-index --quiet HEAD || git commit -m "cmake-formatted by ci"
+    - wget https://ftp.pcre.org/pub/pcre/pcre2-10.33.tar.gz
+    - tar -xvf pcre2-10.33.tar.gz
+    - cd pcre2-10.33
+    - ./configure && make && sudo make install
+    - cd ..
     - wget https://github.com/danmar/cppcheck/archive/1.88.tar.gz
     - tar -xvf 1.88.tar.gz
     - cd cppcheck-1.88
-    - sudo make install
+    - make MATCHCOMPILER=yes CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function" && sudo make install
     - cd ..
     - mkdir build-travis && cd build-travis
     - cmake .. -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DSIMPLE_SOCKET_EXAMPLES=OFF -DSIMPLE_SOCKET_LINT=ON
