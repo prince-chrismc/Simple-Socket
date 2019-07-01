@@ -196,7 +196,7 @@ public:
    ///  -# \b bEnable is true and \b nTime is nonzero, CSimpleSocket::Close does
    ///  not return until all unsent data is transmitted (or the connection is
    ///  Closed by the remote system).
-   /// <br><p>
+   /// <br/><p>
    /// @param bEnable true to enable option false to disable option.
    /// @param nTime time in seconds to linger.
    /// @return true if option successfully set
@@ -233,13 +233,13 @@ public:
 
    /// Return Differentiated Services Code Point (DSCP) value currently set on the socket object.
    /// @return DSCP for current socket object.
-   /// <br><br> \b NOTE: Windows special notes http://support.microsoft.com/kb/248611.
+   /// <br/><br/> \b NOTE: Windows special notes http://support.microsoft.com/kb/248611.
    int GetSocketDscp();
 
    /// Set Differentiated Services Code Point (DSCP) for socket object.
    ///  @param nDscp value of TOS setting which will be converted to DSCP
    ///  @return true if DSCP value was properly set
-   /// <br><br> \b NOTE: Windows special notes http://support.microsoft.com/kb/248611.
+   /// <br/><br/> \b NOTE: Windows special notes http://support.microsoft.com/kb/248611.
    bool SetSocketDscp( int nDscp );
 
    [[nodiscard]] CSocketError GetSocketError() const { return m_error; }
@@ -254,22 +254,22 @@ public:
    std::string GetJoinedGroup();
 
    /// Get the TCP receive buffer window size for the current socket object.
-   /// <br><br>\b NOTE: Linux will set the receive buffer to twice the value passed.
+   /// <br/><br/>\b NOTE: Linux will set the receive buffer to twice the value passed.
    ///  @return zero on failure else the number of bytes of the TCP receive buffer window size if successful.
    uint32_t GetReceiveWindowSize() { return GetWindowSize( SO_RCVBUF ); }
 
    /// Get the TCP send buffer window size for the current socket object.
-   /// <br><br>\b NOTE: Linux will set the send buffer to twice the value passed.
+   /// <br/><br/>\b NOTE: Linux will set the send buffer to twice the value passed.
    ///  @return zero on failure else the number of bytes of the TCP receive buffer window size if successful.
    uint32_t GetSendWindowSize() { return GetWindowSize( SO_SNDBUF ); }
 
    /// Set the TCP receive buffer window size for the current socket object.
-   /// <br><br>\b NOTE: Linux will set the receive buffer to twice the value passed.
+   /// <br/><br/>\b NOTE: Linux will set the receive buffer to twice the value passed.
    ///  @return zero on failure else the number of bytes of the TCP send buffer window size if successful.
    uint32_t SetReceiveWindowSize( uint32_t nWindowSize ) { return SetWindowSize( SO_RCVBUF, nWindowSize ); }
 
    /// Set the TCP send buffer window size for the current socket object.
-   /// <br><br>\b NOTE: Linux will set the send buffer to twice the value passed.
+   /// <br/><br/>\b NOTE: Linux will set the send buffer to twice the value passed.
    ///  @return zero on failure else the number of bytes of the TCP send buffer window size if successful.
    uint32_t SetSendWindowSize( uint32_t nWindowSize ) { return SetWindowSize( SO_SNDBUF, nWindowSize ); }
 

@@ -253,7 +253,7 @@ bool CSimpleSocket::JoinMulticast( const char* pGroup, uint16_t nPort )
       m_stMulticastGroup.sin_addr.s_addr = htonl( INADDR_ANY ),
 
       // Bind to the specified port
-      bRetVal = ( BIND( m_socket, &m_stMulticastGroup, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
+          bRetVal = ( BIND( m_socket, &m_stMulticastGroup, SOCKET_ADDR_IN_SIZE ) == SocketSuccess );
    }
 
    if ( bRetVal )
@@ -341,19 +341,22 @@ std::string CSimpleSocket::GetJoinedGroup()
 //-------------------------------------------------------------------------------------------------
 int32_t CSimpleSocket::GetSocketDscp()
 {
+   if ( !IsSocketValid() )
+   {
+      SetSocketError( SocketInvalidSocket );
+      return -1;
+   }
+
    int32_t nTempVal = 0;
    socklen_t nLen = sizeof( nTempVal );
 
-   if ( IsSocketValid() )
+   if ( GETSOCKOPT( m_socket, IPPROTO_IP, IP_TOS, &nTempVal, &nLen ) == SocketError )
    {
-      if ( GETSOCKOPT( m_socket, IPPROTO_IP, IP_TOS, &nTempVal, &nLen ) == SocketError )
-      {
-         TranslateSocketError();
-      }
-
-      nTempVal *= 4;
-      nTempVal >>= 4;
+      TranslateSocketError();
    }
+
+   nTempVal *= 4;
+   nTempVal >>= 4;
 
    return nTempVal;
 }
@@ -363,21 +366,24 @@ int32_t CSimpleSocket::GetSocketDscp()
 // SetSocketDscp()
 //
 //-------------------------------------------------------------------------------------------------
-bool CSimpleSocket::SetSocketDscp( int32_t nDscp )
+bool CSimpleSocket::SetSocketDscp( int nDscp )
 {
+   if ( !IsSocketValid() )
+   {
+      SetSocketError( SocketInvalidSocket );
+      return false;
+   }
+
    bool bRetVal = true;
    int32_t nTempVal = nDscp;
 
    nTempVal <<= 4;
    nTempVal /= 4;
 
-   if ( IsSocketValid() )
+   if ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_TOS, &nTempVal, sizeof( nTempVal ) ) == SocketError )
    {
-      if ( SETSOCKOPT( m_socket, IPPROTO_IP, IP_TOS, &nTempVal, sizeof( nTempVal ) ) == SocketError )
-      {
-         TranslateSocketError();
-         bRetVal = false;
-      }
+      TranslateSocketError();
+      bRetVal = false;
    }
 
    return bRetVal;
@@ -390,24 +396,17 @@ bool CSimpleSocket::SetSocketDscp( int32_t nDscp )
 //-------------------------------------------------------------------------------------------------
 uint32_t CSimpleSocket::GetWindowSize( uint32_t nOptionName )
 {
-   uint32_t nTcpWinSize = 0;
-
-   //-------------------------------------------------------------------------
-   // no socket given, return system default allocate our own new socket
-   //-------------------------------------------------------------------------
-   if ( IsSocketValid() )
-   {
-      socklen_t nLen = sizeof( nTcpWinSize );
-
-      //---------------------------------------------------------------------
-      // query for buffer size
-      //---------------------------------------------------------------------
-      GETSOCKOPT( m_socket, SOL_SOCKET, nOptionName, &nTcpWinSize, &nLen );
-      TranslateSocketError();
-   }
-   else
+   if ( !IsSocketValid() )
    {
       SetSocketError( CSimpleSocket::SocketInvalidSocket );
+      return 0;
+   }
+
+   uint32_t nTcpWinSize = 0;
+   const socklen_t nLen = sizeof( nTcpWinSize );
+   if ( GETSOCKOPT( m_socket, SOL_SOCKET, nOptionName, &nTcpWinSize, &nLen ) == SocketError )
+   {
+      TranslateSocketError();
    }
 
    return nTcpWinSize;
@@ -420,17 +419,16 @@ uint32_t CSimpleSocket::GetWindowSize( uint32_t nOptionName )
 //-------------------------------------------------------------------------------------------------
 uint32_t CSimpleSocket::SetWindowSize( uint32_t nOptionName, uint32_t nWindowSize )
 {
-   //-------------------------------------------------------------------------
-   // no socket given, return system default allocate our own new socket
-   //-------------------------------------------------------------------------
-   if ( IsSocketValid() )
-   {
-      SETSOCKOPT( m_socket, SOL_SOCKET, nOptionName, &nWindowSize, sizeof( nWindowSize ) );
-      TranslateSocketError();
-   }
-   else
+   if ( !IsSocketValid() )
    {
       SetSocketError( CSimpleSocket::SocketInvalidSocket );
+      return 0;
+   }
+
+   if ( SETSOCKOPT( m_socket, SOL_SOCKET, nOptionName, &nWindowSize, sizeof( nWindowSize ) ) == SocketError )
+   {
+      TranslateSocketError();
+      return 0;
    }
 
    return nWindowSize;
@@ -443,6 +441,12 @@ uint32_t CSimpleSocket::SetWindowSize( uint32_t nOptionName, uint32_t nWindowSiz
 //-------------------------------------------------------------------------------------------------
 bool CSimpleSocket::DisableNagleAlgoritm()
 {
+   if ( !IsSocketValid() )
+   {
+      SetSocketError( SocketInvalidSocket );
+      return false;
+   }
+
    if ( m_nSocketType != CSocketType::SocketTypeTcp )
    {
       SetSocketError( SocketProtocolError );
@@ -464,6 +468,12 @@ bool CSimpleSocket::DisableNagleAlgoritm()
 //-------------------------------------------------------------------------------------------------
 bool CSimpleSocket::EnableNagleAlgoritm()
 {
+   if ( !IsSocketValid() )
+   {
+      SetSocketError( SocketInvalidSocket );
+      return false;
+   }
+
    if ( m_nSocketType != CSocketType::SocketTypeTcp )
    {
       SetSocketError( SocketProtocolError );
@@ -572,6 +582,12 @@ bool CSimpleSocket::Shutdown( CShutdownMode nShutdown )
 //-------------------------------------------------------------------------------------------------
 bool CSimpleSocket::Flush()
 {
+   if ( !IsSocketValid() )
+   {
+      SetSocketError( SocketInvalidSocket );
+      return false;
+   }
+
    if ( m_nSocketType != CSocketType::SocketTypeTcp )
    {
       SetSocketError( SocketProtocolError );
@@ -945,7 +961,7 @@ void CSimpleSocket::TranslateSocketError()
    case WSAEMFILE:
    case WSAENOBUFS:
       SetSocketError( CSimpleSocket::SocketInvalidSocket );
-      break; 
+      break;
    case WSAEPROTONOSUPPORT:
    case WSAENOPROTOOPT:
       SetSocketError( CSimpleSocket::SocketProtocolError );

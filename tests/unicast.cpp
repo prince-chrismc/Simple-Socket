@@ -1537,6 +1537,16 @@ TEST_CASE( "Sockets can be flushed", "[Flush]" )
       REQUIRE_FALSE( socket.Flush() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
    }
+
+   SECTION( "No Handle" )
+   {
+      CActiveSocket socket;
+      CActiveSocket secondary = std::move( socket );
+      REQUIRE_FALSE( socket.IsSocketValid() );   // NOLINT
+
+      CHECK_FALSE( socket.Flush() );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+   }
 }
 
 TEST_CASE( "Sockets can set nagle on/off", "[Nagle]" )
@@ -1553,7 +1563,7 @@ TEST_CASE( "Sockets can set nagle on/off", "[Nagle]" )
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       }
 
-      SECTION( "Disable" )
+      SECTION( "Enable" )
       {
          REQUIRE( socket.EnableNagleAlgoritm() );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
@@ -1578,7 +1588,7 @@ TEST_CASE( "Sockets can set nagle on/off", "[Nagle]" )
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
       }
 
-      SECTION( "Disable" )
+      SECTION( "Enable" )
       {
          REQUIRE_FALSE( socket.EnableNagleAlgoritm() );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
@@ -1591,6 +1601,25 @@ TEST_CASE( "Sockets can set nagle on/off", "[Nagle]" )
 
       REQUIRE_FALSE( socket.Flush() );
       REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+   }
+
+   SECTION( "No Handle" )
+   {
+      CActiveSocket socket;
+      CActiveSocket secondary = std::move( socket );
+      REQUIRE_FALSE( socket.IsSocketValid() );   // NOLINT
+
+      SECTION( "Disable" )
+      {
+         CHECK_FALSE( socket.DisableNagleAlgoritm() );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      }
+
+      SECTION( "Enable" )
+      {
+         CHECK_FALSE( socket.EnableNagleAlgoritm() );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      }
    }
 }
 
@@ -1618,7 +1647,15 @@ TEST_CASE( "Sockets can be shutdown", "[!mayfail][TCP][UDP]" )
       CHECK_FALSE( socket.IsSocketValid() );
    }
 
-   SECTION( "No Handle" ) {}
+   SECTION( "No Handle" )
+   {
+      CActiveSocket socket;
+      CActiveSocket secondary = std::move( socket );
+      REQUIRE_FALSE( socket.IsSocketValid() );   // NOLINT
+
+      CHECK_FALSE( socket.Shutdown( CSimpleSocket::Both ) );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+   }
 }
 
 TEST_CASE( "Sockets can set type of service", "[!mayfail][TCP][UDP]" )
@@ -1648,8 +1685,6 @@ TEST_CASE( "Sockets can set type of service", "[!mayfail][TCP][UDP]" )
          REQUIRE( socket.GetSocketDscp() == IPTOS_LOWDELAY );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       }
-
-      SECTION( "No Handle" ) {}
    }
 
    SECTION( "UDP" )
@@ -1673,8 +1708,25 @@ TEST_CASE( "Sockets can set type of service", "[!mayfail][TCP][UDP]" )
          REQUIRE( socket.GetSocketDscp() == IPTOS_LOWDELAY );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       }
+   }
 
-      SECTION( "No Handle" ) {}
+   SECTION( "No Handle" )
+   {
+      CActiveSocket socket;
+      CActiveSocket secondary = std::move( socket );
+      REQUIRE_FALSE( socket.IsSocketValid() );   // NOLINT
+
+      SECTION( "GET" )
+      {
+         CHECK( socket.GetSocketDscp() == -1 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      }
+
+      SECTION( "SET" )
+      {
+         CHECK_FALSE( socket.SetSocketDscp( IPTOS_LOWDELAY ) );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      }
    }
 }
 
@@ -1686,7 +1738,7 @@ TEST_CASE( "Sockets can set tcp rx windows size", "[!mayfail][TCP][UDP]" )
 
       SECTION( "GET" )
       {
-         REQUIRE( socket.GetReceiveWindowSize() == 8192 );
+         CHECK( socket.GetReceiveWindowSize() == 8192 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       }
 
@@ -1695,14 +1747,12 @@ TEST_CASE( "Sockets can set tcp rx windows size", "[!mayfail][TCP][UDP]" )
          REQUIRE( socket.GetReceiveWindowSize() == 8192 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-         REQUIRE( socket.SetReceiveWindowSize( 8192 * 2 ) );
+         CHECK( socket.SetReceiveWindowSize( 8192 * 2 ) != 0 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-         REQUIRE( socket.GetReceiveWindowSize() == 8192 * 2 );
+         CHECK( socket.GetReceiveWindowSize() == 8192 * 2 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       }
-
-      SECTION( "No Handle" ) {}
    }
 
    SECTION( "UDP" )
@@ -1711,7 +1761,7 @@ TEST_CASE( "Sockets can set tcp rx windows size", "[!mayfail][TCP][UDP]" )
 
       SECTION( "GET" )
       {
-         REQUIRE( socket.GetReceiveWindowSize() == 8192 );
+         CHECK( socket.GetReceiveWindowSize() == 8192 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       }
 
@@ -1720,14 +1770,31 @@ TEST_CASE( "Sockets can set tcp rx windows size", "[!mayfail][TCP][UDP]" )
          REQUIRE( socket.GetReceiveWindowSize() == 8192 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-         REQUIRE( socket.SetReceiveWindowSize( 8192 * 2 ) );
+         CHECK( socket.SetReceiveWindowSize( 8192 * 2 ) != 0 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-         REQUIRE( socket.GetReceiveWindowSize() == 8192 * 2 );
+         CHECK( socket.GetReceiveWindowSize() == 8192 * 2 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       }
+   }
 
-      SECTION( "No Handle" ) {}
+   SECTION( "No Handle" )
+   {
+      CActiveSocket socket;
+      CActiveSocket secondary = std::move( socket );
+      REQUIRE_FALSE( socket.IsSocketValid() );   // NOLINT
+
+      SECTION( "GET" )
+      {
+         CHECK( socket.GetReceiveWindowSize() == 0 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      }
+
+	  SECTION( "SET" )
+      {
+         CHECK( socket.SetReceiveWindowSize( 8192 * 2 ) == 0 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      }
    }
 }
 
@@ -1748,14 +1815,12 @@ TEST_CASE( "Sockets can set tcp tx windows size", "[!mayfail][TCP][UDP]" )
          REQUIRE( socket.GetReceiveWindowSize() == 8192 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-         REQUIRE( socket.SetReceiveWindowSize( 8192 * 2 ) );
+         REQUIRE( socket.SetReceiveWindowSize( 8192 * 2 ) != 0 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
          REQUIRE( socket.GetReceiveWindowSize() == 8192 * 2 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       }
-
-      SECTION( "No Handle" ) {}
    }
 
    SECTION( "UDP" )
@@ -1773,13 +1838,34 @@ TEST_CASE( "Sockets can set tcp tx windows size", "[!mayfail][TCP][UDP]" )
          REQUIRE( socket.GetSendWindowSize() == 8192 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
-         REQUIRE( socket.SetSendWindowSize( 8192 * 2 ) );
+         REQUIRE( socket.SetSendWindowSize( 8192 * 2 ) != 0 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
 
          REQUIRE( socket.GetSendWindowSize() == 8192 * 2 );
          CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
       }
+   }
 
-      SECTION( "No Handle" ) {}
+   SECTION( "No Handle" )
+   {
+      CActiveSocket socket;
+      CActiveSocket secondary = std::move( socket );
+      REQUIRE_FALSE( socket.IsSocketValid() );   // NOLINT
+
+      CHECK( socket.SetSendWindowSize( 8192 * 2 ) == 0 );
+      CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+
+	  
+      SECTION( "GET" )
+      {
+         CHECK( socket.GetSendWindowSize() == 0 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      }
+
+      SECTION( "SET" )
+      {
+         CHECK( socket.SetSendWindowSize( 8192 * 2 ) == 0 );
+         CHECK( socket.GetSocketError() == CSimpleSocket::SocketInvalidSocket );
+      }
    }
 }
