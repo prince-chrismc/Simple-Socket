@@ -31,6 +31,131 @@ SOFTWARE.
 
 #include <future>
 
+class benchmark_socket : CActiveSocket
+{
+public:
+   explicit benchmark_socket( CSocketType type = SocketTypeTcp ) : CActiveSocket( type ) {}
+
+   using CActiveSocket::Open;
+   using CSimpleSocket::Close;
+
+   // Benchmark Results:
+   // TCP: ~2us
+   // UDP: ~11us
+   int32_t sendOriginal( const uint8_t* pBuf, size_t bytesToSend )
+   {
+      if ( !IsSocketValid() || bytesToSend == 0 || pBuf == nullptr )
+      {
+         SetSocketError( IsSocketValid() ? SocketInvalidPointer : SocketInvalidSocket );
+         m_nBytesSent = SocketError;
+         return m_nBytesSent;
+      }
+
+      SetSocketError( SocketSuccess );
+      m_nBytesSent = 0;
+
+      std::function<int32_t()> sendMessage = [] { return -1; };
+      if ( m_nSocketType == SocketTypeTcp )
+         sendMessage = [&] { return SEND( m_socket, pBuf, bytesToSend, 0 ); };
+      else if ( m_nSocketType == SocketTypeUdp )
+         sendMessage = [&] {
+            const auto addrToSentTo = reinterpret_cast<const sockaddr*>( GetUdpTxAddrBuffer() );
+            return SENDTO( m_socket, pBuf, bytesToSend, 0, addrToSentTo, SOCKET_ADDR_IN_SIZE );
+         };
+
+      m_timer.SetStartTime();
+
+      // Check error condition and attempt to resend if call was interrupted by a signal.
+      do
+      {
+         m_nBytesSent += sendMessage();
+         TranslateSocketError();
+      } while ( GetSocketError() == CSimpleSocket::SocketInterrupted );
+
+      m_timer.SetEndTime();
+
+      return m_nBytesSent;
+   }
+
+   // Benchmark Results:
+   // TCP: ~2us
+   // UDP: ~11us
+   int32_t noLoop( const uint8_t* pBuf, size_t bytesToSend )
+   {
+      if ( !IsSocketValid() || bytesToSend == 0 || pBuf == nullptr )
+      {
+         SetSocketError( IsSocketValid() ? SocketInvalidPointer : SocketInvalidSocket );
+         m_nBytesSent = SocketError;
+         return m_nBytesSent;
+      }
+
+      SetSocketError( SocketSuccess );
+      m_nBytesSent = 0;
+
+      std::function<int32_t()> sendMessage = [] { return -1; };
+      if ( m_nSocketType == SocketTypeTcp )
+         sendMessage = [&] { return SEND( m_socket, pBuf, bytesToSend, 0 ); };
+      else if ( m_nSocketType == SocketTypeUdp )
+         sendMessage = [&] {
+            const auto addrToSentTo = reinterpret_cast<const sockaddr*>( GetUdpTxAddrBuffer() );
+            return SENDTO( m_socket, pBuf, bytesToSend, 0, addrToSentTo, SOCKET_ADDR_IN_SIZE );
+         };
+
+      m_timer.SetStartTime();
+
+      m_nBytesSent = sendMessage();
+      TranslateSocketError();
+
+      m_timer.SetEndTime();
+
+      return m_nBytesSent;
+   }
+   // Benchmark Results:
+   // TCP: ~2us
+   // UDP: ~11us
+   int32_t noTimer( const uint8_t* pBuf, size_t bytesToSend )
+   {
+      if ( !IsSocketValid() || bytesToSend == 0 || pBuf == nullptr )
+      {
+         SetSocketError( IsSocketValid() ? SocketInvalidPointer : SocketInvalidSocket );
+         m_nBytesSent = SocketError;
+         return m_nBytesSent;
+      }
+
+      SetSocketError( SocketSuccess );
+      m_nBytesSent = 0;
+
+      std::function<int32_t()> sendMessage = [] { return -1; };
+      if ( m_nSocketType == SocketTypeTcp )
+         sendMessage = [&] { return SEND( m_socket, pBuf, bytesToSend, 0 ); };
+      else if ( m_nSocketType == SocketTypeUdp )
+         sendMessage = [&] {
+            const auto addrToSentTo = reinterpret_cast<const sockaddr*>( GetUdpTxAddrBuffer() );
+            return SENDTO( m_socket, pBuf, bytesToSend, 0, addrToSentTo, SOCKET_ADDR_IN_SIZE );
+         };
+
+      // Check error condition and attempt to resend if call was interrupted by a signal.
+      do
+      {
+         m_nBytesSent += sendMessage();
+         TranslateSocketError();
+      } while ( GetSocketError() == CSimpleSocket::SocketInterrupted );
+
+      return m_nBytesSent;
+   }
+   // Benchmark Results:
+   // TCP: n/a
+   // UDP: ~9.3us
+   int32_t pureUdp( const uint8_t* pBuf, size_t bytesToSend )
+   {
+      const auto addrToSentTo = reinterpret_cast<const sockaddr*>( GetUdpTxAddrBuffer() );
+      m_nBytesSent = SENDTO( m_socket, pBuf, bytesToSend, 0, addrToSentTo, SOCKET_ADDR_IN_SIZE );
+      TranslateSocketError();
+
+      return m_nBytesSent;
+   }
+};
+
 TEST_CASE( "socket send", "[.][Benchmark][TCP][UDP]" )
 {
    static constexpr uint8_t MSG[] = { 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd' };
@@ -40,13 +165,14 @@ TEST_CASE( "socket send", "[.][Benchmark][TCP][UDP]" )
    {
       CPassiveSocket server;
       REQUIRE( server.Listen( nullptr, 35346 ) );
-      CActiveSocket socket;
+      benchmark_socket socket;
+      auto remote = std::async( std::launch::async, [&] { return server.Accept(); } );
       REQUIRE( socket.Open( "127.0.0.1", 35346 ) );
-      auto remote = std::async( std::launch::async, [&] {
-         return server.Accept();
-      } );
+      auto connection = remote.get();
 
-      BENCHMARK( "TCP Send" ) { socket.Send( MSG, MSG_LENGTH ); };
+      BENCHMARK( "original" ) { socket.sendOriginal( MSG, MSG_LENGTH ); };
+      BENCHMARK( "no loop" ) { socket.noLoop( MSG, MSG_LENGTH ); };
+      // BENCHMARK( "no timer" ) { socket.noTimer( MSG, MSG_LENGTH ); };
 
       CHECK( socket.Close() );
    }
@@ -54,10 +180,13 @@ TEST_CASE( "socket send", "[.][Benchmark][TCP][UDP]" )
 #ifndef _DARWIN
    SECTION( "UDP" )
    {
-      CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
+      benchmark_socket socket( CSimpleSocket::SocketTypeUdp );
       REQUIRE( socket.Open( "127.0.0.1", 12345 ) );
 
-      BENCHMARK( "UDP Send" ) { socket.Send( MSG, MSG_LENGTH ); };
+      BENCHMARK( "original" ) { socket.sendOriginal( MSG, MSG_LENGTH ); };
+      BENCHMARK( "no loop" ) { socket.noLoop( MSG, MSG_LENGTH ); };
+      BENCHMARK( "no timer" ) { socket.noTimer( MSG, MSG_LENGTH ); };
+      BENCHMARK( "pure UDP" ) { socket.pureUdp( MSG, MSG_LENGTH ); };
 
       CHECK( socket.Close() );
    }

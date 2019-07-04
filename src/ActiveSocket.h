@@ -54,14 +54,15 @@ public:
 
    bool Open( const char* pAddr, uint16_t nPort );
 
+protected:
+   sockaddr_in* GetUdpRxAddrBuffer() override;
+   sockaddr_in* GetUdpTxAddrBuffer() override;
+
 private:
    bool Validate( const char* pAddr, uint16_t nPort );
    bool PreConnect( const char* pAddr, uint16_t nPort );   // Convert and Save params for OS layer
    bool ConnectStreamSocket();
    bool ConnectDatagramSocket();
-
-   sockaddr_in* GetUdpRxAddrBuffer() override;
-   sockaddr_in* GetUdpTxAddrBuffer() override;
 };
 
 #endif   //  __ACTIVESOCKET_H__

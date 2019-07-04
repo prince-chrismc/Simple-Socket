@@ -286,10 +286,6 @@ public:
    bool Flush();
    
 protected:
-   /// Return socket descriptor
-   ///  @return socket descriptor which is a signed 32 bit integer.
-   [[nodiscard]] SOCKET GetSocketDescriptor() const { return m_socket; }
-
    /// Errors : CSocket::SocketProtocolError, CSocket::SocketInvalidSocket,
    /// @return true if properly initialized.
    bool ObtainNewHandle();
@@ -306,6 +302,9 @@ protected:
    ///  @param socket value of socket descriptor
    void SetSocketHandle( SOCKET socket ) { m_socket = socket; }
 
+   virtual sockaddr_in* GetUdpRxAddrBuffer() { return &m_stClientSockaddr; }
+   virtual sockaddr_in* GetUdpTxAddrBuffer() { return m_bIsMulticast ? &m_stMulticastGroup : &m_stClientSockaddr; }
+
    static constexpr int SOCKET_ADDR_IN_SIZE = sizeof( sockaddr_in );
 
 private:
@@ -319,9 +318,6 @@ private:
 
    bool BindUnicastInterface( const char* pInterface );
    bool BindMulticastInterface( const char* pInterface );
-
-   virtual sockaddr_in* GetUdpRxAddrBuffer() { return &m_stClientSockaddr; }
-   virtual sockaddr_in* GetUdpTxAddrBuffer() { return m_bIsMulticast ? &m_stMulticastGroup : &m_stClientSockaddr; }
 
 protected:
    SOCKET m_socket = INVALID_SOCKET;                /// socket handle
