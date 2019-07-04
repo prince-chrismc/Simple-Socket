@@ -29,44 +29,37 @@ SOFTWARE.
 #include "catch2/catch.hpp"
 #include "PassiveSocket.h"
 
-using namespace std::string_view_literals;
-
+#include <future>
 
 TEST_CASE( "socket send", "[.][Benchmark][TCP][UDP]" )
 {
-   static constexpr auto udp = CSimpleSocket::SocketTypeUdp;
+   static constexpr uint8_t MSG[] = { 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd' };
+   static constexpr auto MSG_LENGTH = ( sizeof( MSG ) / sizeof( MSG[ 0 ] ) );
 
    SECTION( "TCP" )
    {
+      CPassiveSocket server;
+      REQUIRE( server.Listen( nullptr, 35346 ) );
       CActiveSocket socket;
-      REQUIRE( socket.Open( "www.google.ca", 80 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.Open( "127.0.0.1", 35346 ) );
+      auto remote = std::async( std::launch::async, [&] {
+         return server.Accept();
+      } );
 
-      BENCHMARK( "TCP Send" ) { socket.Send( "GET / HTTP/1.0\r\n\r\n"sv ); };
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      BENCHMARK( "TCP Send" ) { socket.Send( MSG, MSG_LENGTH ); };
 
-      REQUIRE( socket.Flush() );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      CHECK( socket.Close() );
    }
 
 #ifndef _DARWIN
    SECTION( "UDP" )
    {
       CActiveSocket socket( CSimpleSocket::SocketTypeUdp );
-      REQUIRE( socket.Open( "8.8.8.8", 53 ) );
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
+      REQUIRE( socket.Open( "127.0.0.1", 12345 ) );
 
-      static constexpr uint8_t DNS_QUERY[] = { '\x12', '\x34', '\x01', '\x00', '\x00', '\x01', '\x00', '\x00',
-                                               '\x00', '\x00', '\x00', '\x00', '\x07', '\x65', '\x78', '\x61',
-                                               '\x6d', '\x70', '\x6c', '\x65', '\x03', '\x63', '\x6f', '\x6d',
-                                               '\x00', '\x00', '\x01', '\x00', '\x01' };
-      static constexpr auto DNS_QUERY_LENGTH = ( sizeof( DNS_QUERY ) / sizeof( DNS_QUERY[ 0 ] ) );
+      BENCHMARK( "UDP Send" ) { socket.Send( MSG, MSG_LENGTH ); };
 
-	  BENCHMARK( "UDP Send" ) { socket.Send( DNS_QUERY, DNS_QUERY_LENGTH ); };
-      CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
-
-      REQUIRE_FALSE( socket.Flush() );
-      REQUIRE( socket.GetSocketError() == CSimpleSocket::SocketProtocolError );
+      CHECK( socket.Close() );
    }
 #endif
 }
