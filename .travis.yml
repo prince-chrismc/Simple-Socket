@@ -141,15 +141,7 @@ jobs:
     - git config --global user.email "travis@travis-ci.org" && git config --global user.name "Travis CI"
     - git checkout -b travis/${TRAVIS_BRANCH}_${TRAVIS_BUILD_NUMBER}
     - sudo -H pip install cmake-format
-    - cmake-format CMakeLists.txt > CMakeLists.txt.format
-    - rm CMakeLists.txt && mv CMakeLists.txt.format CMakeLists.txt
-    - cd tests
-    - cmake-format CMakeLists.txt > CMakeLists.txt.format
-    - rm CMakeLists.txt && mv CMakeLists.txt.format CMakeLists.txt
-    - cd ../examples
-    - cmake-format CMakeLists.txt > CMakeLists.txt.format
-    - rm CMakeLists.txt && mv CMakeLists.txt.format CMakeLists.txt
-    - cd ..
+    - ./ci/format-cmake.sh
     - git add -u
     - git diff-index --quiet HEAD || ( git commit -m "cmake-formatted by ci"
       && git remote add origin-ci https://${GH_TOKEN}@github.com/prince-chrismc/Simple-Socket.git
