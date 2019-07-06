@@ -1,5 +1,9 @@
 language: cpp
 
+branches:
+  except:
+  - travis/*
+
 before_install:
 - eval "${MATRIX_EVAL}"
 
