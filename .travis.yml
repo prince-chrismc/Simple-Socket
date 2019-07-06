@@ -137,10 +137,11 @@ jobs:
         - libc++abi-8-dev
     env:
     - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
-    script:
+    before_script:
     - git config --global user.email "travis@travis-ci.org" && git config --global user.name "Travis CI"
     - git checkout -b travis/${TRAVIS_BRANCH}_${TRAVIS_BUILD_NUMBER}
     - sudo -H pip install cmake-format
+    script:
     - ./ci/format-cmake.sh .
     - git add -u
     - git diff-index --quiet HEAD || ( git commit -m "cmake-formatted by ci"
