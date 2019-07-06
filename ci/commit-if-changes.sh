@@ -30,7 +30,7 @@ git push --set-upstream origin-ci
 
 curl -X POST \
 -H "Content-Type: application/json" \
--H "Authorization: token ${GH_TOKEN}"
+-H "Authorization: token ${GH_TOKEN}" \
 -d '{
   "title": "cmake-formatted by ci",
   "head": "$1",
