@@ -258,6 +258,7 @@ TEST_CASE( "Sockets dont leak" )
 
 TEST_CASE( "Socket errors produce descriptions" )
 {
-   const auto code = GENERATE( range( CSimpleSocket::SocketError, CSimpleSocket::SocketEunknown ) );
-   CHECK_FALSE( CSimpleSocket::DescribeError( code ).empty() );
+   const auto code = GENERATE(
+       range( static_cast<int>( CSimpleSocket::SocketError ), static_cast<int>( CSimpleSocket::SocketEunknown ) + 1 ) );
+   CHECK_FALSE( CSimpleSocket::DescribeError( static_cast<CSimpleSocket::CSocketError>( code ) ).empty() );
 }
