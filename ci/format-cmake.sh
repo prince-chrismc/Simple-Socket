@@ -2,8 +2,10 @@
 
 usage()
 {
-   echo "Usage: $0 <dir>\n"
-   echo "  Used to call the cmake-format on the various 'CMakeLists.txt' located under 'dir'\n"
+   echo "Usage: $0 <dir>"
+   echo ""
+   echo "  Used to call the cmake-format on the various 'CMakeLists.txt' located under 'dir'"
+   echo ""
 }
 
 if [ "$#" -ne 1 ]; then

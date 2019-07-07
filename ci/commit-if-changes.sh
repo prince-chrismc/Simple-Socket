@@ -2,9 +2,11 @@
 
 usage()
 {
-   echo "Usage: $0 <branch name>\n"
+   echo "Usage: $0 <branch name>"
+   echo ""
    echo "  Attempts to commit all tracked changes and commit them."
-   echo "  Followed by creating a pull request for that branch\n"
+   echo "  Followed by creating a pull request for that branch based on master"
+   echo ""
 }
 
 if [ "$#" -ne 1 ]; then
@@ -29,12 +31,7 @@ git remote add origin-ci https://${GH_TOKEN}@github.com/prince-chrismc/Simple-So
 git push --set-upstream origin-ci
 
 curl -X POST \
--H "Content-Type: application/json" \
--H "Authorization: token ${GH_TOKEN}" \
--d '{
-  "title": "cmake-formatted by ci",
-  "head": "$1",
-  "base": "master"
-  "body": "changes performed by ci linting job",
-}' \
-https://api.github.com/repos/prince-chrismc/Simple-Socket/pulls
+  -H "Content-Type: application/json" \
+  -H "Authorization: token ${GH_TOKEN}" \
+  -d "{\"title\": \"cmake-formatted by ci\",\"head\": \"$1\",\"base\": \"master\",\"body\": \"changes performed by ci linting job\"}" \
+  https://api.github.com/repos/prince-chrismc/Simple-Socket/pulls
