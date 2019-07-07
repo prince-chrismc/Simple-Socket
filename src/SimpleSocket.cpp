@@ -1055,10 +1055,8 @@ std::string CSimpleSocket::DescribeError( CSocketError err )
       return "Pointer type supplied as argument is invalid.";
    case CSimpleSocket::SocketInvalidOperation:
       return "An invalid argument was provide for the requested action.";
-   case CSimpleSocket::SocketEunknown:
-      return "Unknown error";
    default:
-      return "No such CSimpleSocket error";
+      return "Unknown error";
    }
 }
 

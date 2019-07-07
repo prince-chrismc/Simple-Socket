@@ -59,7 +59,7 @@ namespace
 
       REQUIRE( socket.GetTotalTimeMs() == 0 );
       // This does occasionally come out as 0
-      //REQUIRE( socket.GetTotalTimeUsec() > 0 );   // Timer tracked internal init from ctor
+      // REQUIRE( socket.GetTotalTimeUsec() > 0 );   // Timer tracked internal init from ctor
 
       REQUIRE( socket.GetServerAddr() == "0.0.0.0" );
       REQUIRE( socket.GetServerPort() == 0 );
@@ -254,4 +254,10 @@ TEST_CASE( "Sockets dont leak" )
       REQUIRE_FALSE( socket.IsSocketValid() );
       CHECK( socket.GetSocketError() == CSimpleSocket::SocketSuccess );
    }
+}
+
+TEST_CASE( "Socket errors produce descriptions" )
+{
+   const auto code = GENERATE( range( CSimpleSocket::SocketError, CSimpleSocket::SocketEunknown ) );
+   CHECK_FALSE( CSimpleSocket::DescribeError( code ).empty() );
 }
