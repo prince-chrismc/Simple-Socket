@@ -6,7 +6,7 @@ set(TESTER_SOURCES
     "unicast.cpp"
     "multicast.cpp"
     "async.cpp"
-	"benchmarks.cpp")
+    "benchmarks.cpp")
 
 set(SIMPLE_SOCKET_STRING_VIEW
     ON
