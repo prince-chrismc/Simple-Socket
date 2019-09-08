@@ -200,6 +200,7 @@ jobs:
     - 11
     cache: yarn
     script:
+    - cd docs/website/
     - yarn build
 
 notifications:
