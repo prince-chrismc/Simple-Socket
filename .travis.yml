@@ -201,6 +201,7 @@ jobs:
     cache: yarn
     script:
     - cd docs/website/
+    - yarn install
     - yarn build
 
 notifications:
