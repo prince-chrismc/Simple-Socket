@@ -64,6 +64,9 @@ jobs:
     - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
     
   - os: linux
+    dist: bionic
+    
+  - os: linux
     addons:
       apt:
         sources:
