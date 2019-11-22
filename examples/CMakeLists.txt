@@ -1,5 +1,7 @@
 # Examples
-set(SIMPLE_SOCKET_STRING_VIEW ON CACHE BOOL "Required by examples" FORCE)
+set(SIMPLE_SOCKET_STRING_VIEW
+    ON
+    CACHE BOOL "Required by examples" FORCE)
 
 add_executable(asyncclient-example RecvAsync.cpp)
 target_compile_features(asyncclient-example PRIVATE cxx_std_17)
